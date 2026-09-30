@@ -4,8 +4,9 @@
 
 ## 저장소 상태
 
-- 로컬 Git: 존재, 빈 `main`, 커밋 없음, 원격 없음.
-- 제안 원격 이름: `PCY00/aircon-remote-control` — 아직 생성하지 않았고 계정 재인증 후 존재 여부를 먼저 확인한다.
+- 로컬 Git: `main` baseline 완료.
+- private 원격: `PCY00/aircon-remote-control`.
+- 검증 baseline: `6a1956fe31504a795c54046a424d4cf9943fa42f`, 원격 blob 490개, 로컬·원격 SHA 일치.
 
 ## 추적 후보
 
@@ -26,7 +27,7 @@
 
 ## 조건부 검토
 
-- `outputs/`: 현재 두 파일, 약 0.25 MiB. 소스 증거인지 재생성 가능한 산출물인지 확인한 뒤 포함 여부를 정한다.
+- `outputs/`: BOM XLSX는 baseline에 포함했고 생성된 `*.inspect.ndjson` sidecar는 제외했다.
 - `docs/assets/`: 2026-09-30 메타데이터 검사는 통과했지만 첫 commit 직전에 다시 검사한다.
 
 ## 과거 자료 보존
@@ -36,6 +37,5 @@
 
 ## 차단 요인과 안전 조건
 
-- `PCY00` 로컬 GitHub CLI 재인증 대기.
-- 첫 commit 전 staging 목록, 비밀 패턴, 파일 크기 검증 필요.
+- 후속 commit 전 staging 목록, 비밀 패턴, 파일 크기 재검증 필요.
 - 실제 장비나 Raspberry Pi에는 이번 전환 과정에서 접속하지 않는다.
