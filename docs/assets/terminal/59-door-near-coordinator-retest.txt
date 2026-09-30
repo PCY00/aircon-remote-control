@@ -1,0 +1,23 @@
+# Step 3 near-coordinator door retest — 2026-09-08
+# User was asked to test near the dongle, then reported completion.
+# Actual separation distance was not measured by the operator.
+# Read-only observation: no Pi changes, reset, or pairing operation.
+
+Pi$ timeout 50 docker logs --follow --since 90s --timestamps aircon-zigbee2mqtt 2>&1 | grep --line-buffered -E "topic .*zigbee2mqtt/sensor_door_01|error|warn"
+OBSERVATION_STARTED_KST=2026-09-08T08:18:45+09:00
+
+# No matching report/warning/error appeared. grep finished with exit=1.
+
+# GET /api/v1/sensors and GET /api/v1/sensors/[DOOR_ID]/events?limit=20
+# Poll every 2 seconds, for 45 seconds. Only state changes and recent events printed.
+# All timestamps converted to KST. Device identifiers omitted.
+OBSERVATION_STARTED_KST=2026-09-08 08:18:55 +09:00
+RECENT_EVENT_CUTOFF_KST=2026-09-08 08:16:55 +09:00
+DOOR_STATE=closed LAST_REPORTED_KST=2026-09-07 20:22:39 +09:00
+RECENT_EVENTS_OBSERVED=0
+OBSERVATION_ENDED_KST=2026-09-08 08:19:40 +09:00
+
+# Result: no new door state publication or stored transition during this retest.
+# Cached closed state is from the previous day, not proof of the current physical state.
+# Root cause remains unconfirmed; next proposed check is battery contact/power cycling.
+# Reset and re-pairing have not been performed.

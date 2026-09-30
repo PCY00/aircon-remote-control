@@ -1,0 +1,43 @@
+# 사용자 화면
+[ok] Reached target cloud-init.target - Cloud-init target.
+콘솔 마지막 줄에서 스마트홈 화면으로 전환되지 않음
+
+# 부팅과 장치 상태
+Pi uptime: 정상
+aircon-controller: active
+web health: HTTP 200
+HDMI-A-1: connected
+display mode: 1920x1200
+USB input: TouchScreen detected
+tty1 session: active
+
+# 키오스크 상태의 모순
+aircon-kiosk: active
+Cage process: running
+Chromium child: 없음
+Wayland socket: 없음
+
+# 로그인 세션 로그에서 찾은 실제 오류
+Display detected. Preparing dashboard kiosk.
+Dashboard is healthy. Starting Chromium kiosk.
+Failed to create /home/air/.cache/mesa_shader_cache (Read-only file system)
+Unable to open Wayland socket: Invalid argument
+
+# 원인
+ProtectSystem=strict 보안 격리 아래에서 /run/user/1000이 쓰기 예외가 아니었다.
+Cage가 XDG_RUNTIME_DIR에 Wayland 소켓을 만들지 못해 Chromium이 시작되지 않았다.
+
+# 로컬 수정안
+ReadWritePaths=/run/user/1000
+XDG_RUNTIME_DIR=/run/user/1000
+XDG_CACHE_HOME=/home/air/aircon-controller/runtime/kiosk/cache
+전체 홈과 시스템 경로의 읽기 전용 보호는 유지
+
+# 로컬 검증
+Python tests: 62 passed
+Ruff: passed
+run_kiosk.sh bash -n: passed
+setup_kiosk.sh bash -n: passed
+
+# 상태
+Pi 적용과 실화면 검증 전 — 해결 확정하지 않음

@@ -1,0 +1,22 @@
+air@AC:~ $ lsusb
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 004: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+
+air@AC:~ $ ls -l /dev/serial/by-id
+usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_[REDACTED]-if00-port0 -> ../../ttyUSB0
+
+air@AC:~ $ lsusb -t
+/:  Bus 001.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/1p, 480M
+    |__ Port 001: Dev 002, If 0, Class=Hub, Driver=hub/4p, 480M
+        |__ Port 002: Dev 004, If 0, Class=Vendor Specific Class, Driver=cp210x, 12M
+/:  Bus 002.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/4p, 5000M
+
+air@AC:~ $ id
+uid=1000(air) gid=1000(air) groups=1000(air),4(adm),20(dialout),27(sudo),986(gpio),988(i2c),989(spi)
+
+# Result
+# CP2102N USB-UART interface detected as /dev/ttyUSB0.
+# The air user belongs to dialout and can access the serial device.
+# Zigbee coordinator firmware and radio communication are not verified yet.

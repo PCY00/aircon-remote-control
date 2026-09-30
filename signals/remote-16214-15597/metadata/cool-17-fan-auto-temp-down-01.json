@@ -1,0 +1,26 @@
+{
+  "capture_id": "cool-17-fan-auto-temp-down-01",
+  "captured_at": "2026-08-29T21:13:24+09:00",
+  "remote_id": "remote-16214-15597",
+  "button": "temperature_down",
+  "display_state_before": {"mode": "cool", "temperature_c": 18, "fan": "no_arrow_auto_candidate"},
+  "display_state_after": {"mode": "cool", "temperature_c": 17, "fan": "no_arrow_auto_candidate", "confirmed_by_user": true},
+  "receiver": {"module": "HW-477 V0.2", "gpio_bcm": 17, "physical_pin": 11, "device": "/dev/lirc0"},
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 178939,
+    "median_data_pulse_us": 564,
+    "median_short_space_us": 515,
+    "median_long_space_us": 1613,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": ["b2", "4d", "bf", "40", "00", "ff"],
+    "field_hypothesis": {"fan_bytes": ["bf", "40"], "temperature_bytes": ["00", "ff"]},
+    "interpretation": "17C differs from 18C in the fifth byte and its complement"
+  },
+  "raw_compact_file": "../raw/cool-17-fan-auto-temp-down-01.compact",
+  "send_format_file": "../raw/cool-17-fan-auto-temp-down-01.ir"
+}

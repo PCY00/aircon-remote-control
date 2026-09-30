@@ -1,0 +1,19 @@
+# KiCad 10.0.1 / Espressif library source verification
+# 2026-09-18. Actual command output; no hardware test performed.
+# Official repositories were checked out under tmp for read-only inspection.
+# Script checks file existence and searches the full Git tree for model names.
+
+PS> & ./tmp/kicad-reference-audit.ps1
+KiCad symbols tag 10.0.1 commit:
+7058584a0fbe9aa2f1c9ff2acf7847726ff6922c
+KiCad footprints tag 10.0.1 commit:
+3d2b27e687a44c97f02109afb2acfeebbc8dd75f
+Espressif library reference commit:
+dd76561812ab300351234ba6e0ec1295641796f0
+CORE_SYMBOL_FILES_FOUND=5
+CORE_FOOTPRINT_FILES_FOUND=9
+H2_MINI1_CORE_SYMBOL_MATCHES=0
+TPS63802_CORE_SYMBOL_MATCHES=0
+ESPRESSIF_H2_MINI1_SYMBOL_FOUND=True
+ESPRESSIF_H2_MINI1_FOOTPRINT_MATCHES=1
+SCOPE=Library source audit only; no schematic ERC or PCB DRC performed.

@@ -1,0 +1,31 @@
+# 승인된 재배포 범위
+로컬 파일: app/sensors/store.py
+Pi 대상: /home/air/aircon-controller/app/sensors/store.py
+런타임 SQLite: 전송·교체·삭제하지 않음
+
+> scp [SSH KEY OPTIONS] app/sensors/store.py air@AC:/home/air/aircon-controller/app/sensors/store.py
+TRANSFER=OK
+LOCAL_REMOTE_SHA256=MATCH
+
+> systemctl --user restart aircon-controller
+> systemctl --user is-active aircon-controller
+active
+
+> systemctl --user show aircon-controller -p NRestarts --value
+0
+
+# 재시작 직후 health 대기
+첫 2회: 서비스 소켓 준비 중
+최종: HEALTH_HTTP=200
+
+# 운영 API 검증
+SENSOR_COUNT=2
+DOOR_STATE=closed
+DOOR_LAST_CHANGED=None
+DOOR_FIRST_SEEN_PRESENT=True
+DOOR_LAST_REPORTED_PRESENT=True
+DOOR_EVENT_COUNT=0
+
+# 판정
+현재 문 상태, 최초 확인과 마지막 보고는 보존됐다.
+실제 전환 이력은 0건 그대로이며 잘못된 기준값 변경 시각만 제거됐다.

@@ -1,0 +1,15 @@
+IR receiver local verification
+Date: 2026-08-29
+
+Command:
+.\.venv\Scripts\python.exe -m ruff check app tests
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m compileall -q app
+
+Result:
+All checks passed!
+.............                                                            [100%]
+14 passed in 1.44s
+REAL_CAPTURE_CORPUS=30/30 parsed
+
+Note: paths, credentials, private addresses, and Tailnet identifiers are not included.

@@ -1,0 +1,27 @@
+# AA / USB-C ESP32-H2 IR BOM verification — 2026-09-18
+# Real command/output excerpts. Local runtime/user paths omitted.
+# Document calculations only; not a hardware test.
+
+> node ./tmp/bom-20260918/build.mjs
+BOM_ROWS=33
+FITTED_UNITS_PER_NODE=44
+QUANTITY_FORMULAS=1_AND_5_NODE_CASES_VERIFIED
+{"kind":"notice","message":"Cell search matched 0 entries."}
+IR_CURRENT_ESTIMATE_MA=59.09
+IR_RESISTOR_ON_POWER_W=0.115
+DC_DC_NOMINAL_OUTPUT_V=3.3077
+XLSX_EXPORTED=ESP32-H2-AA-USB-IR-BOM-RevA.xlsx
+NODE_EXIT_CODE_AT_COMPLETION=unset
+NODE_EXIT_EVENT_CODE=0
+# The command runner reported exit code 1 despite Node's exit event code 0.
+# Root cause not determined; independently checked the exported file below.
+
+> ./.venv/Scripts/python.exe ./tmp/bom-20260918/verify_export.py
+XLSX_ZIP_CRC=PASS
+WORKSHEETS=3
+EXPORTED_FORMULAS=33_VERIFIED
+EXPORTED_ERROR_CELLS=0
+BOM_ROWS=33
+PHYSICAL_UNITS_PER_NODE_INCLUDING_2_AA=44
+VALIDATION_SCOPE=FILE_STRUCTURE_AND_QUANTITY_FORMULAS_NOT_HARDWARE
+# Exit code: 0

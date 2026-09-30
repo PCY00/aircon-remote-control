@@ -1,0 +1,22 @@
+$ ./.venv/Scripts/python.exe -m pytest -q
+.................................................................F....   [100%]
+FAILED tests/test_sensors_api.py::test_sensor_metadata_persists_across_restart
+TypeError: 'NoneType' object is not subscriptable
+1 failed, 69 passed
+
+# 원인: sqlite3.Row에 `"column" in row`를 사용해 열 이름이 아니라 행 값 포함 여부를 검사했다.
+# 해결: `set(row.keys())`로 열 존재를 확인하고 재시작 영속성 회귀 테스트를 유지했다.
+
+$ ./.venv/Scripts/python.exe -m ruff check app tests
+All checks passed!
+
+$ ./.venv/Scripts/python.exe -m pytest -q
+......................................................................   [100%]
+70 passed in 2.59s
+
+$ node --check app/static/sensors.js
+# 출력 없음: JavaScript 문법 검사 통과
+
+# UI 시각 검증
+# 로컬 MQTT 비활성 안내, 연결 버튼 비활성화, 30/60/120초 선택,
+# 센서 표시 이름·공간·아이콘 편집 화면을 확인했다.

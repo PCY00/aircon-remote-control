@@ -1,0 +1,15 @@
+# PCB blog document checks — 2026-09-22
+# Real read-only check output. This is documentation QA, not a new PCB test.
+
+$ ./scripts/validate_pcb_blog.ps1
+BLOG_ARTICLES=4
+MARKDOWN_FILES_CHECKED=7
+LOCAL_LINKS_CHECKED=63
+IMAGE_EMBEDS_CHECKED=11
+ISSUES=0
+BLOG_STRUCTURE_CHECK=PASS
+SCOPE=Local links, UTF-8, code fences, obvious private paths/addresses/keys; not an electrical or exhaustive security audit
+
+$ ./.venv/Scripts/python.exe scripts/sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=113
+PRIVATE_METADATA_COUNT=0

@@ -1,0 +1,96 @@
+$ ./scripts/zigbee_join_control.sh status
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+$ ./scripts/zigbee_join_control.sh open 180
+PERMIT_JOIN_REQUEST=180
+PERMIT_JOIN=true
+PERMIT_JOIN_TARGET=Coordinator
+
+# 첫 RESET 시도: 장치가 나타난 직후 네트워크를 떠남
+[2026-09-07 08:22:15] Interview failed for '[REDACTED_IEEE]' with error
+Error: DatabaseEntry with ID '3' does not exist
+
+# RESET을 LED가 깜박일 때까지 약 5초 다시 누름
+[2026-09-07 08:22:33] Interview for '[REDACTED_IEEE]' started
+[2026-09-07 08:22:39] Successfully interviewed '[REDACTED_IEEE]'
+[2026-09-07 08:22:39] Device has successfully been paired
+MODEL=TS0203
+VENDOR=Tuya
+MANUFACTURER_NAME=Wing
+TYPE=EndDevice
+SUPPORTED=true
+EXPOSES=contact,battery,voltage,tamper,battery_low,linkquality
+[2026-09-07 08:22:42] Successfully configured '[REDACTED_IEEE]'
+
+$ ./scripts/zigbee_join_control.sh close
+PERMIT_JOIN_REQUEST=closed
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+# 자석이 떨어진 상태: 열림
+[2026-09-07 08:22:50] {"battery":100,"battery_low":false,"contact":false,
+"linkquality":204,"tamper":false,"voltage":3200}
+
+# 자석을 중심선 10 mm 이내로 붙임: 닫힘
+[2026-09-07 08:23:28] {"battery":100,"battery_low":false,"contact":true,
+"linkquality":182,"tamper":false,"voltage":3200}
+
+# 자석을 2~3 cm 이상 뗌: 열림
+[2026-09-07 08:24:47] {"battery":100,"battery_low":false,"contact":false,
+"linkquality":218,"tamper":false,"voltage":3200}
+
+$ ./scripts/zigbee_join_control.sh status
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+# PowerShell Get-Content 파이프로 읽기 전용 요약을 보낸 첫 시도
+DEVICE_COUNT=2
+DEVICE_1_MODEL=TH01
+DEVICE_1_VENDOR=Zbeacon
+DEVICE_1_INTERVIEW_COMPLETED=true
+DEVICE_1_SUPPORTED=true
+DEVICE_2_MODEL=TS0203
+DEVICE_2_VENDOR=Tuya
+DEVICE_2_INTERVIEW_COMPLETED=true
+DEVICE_2_SUPPORTED=true
+bash: line 45: $'\r': command not found
+
+# CR 제거 후 동일 요약 재실행
+$ tr -d '\r' | bash -s
+DEVICE_COUNT=2
+DEVICE_1_MODEL=TH01
+DEVICE_1_VENDOR=Zbeacon
+DEVICE_1_INTERVIEW_COMPLETED=true
+DEVICE_1_SUPPORTED=true
+DEVICE_2_MODEL=TS0203
+DEVICE_2_VENDOR=Tuya
+DEVICE_2_INTERVIEW_COMPLETED=true
+DEVICE_2_SUPPORTED=true
+
+$ ./scripts/check_zigbee_stack.sh
+# Sanitized selected output; ANSI codes, command columns, and identifiers removed
+[containers]
+NAME                 IMAGE                               STATUS       PORTS
+aircon-mosquitto     eclipse-mosquitto:2.1.2-alpine      Up 9 hours   127.0.0.1:1883->1883/tcp
+aircon-zigbee2mqtt   ghcr.io/koenkk/zigbee2mqtt:2.14.1   Up 9 hours   127.0.0.1:8080->8080/tcp
+
+[zigbee2mqtt current-start milestones]
+Starting Zigbee2MQTT without watchdog.
+[2026-09-06 23:16:12] z2m: Starting Zigbee2MQTT version 2.14.1
+[2026-09-06 23:16:12] zh:zstack:znp: Serialport opened
+[2026-09-06 23:16:38] z2m: Coordinator firmware revision: 20240710
+[2026-09-06 23:16:38] z2m: Connected to MQTT server
+[2026-09-06 23:16:38] z2m: MQTT bridge state: online
+[2026-09-06 23:16:38] z2m: Zigbee2MQTT started!
+
+[mqtt bridge state]
+{"state":"online"}
+
+[host listeners]
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+
+[existing application]
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success

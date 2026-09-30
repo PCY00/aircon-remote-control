@@ -1,0 +1,26 @@
+{
+  "capture_id": "cool-18-fan-low-to-medium-01",
+  "captured_at": "2026-08-29T21:06:41+09:00",
+  "remote_id": "remote-16214-15597",
+  "button": "fan_select",
+  "display_state_before": {"mode": "cool", "temperature_c": 18, "fan": "low"},
+  "display_state_after": {"mode": "cool", "temperature_c": 18, "fan": "medium", "confirmed_by_user": true},
+  "receiver": {"module": "HW-477 V0.2", "gpio_bcm": 17, "physical_pin": 11, "device": "/dev/lirc0"},
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 178977,
+    "median_data_pulse_us": 541,
+    "median_short_space_us": 544,
+    "median_long_space_us": 1598,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": ["b2", "4d", "5f", "a0", "10", "ef"],
+    "different_bit_indexes_from_low_fan_zero_based": [16, 17, 24, 25],
+    "interpretation": "fan state is encoded in the packet rather than a single relative cycle command"
+  },
+  "raw_compact_file": "../raw/cool-18-fan-low-to-medium-01.compact",
+  "send_format_file": "../raw/cool-18-fan-low-to-medium-01.ir"
+}

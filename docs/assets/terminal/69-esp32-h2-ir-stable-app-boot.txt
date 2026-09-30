@@ -1,0 +1,37 @@
+ESP32-H2 IR firmware normal boot verification
+Date: 2026-09-11 KST
+
+Procedure
+  1. Finish the verified flash operation.
+  2. Disconnect USB.
+  3. Reconnect USB without pressing BOOT or RST.
+  4. Monitor COM6 at 115200 baud.
+
+Boot evidence
+  rst:0x15 (USB_UART_HPSYS),boot:0x8 (SPI_FAST_FLASH_BOOT)
+  ESP-IDF v5.5.4 2nd stage bootloader
+  chip revision: v1.2
+  SPI Flash Size : 2MB
+  Loaded app from partition at offset 0x10000
+  Project name:     aircon_h2_ir_node
+  ESP-IDF:          v5.5.4
+  h2_ir_node: booted with ESP-IDF v5.5.4
+  h2_ir_node: IR output ready: GPIO5, 38 kHz, duty 33%
+
+Console verification
+  > h
+  ESP32-H2 IR test commands
+    c : camera test (does not contain an A/C command)
+    n : Carrier CS-A061GS power on / cool 17 C / high fan
+    f : Carrier CS-A061GS power off
+    h : show this help
+
+Stability result
+  COM6 remained present throughout repeated checks and more than 30 seconds of
+  monitoring. No reset loop or panic was observed.
+
+Conclusion
+  The board and its native USB interface are operational. The earlier repeated
+  COM disconnects were isolated to the previous flash/boot state rather than
+  the detached external IR circuit.
+

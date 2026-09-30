@@ -1,0 +1,32 @@
+PS [PROJECT]> scp app/static/index.html app/static/sensors.css app/static/sensors.js air@AC:/home/air/aircon-controller/app/static/
+
+PS [PROJECT]> ssh air@AC "systemctl --user restart aircon-controller"
+
+원격 체크섬 확인:
+82b9acded6ad959133e7e04980218680b8ef01e024a2b4145ad78442eaf5c8f2  app/static/index.html
+860dc12db0f1f14dffb5b948babdf677a5b89e140054a83c07ee61ac00eeb4d7  app/static/sensors.css
+96de1d74452241d11afc67761abbfbb246d34f6383f186ac69683a2d82d1db3e  app/static/sensors.js
+SERVICE_ACTIVE=active
+SERVICE_ENABLED=enabled
+
+첫 검증 실패:
+GET http://127.0.0.1:8001/health -> connection refused
+GET http://127.0.0.1:8001/       -> connection refused
+
+진단:
+- systemd 서비스는 active였다.
+- Uvicorn 프로세스도 실행 중이었다.
+- 8001은 [TAILSCALE-IP]에만 LISTEN하고 있었다.
+- 원인: 서비스 장애가 아니라 잘못된 루프백 검증 주소였다.
+
+실제 리스닝 주소로 재검증:
+HEALTH_HTTP=200
+ROOT_HTTP=200
+CSS_HTTP=200
+JS_HTTP=200
+UI_SENSOR_MARKER=present
+MQTT_CONNECTED=true
+STORED_SENSOR_COUNT=2
+SENSOR_KINDS=door_contact,temperature_humidity
+
+비밀번호, 개인 키, 사설 IP와 장치 고유 주소는 기록하지 않았다.

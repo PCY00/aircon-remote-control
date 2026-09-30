@@ -1,0 +1,65 @@
+$ ./.venv/Scripts/python.exe -m pytest -q
+.................................................................
+65 passed
+
+$ ./.venv/Scripts/python.exe -m ruff check tests/test_kiosk_assets.py tests/test_sensor_ui_assets.py
+All checks passed!
+
+$ node --check app/static/sensors.js
+# 출력 없음: JavaScript 문법 검사 통과
+
+$ bash -n scripts/run_kiosk.sh
+WSL ERROR: execvpe(/bin/bash) failed: No such file or directory
+
+$ Get-Content -Raw scripts/run_kiosk.sh | ssh air@[HOST] "bash -n"
+# 출력 없음: Pi Bash에서 표준입력 스크립트 문법 검사 통과, 원격 파일 변경 없음
+
+$ git diff --no-index [PI-BEFORE]/index.html app/static/index.html
+# 차이: kiosk 쿼리 감지와 cursor:none 규칙만 추가
+$ git diff --no-index [PI-BEFORE]/run_kiosk.sh scripts/run_kiosk.sh
+# 차이: 키오스크 URL에 ?kiosk=1 추가, health URL은 기존 경로 유지
+
+$ scp app/static/index.html air@[HOST]:/home/air/aircon-controller/app/static/index.html
+$ scp scripts/run_kiosk.sh air@[HOST]:/home/air/aircon-controller/scripts/run_kiosk.sh
+# 두 파일 전송 완료
+
+$ ssh air@[HOST] 'bash -n /home/air/aircon-controller/scripts/run_kiosk.sh && sha256sum ...'
+[SHA-256]  /home/air/aircon-controller/app/static/index.html
+[SHA-256]  /home/air/aircon-controller/scripts/run_kiosk.sh
+# 로컬 기준본과 Raspberry Pi의 두 SHA-256이 각각 일치했다.
+
+$ sudo reboot
+Connection to [HOST] closed.
+
+$ # 키 접속을 반복해 실제 종료와 복귀 확인
+SSH_WAIT attempt=1
+SSH_WAIT attempt=2
+SSH_WAIT attempt=3
+SSH_WAIT attempt=4
+SSH_WAIT attempt=5
+SSH_WAIT attempt=6
+SSH_UP attempt=1
+
+$ # 재부팅 후 자동 복구 종합 확인
+UPTIME_SECONDS=45
+SYSTEM_STATE=running
+TAILSCALE=active
+WEB_APP=active
+KIOSK=active
+KIOSK_RESTARTS=0
+WAYLAND=wayland-0
+CHROMIUM_PROCESSES=11
+KIOSK_URL_MARKER=present
+HEALTH=200
+
+$ curl -fsS "http://[TAILSCALE-IP]:8001/?kiosk=1" | grep -q "cursor: none !important"
+curl: (23) Failure writing output to destination
+# grep -q가 일치 직후 파이프를 닫아 생긴 검증 명령의 잡음이다.
+
+$ page=$(curl -fsS "http://[TAILSCALE-IP]:8001/?kiosk=1")
+$ printf '%s' "$page" | grep -q "cursor: none !important" && echo CURSOR_RULE=present
+CURSOR_RULE=present
+
+$ docker ps --format "{{.Names}}={{.Status}}" | grep -E "mosquitto|zigbee2mqtt"
+aircon-zigbee2mqtt=Up
+aircon-mosquitto=Up

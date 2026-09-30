@@ -1,0 +1,24 @@
+# 2026-09-12 ESP32-H2 SOURCE BUILD VERIFICATION
+# Actual output excerpts. Build only; no flash, serial connection or IR output.
+# SDK: ESP-IDF 5.5.4. Checkout-specific folder hash replaced below.
+
+> powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/esp32_h2_firmware.ps1 build
+BUILD_DIRECTORY=C:\esp\aircon-h2-ir-node-[CHECKOUT_HASH]
+# Output excerpt: successful app compilation and image generation.
+[953/963] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+[954/963] Linking C static library esp-idf\main\libmain.a
+[958/963] Linking CXX executable aircon_h2_ir_node.elf
+[959/963] Generating binary image from built executable
+Successfully created esp32h2 image.
+Generated C:/esp/aircon-h2-ir-node-[CHECKOUT_HASH]/build/aircon_h2_ir_node.bin
+aircon_h2_ir_node.bin binary size 0x2d4a0 bytes. Smallest app partition is 0x100000 bytes. 0xd2b60 bytes (82%) free.
+# Output excerpt: bootloader and complete build.
+Bootloader binary size 0x5690 bytes. 0x2970 bytes (32%) free.
+[962/963] No install step for 'bootloader'
+[963/963] Completed 'bootloader'
+Project build complete. To flash, run:
+# The tool's suggested flash commands are omitted; none were run.
+# Process exit code: 0
+
+> .\.venv\Scripts\python.exe -m pip check
+No broken requirements found.

@@ -1,0 +1,552 @@
+#room-first-design-studio .sensor-section {
+  order: 2;
+  margin: 0 0 22px;
+}
+
+#room-first-design-studio .spaces-section { order: 3; }
+
+#room-first-design-studio .sensor-section-heading { align-items: flex-end; }
+
+#room-first-design-studio .sensor-section-heading h3 { margin-bottom: 4px; }
+
+#room-first-design-studio .sensor-connection {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--studio-muted);
+}
+
+#room-first-design-studio .sensor-connection::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+#room-first-design-studio .sensor-connection[data-state="online"] { color: var(--studio-confirm-text); }
+#room-first-design-studio .sensor-connection[data-state="offline"] { color: var(--studio-danger); }
+#room-first-design-studio .sensor-connection[data-state="loading"] { opacity: .7; }
+
+#room-first-design-studio .sensor-refresh-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#room-first-design-studio .sensor-refresh-button svg { width: 16px; height: 16px; }
+
+#room-first-design-studio .sensor-refresh-button[data-loading="true"] svg {
+  animation: sensor-spin .9s linear infinite;
+}
+
+@keyframes sensor-spin { to { transform: rotate(360deg); } }
+
+#room-first-design-studio .sensor-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+#room-first-design-studio .sensor-card {
+  min-height: 164px;
+  padding: 16px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--studio-panel);
+  color: var(--studio-text);
+  text-align: left;
+  box-shadow: 0 12px 30px var(--studio-shadow);
+}
+
+#room-first-design-studio .sensor-card-top,
+#room-first-design-studio .sensor-card-meta,
+#room-first-design-studio .sensor-block-heading,
+#room-first-design-studio .sensor-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#room-first-design-studio .sensor-card-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: var(--studio-scene);
+  color: var(--studio-muted);
+}
+
+#room-first-design-studio .sensor-card[data-kind="door_contact"][data-door-state="open"] .sensor-card-icon {
+  background: color-mix(in srgb, #e9a54a 18%, var(--studio-panel));
+  color: #9a5b08;
+}
+
+#room-first-design-studio[data-theme="dark"] .sensor-card[data-kind="door_contact"][data-door-state="open"] .sensor-card-icon {
+  color: #ffc46f;
+}
+
+#room-first-design-studio .sensor-card-battery {
+  color: var(--studio-muted);
+  font-size: .72rem;
+}
+
+#room-first-design-studio .sensor-card-value {
+  display: block;
+  margin-top: 20px;
+  font-size: 1.7rem;
+  font-weight: 500;
+  letter-spacing: -.04em;
+}
+
+#room-first-design-studio .sensor-card[data-kind="temperature_humidity"] .sensor-card-value {
+  font-size: 1.55rem;
+}
+
+#room-first-design-studio .sensor-card-name {
+  display: block;
+  margin-top: 7px;
+  font-weight: 500;
+}
+
+#room-first-design-studio .sensor-card-meta {
+  margin-top: 5px;
+  color: var(--studio-muted);
+  font-size: .75rem;
+}
+
+#room-first-design-studio .sensor-empty-state {
+  grid-column: 1 / -1;
+  min-height: 164px;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  border: 1px dashed color-mix(in srgb, var(--studio-muted) 32%, transparent);
+  border-radius: 22px;
+  color: var(--studio-muted);
+  text-align: center;
+}
+
+#room-first-design-studio .sensor-empty-state strong { color: var(--studio-text); font-weight: 500; }
+
+#room-first-design-studio .sensor-refresh-policy {
+  min-height: 42px;
+  margin-top: 9px;
+  padding: 0 4px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--studio-muted);
+  font-size: .75rem;
+}
+
+#room-first-design-studio .sensor-refresh-policy > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#room-first-design-studio .sensor-refresh-policy svg { width: 15px; height: 15px; }
+
+#room-first-design-studio .sensor-refresh-policy button {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--studio-active-text);
+}
+
+#room-first-design-studio .sensor-detail[hidden] { display: none; }
+
+#room-first-design-studio .sensor-detail-hero {
+  min-height: 230px;
+  padding: 26px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 9px;
+  border-radius: 28px;
+  background: var(--studio-hero);
+  color: var(--studio-hero-text);
+  text-align: center;
+}
+
+#room-first-design-studio .sensor-detail-icon {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--studio-hero-text) 14%, transparent);
+}
+
+#room-first-design-studio .sensor-detail-icon svg { width: 27px; height: 27px; }
+
+#room-first-design-studio [data-sensor-detail-primary] {
+  margin-top: 10px;
+  font-size: 2.7rem;
+  font-weight: 500;
+  letter-spacing: -.06em;
+}
+
+#room-first-design-studio [data-sensor-detail-secondary] {
+  margin: 0;
+  opacity: .78;
+}
+
+#room-first-design-studio .sensor-detail-actions { margin: 12px 0; }
+
+#room-first-design-studio .sensor-detail-actions button,
+#room-first-design-studio .sensor-discover-button {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--studio-scene);
+  color: var(--studio-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#room-first-design-studio .sensor-detail-actions button[data-loading="true"] svg,
+#room-first-design-studio .sensor-discover-button[data-loading="true"] svg {
+  animation: sensor-spin .9s linear infinite;
+}
+
+#room-first-design-studio .sensor-facts {
+  margin: 0;
+  display: grid;
+  gap: 0;
+}
+
+#room-first-design-studio .sensor-fact {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+#room-first-design-studio .sensor-fact + .sensor-fact,
+#room-first-design-studio .door-event + .door-event {
+  border-top: 1px solid color-mix(in srgb, var(--studio-muted) 16%, transparent);
+}
+
+#room-first-design-studio .sensor-fact dt { color: var(--studio-muted); }
+#room-first-design-studio .sensor-fact dd { margin: 0; text-align: right; }
+
+#room-first-design-studio .sensor-block-heading { margin-bottom: 4px; }
+#room-first-design-studio .sensor-block-heading small { color: var(--studio-muted); }
+
+#room-first-design-studio .door-event-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#room-first-design-studio .door-event {
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+#room-first-design-studio .door-event-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--studio-scene);
+  color: var(--studio-muted);
+}
+
+#room-first-design-studio .door-event-copy strong { display: block; font-weight: 500; }
+#room-first-design-studio .door-event-copy small,
+#room-first-design-studio .door-event > time { color: var(--studio-muted); font-size: .72rem; }
+
+#room-first-design-studio .sensor-list-empty {
+  margin: 0;
+  padding: 24px 8px;
+  color: var(--studio-muted);
+  text-align: center;
+}
+
+#room-first-design-studio .sensor-refresh-explanation p,
+#room-first-design-studio .sensor-dialog-intro {
+  margin: 0;
+  color: var(--studio-muted);
+  line-height: 1.55;
+}
+
+#room-first-design-studio .sensor-settings-dialog form,
+#room-first-design-studio .sensor-editor-form {
+  margin-top: 18px;
+  display: grid;
+  gap: 13px;
+}
+
+#room-first-design-studio .sensor-settings-dialog label,
+#room-first-design-studio .sensor-editor-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--studio-muted);
+}
+
+#room-first-design-studio .sensor-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+#room-first-design-studio .sensor-settings-dialog input[type="time"],
+#room-first-design-studio .sensor-settings-dialog select,
+#room-first-design-studio .sensor-editor-form input,
+#room-first-design-studio .sensor-editor-form select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--studio-muted) 28%, transparent);
+  border-radius: 12px;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+  font: inherit;
+}
+
+#room-first-design-studio .sensor-checkbox {
+  min-height: 46px;
+  grid-template-columns: auto 1fr !important;
+  align-items: center;
+}
+
+#room-first-design-studio .sensor-checkbox input { width: 20px; height: 20px; }
+
+#room-first-design-studio .sensor-settings-preview,
+#room-first-design-studio .sensor-editor-id {
+  margin: 0;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: var(--studio-scene);
+  color: var(--studio-muted);
+  font-size: .78rem;
+}
+
+#room-first-design-studio .sensor-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+#room-first-design-studio .sensor-dialog-actions button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--studio-scene);
+  color: var(--studio-text);
+}
+
+#room-first-design-studio .sensor-dialog-actions button:last-child {
+  background: var(--studio-hero);
+  color: var(--studio-hero-text);
+}
+
+#room-first-design-studio .sensor-dialog-heading { align-items: flex-start; }
+#room-first-design-studio .sensor-dialog-heading h3 { margin-bottom: 0; }
+#room-first-design-studio .sensor-dialog-heading .detail-icon-action { flex: 0 0 auto; }
+#room-first-design-studio .sensor-discover-button { margin: 16px 0 12px; }
+
+#room-first-design-studio .sensor-join-panel {
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 18px;
+  background: var(--studio-scene);
+}
+
+#room-first-design-studio .sensor-join-heading,
+#room-first-design-studio .sensor-joined-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#room-first-design-studio .sensor-join-heading > div > strong,
+#room-first-design-studio .sensor-join-heading > div > small { display: block; }
+
+#room-first-design-studio [data-zigbee-join-status] {
+  margin-top: 4px;
+  color: var(--studio-muted);
+}
+
+#room-first-design-studio [data-zigbee-join-status][data-state="open"] {
+  color: var(--studio-confirm-text);
+}
+
+#room-first-design-studio [data-zigbee-join-status][data-state="offline"] {
+  color: var(--studio-danger);
+}
+
+#room-first-design-studio .sensor-join-heading label {
+  display: grid;
+  gap: 4px;
+  color: var(--studio-muted);
+  font-size: .72rem;
+}
+
+#room-first-design-studio .sensor-join-heading select {
+  min-width: 88px;
+  min-height: 40px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--studio-muted) 25%, transparent);
+  border-radius: 10px;
+  background: var(--studio-panel);
+  color: var(--studio-text);
+  font: inherit;
+}
+
+#room-first-design-studio .sensor-join-button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 13px;
+  border: 0;
+  border-radius: 13px;
+  background: var(--studio-hero);
+  color: var(--studio-hero-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#room-first-design-studio .sensor-join-button[hidden] { display: none; }
+
+#room-first-design-studio .sensor-join-stop {
+  background: color-mix(in srgb, var(--studio-danger) 16%, var(--studio-panel));
+  color: var(--studio-danger);
+}
+
+#room-first-design-studio .sensor-pairing-steps {
+  margin: 13px 0 15px;
+  padding-left: 22px;
+  color: var(--studio-muted);
+  font-size: .77rem;
+  line-height: 1.65;
+}
+
+#room-first-design-studio .sensor-joined-heading {
+  padding-top: 13px;
+  border-top: 1px solid color-mix(in srgb, var(--studio-muted) 16%, transparent);
+}
+
+#room-first-design-studio .sensor-joined-heading small { color: var(--studio-muted); }
+
+#room-first-design-studio .zigbee-device-list {
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  list-style: none;
+}
+
+#room-first-design-studio .zigbee-device-list li {
+  min-height: 52px;
+  padding: 8px 9px;
+  border-radius: 12px;
+  background: var(--studio-panel);
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+#room-first-design-studio .zigbee-device-list li > span:first-child {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--studio-muted);
+}
+
+#room-first-design-studio .zigbee-device-list strong,
+#room-first-design-studio .zigbee-device-list small { display: block; }
+#room-first-design-studio .zigbee-device-list strong { font-weight: 500; }
+#room-first-design-studio .zigbee-device-list small { margin-top: 2px; color: var(--studio-muted); }
+
+#room-first-design-studio .sensor-manager-list { display: grid; gap: 8px; }
+
+#room-first-design-studio .sensor-manager-item {
+  width: 100%;
+  min-height: 66px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 15px;
+  background: var(--studio-scene);
+  color: var(--studio-text);
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+
+#room-first-design-studio .sensor-manager-item > span:first-child {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--studio-panel);
+}
+
+#room-first-design-studio .sensor-manager-item strong,
+#room-first-design-studio .sensor-manager-item small { display: block; }
+#room-first-design-studio .sensor-manager-item strong { font-weight: 500; }
+#room-first-design-studio .sensor-manager-item small { margin-top: 3px; color: var(--studio-muted); }
+
+#room-first-design-studio .sensor-device-tile .sensor-live-dot {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--studio-confirm-text);
+}
+
+#room-first-design-studio .sensor-device-tile { position: relative; }
+#room-first-design-studio .inventory-grid .sensor-live-dot { display: none; }
+
+#room-first-design-studio.desktop-preview .sensor-overview-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#room-first-design-studio.desktop-preview .sensor-card { min-height: 150px; }
+
+#room-first-design-studio.desktop-preview .sensor-detail {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+@media (max-width: 380px) {
+  #room-first-design-studio .sensor-overview-grid { grid-template-columns: 1fr; }
+  #room-first-design-studio .sensor-card { min-height: 142px; }
+  #room-first-design-studio .sensor-form-grid { grid-template-columns: 1fr; }
+  #room-first-design-studio .sensor-section-heading { align-items: flex-start; }
+  #room-first-design-studio .sensor-section-heading .section-meta { align-items: flex-end; flex-direction: column-reverse; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #room-first-design-studio .sensor-refresh-button[data-loading="true"] svg,
+  #room-first-design-studio .sensor-detail-actions button[data-loading="true"] svg,
+  #room-first-design-studio .sensor-discover-button[data-loading="true"] svg { animation: none; }
+}

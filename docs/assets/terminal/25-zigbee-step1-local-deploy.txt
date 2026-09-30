@@ -1,0 +1,41 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee Step 1 - local validation and approved file deployment
+# Private addresses, device serials, and credentials are omitted.
+
+PS> docker compose --env-file deploy/zigbee/.env.example -f deploy/zigbee/compose.yaml config --quiet
+compose: OK
+
+PS> .\scripts\deploy_zigbee.ps1
+MODE=PREVIEW
+TARGET=air@AC:/home/air/aircon-controller
+FILE_COUNT=9
+TOTAL_BYTES=12910
+NO_REMOTE_CHANGES=preview-only
+Run again with -Apply only after the Raspberry Pi update is approved.
+
+PS> .\.venv\Scripts\python.exe -m pytest -q
+...............................                                          [100%]
+31 passed in 1.01s
+
+PS> docker compose ... config --format json
+Compose services and loopback bindings: OK
+Local validation gate: PASS
+
+PS> .\scripts\deploy_zigbee.ps1 -Apply
+MODE=APPLY
+TARGET=air@AC:/home/air/aircon-controller
+FILE_COUNT=9
+TOTAL_BYTES=12910
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+PS> ssh ... air@AC "cd /home/air/aircon-controller && bash -n scripts/install_zigbee_host.sh ..."
+SHELL_SYNTAX=ok
+DEPLOY_FILES=present
+DOCKER=not-installed
+
+PS> ssh ... air@AC '<existing service and port checks>'
+USER_SERVICE_STATE=active
+AIRCON_8001_HEALTH=ok
+ZIGBEE_PORT_1883=0
+Z2M_PORT_8080=0

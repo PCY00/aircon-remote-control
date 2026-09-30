@@ -1,0 +1,28 @@
+# 사용자 실험 직후 운영 API 읽기 전용 확인
+SERVICE=active
+DOOR_EVENT_COUNT=4
+
+closed -> open   KST 20:00:01
+open   -> closed KST 20:00:13
+closed -> open   KST 20:00:15
+open   -> closed KST 20:00:17
+
+CURRENT_STATE=closed
+
+# 판정
+각 행은 서로 다른 Zigbee 원문 보고 시각을 가진 실제 상태 전환이다.
+UI가 같은 이벤트를 복제한 것은 아니다.
+현재 UI가 초를 생략해 네 이벤트가 모두 같은 20:00으로 보인다.
+
+# 최우선 가설
+마지막 전환 간격은 약 1.7초와 2.4초다.
+밀리초 접점 바운스보다 자석 정렬·거리의 감지 경계 재진입 가능성이 높다.
+
+# 다음 재현 조건
+1. 본체와 자석 중앙선을 맞춘다.
+2. 닫힘 간격을 3~5mm로 고정한다.
+3. 열림 위치에서 10초간 손을 떼고 유지한다.
+4. 닫힘 위치에서 10초간 손을 떼고 유지한다.
+5. 정확히 열림 1건, 닫힘 1건인지 다시 확인한다.
+
+RESULT=UNRESOLVED_PENDING_CONTROLLED_RETEST

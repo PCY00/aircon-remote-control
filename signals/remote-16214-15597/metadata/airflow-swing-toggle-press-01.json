@@ -1,0 +1,48 @@
+{
+  "capture_id": "airflow-swing-toggle-press-01",
+  "captured_at": "2026-08-29T21:37:11+09:00",
+  "timestamp_note": "Timestamp recorded after the four-capture sequence completed.",
+  "remote_id": "remote-16214-15597",
+  "capture_group": "airflow-swing-toggle-sequence-01",
+  "sequence_index": 1,
+  "button": "airflow_select",
+  "display_state_before": {
+    "remote_lcd_change_expected": false,
+    "air_conditioner_airflow_state": "stopped_or_fixed"
+  },
+  "display_state_after": {
+    "remote_lcd_change": false,
+    "air_conditioner_airflow_state": "swing_moving",
+    "confirmation": "confirmed_by_user"
+  },
+  "receiver": {
+    "module": "HW-477 V0.2",
+    "gpio_bcm": 17,
+    "physical_pin": 11,
+    "device": "/dev/lirc0"
+  },
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 178993,
+    "median_data_pulse_us": 590,
+    "median_short_space_us": 498,
+    "median_long_space_us": 1546,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": [
+      "b2",
+      "4d",
+      "6b",
+      "94",
+      "e0",
+      "1f"
+    ],
+    "same_command_on_all_four_presses": true,
+    "semantic_interpretation": "Stateless airflow swing toggle command; the air conditioner tracks moving versus stopped state."
+  },
+  "raw_compact_file": "../raw/airflow-swing-toggle-press-01.compact",
+  "send_format_file": "../raw/airflow-swing-toggle-press-01.ir"
+}

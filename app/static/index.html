@@ -1,0 +1,2942 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2ec">
+  <title>우리 집 · 스마트홈</title>
+  <script>
+    if (new URLSearchParams(window.location.search).get('kiosk') === '1') {
+      document.documentElement.dataset.kiosk = 'true';
+    }
+  </script>
+  <script src="/static/vendor/lucide.min.js"></script>
+  <link rel="stylesheet" href="/static/sensors.css?v=20260907-2">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; background: #e9ece8; }
+    html[data-kiosk="true"],
+    html[data-kiosk="true"] * { cursor: none !important; }
+    body { min-width: 320px; }
+    [data-lucide] { width: 20px; height: 20px; flex: 0 0 auto; }
+  </style>
+</head>
+<body>
+<div id="room-first-design-studio" data-theme="light">
+  <style>
+    #room-first-design-studio {
+      width: 100%;
+      font-family: Pretendard, "Noto Sans KR", system-ui, sans-serif;
+      --studio-bg: #f4f2ec;
+      --studio-text: #202329;
+      --studio-muted: #6f756f;
+      --studio-panel: #fffefa;
+      --studio-active: #dcecf3;
+      --studio-active-text: #244657;
+      --studio-hero: #293b36;
+      --studio-hero-text: #f5f8f5;
+      --studio-scene: #e7e4db;
+      --studio-scene-active: #d6ece3;
+      --studio-nav: rgba(255,255,255,.94);
+      --studio-shadow: rgba(50,55,50,.09);
+      --studio-confirm: #d6ece3;
+      --studio-confirm-text: #244b3e;
+      --studio-status-text: #163b4c;
+      --studio-border: #d8dce4;
+      --studio-danger: #a23f3f;
+      color-scheme: light;
+    }
+
+    #room-first-design-studio[data-theme="dark"] {
+      --studio-bg: #080a09;
+      --studio-text: #f0f4f1;
+      --studio-muted: #9aa49f;
+      --studio-panel: #141815;
+      --studio-active: #203840;
+      --studio-active-text: #c7eaf2;
+      --studio-hero: #1c302a;
+      --studio-hero-text: #eff8f3;
+      --studio-scene: #202522;
+      --studio-scene-active: #203b33;
+      --studio-nav: rgba(16,19,17,.96);
+      --studio-shadow: rgba(0,0,0,.5);
+      --studio-confirm: #203b33;
+      --studio-confirm-text: #c4e8d9;
+      --studio-status-text: #e7f7ff;
+      --studio-border: #363c38;
+      --studio-danger: #ff9b9b;
+      color-scheme: dark;
+    }
+
+    #room-first-design-studio * { box-sizing: border-box; }
+    #room-first-design-studio .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    #room-first-design-studio button { font: inherit; cursor: pointer; }
+    #room-first-design-studio h2,
+    #room-first-design-studio h3,
+    #room-first-design-studio p { margin-top: 0; }
+
+    #room-first-design-studio .app-shell {
+      width: min(100%, 430px);
+      min-height: 760px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      border-radius: 30px;
+      padding: 24px 20px 94px;
+      background: var(--studio-bg);
+      color: var(--studio-text);
+      transition: background-color .2s ease, color .2s ease, width .2s ease;
+    }
+
+    #room-first-design-studio .top-row,
+    #room-first-design-studio .section-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    #room-first-design-studio .section-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .section-manage {
+      min-height: 40px;
+      padding: 0 13px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .eyebrow { margin-bottom: 4px; color: var(--studio-muted); }
+    #room-first-design-studio h2,
+    #room-first-design-studio h3 { margin-bottom: 0; font-weight: 500; }
+
+    #room-first-design-studio .round-action {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .summary-strip {
+      margin: 22px 0 18px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: var(--studio-hero);
+      color: var(--studio-hero-text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    #room-first-design-studio .automation-alert {
+      margin: -6px 0 18px;
+      padding: 14px 16px;
+      border: 1px solid color-mix(in srgb, #ffb454 42%, transparent);
+      border-radius: 18px;
+      background: color-mix(in srgb, #ffb454 15%, var(--studio-panel));
+      color: var(--studio-text);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #room-first-design-studio .automation-alert[hidden] { display: none; }
+    #room-first-design-studio .automation-alert svg { color: #f59e0b; }
+    #room-first-design-studio .automation-alert strong,
+    #room-first-design-studio .automation-alert small { display: block; }
+    #room-first-design-studio .automation-alert small { margin-top: 3px; color: var(--studio-muted); }
+
+    #room-first-design-studio [data-api-status] { font-weight: 500; }
+    #room-first-design-studio [data-api-status][data-state="ready"] {
+      background: transparent;
+      color: #fff;
+    }
+    #room-first-design-studio [data-api-status][data-state="error"] { color: var(--studio-danger); }
+    #room-first-design-studio [data-api-status][data-state="busy"] { opacity: .7; }
+
+    #room-first-design-studio .detail-api-status {
+      margin: 0 0 12px;
+      text-align: center;
+      color: var(--studio-muted);
+      font-size: .78rem;
+    }
+    #room-first-design-studio .detail-api-status[data-state="ready"] { color: var(--studio-status-text); }
+    #room-first-design-studio .detail-api-status[data-state="error"] { color: var(--studio-danger); }
+
+    #room-first-design-studio .scene-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0 22px;
+    }
+
+    #room-first-design-studio .home-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #room-first-design-studio .scenes-section { order: 1; }
+    #room-first-design-studio .spaces-section { order: 2; }
+    #room-first-design-studio .scene-list button {
+      min-height: 96px;
+      padding: 18px 8px 12px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--studio-scene);
+      color: var(--studio-muted);
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 6px;
+    }
+
+    #room-first-design-studio .scene-list button small {
+      display: block;
+      color: inherit;
+      opacity: .72;
+    }
+
+    #room-first-design-studio .scene-list button[aria-pressed="true"] {
+      background: var(--studio-scene-active);
+      color: var(--studio-active-text);
+    }
+
+    #room-first-design-studio .room-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    #room-first-design-studio .room-tabs button {
+      min-height: 40px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--studio-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    #room-first-design-studio .room-tabs button[aria-pressed="true"] {
+      background: var(--studio-text);
+      color: var(--studio-bg);
+    }
+
+    #room-first-design-studio .device-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    #room-first-design-studio .device-tile {
+      min-height: 132px;
+      padding: 16px;
+      border: 0;
+      border-radius: 22px;
+      background: var(--studio-panel);
+      color: var(--studio-muted);
+      text-align: left;
+      box-shadow: 0 12px 30px var(--studio-shadow);
+    }
+
+    #room-first-design-studio .device-tile[aria-pressed="true"] {
+      background: var(--studio-active);
+      color: var(--studio-active-text);
+    }
+
+    #room-first-design-studio .device-tile strong {
+      display: block;
+      margin-top: 24px;
+      color: inherit;
+      font-weight: 500;
+    }
+
+    #room-first-design-studio .device-tile small { display: block; margin-top: 5px; opacity: .72; }
+
+    #room-first-design-studio .main-navigation {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 12px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px;
+      background: var(--studio-nav);
+      color: var(--studio-text);
+      border-radius: 22px;
+      box-shadow: 0 12px 34px var(--studio-shadow);
+    }
+
+    #room-first-design-studio .main-navigation button {
+      min-height: 52px;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      opacity: .5;
+      display: grid;
+      place-items: center;
+      gap: 2px;
+    }
+
+    #room-first-design-studio .main-navigation button[aria-current="page"] { opacity: 1; }
+    #room-first-design-studio .main-navigation small { display: block; }
+
+    #room-first-design-studio .manage-dialog {
+      width: min(calc(100% - 32px), 390px);
+      max-height: calc(100% - 48px);
+      overflow-y: auto;
+      padding: 22px;
+      border: 0;
+      border-radius: 24px;
+      background: var(--studio-panel);
+      color: var(--studio-text);
+      box-shadow: 0 24px 70px rgba(20, 30, 25, .24);
+    }
+
+    #room-first-design-studio .manage-dialog::backdrop { background: rgba(22, 29, 26, .45); }
+    #room-first-design-studio .manage-dialog h3 { margin-bottom: 18px; }
+
+    #room-first-design-studio .manager-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    #room-first-design-studio .manager-form label {
+      grid-column: 1 / -1;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .manager-icon-field {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 7px;
+    }
+
+    #room-first-design-studio .icon-picker {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    #room-first-design-studio .icon-choice {
+      min-width: 0;
+      min-height: 58px;
+      padding: 7px 4px;
+      border: 1px solid color-mix(in srgb, var(--studio-muted) 24%, transparent);
+      border-radius: 13px;
+      background: var(--studio-bg);
+      color: var(--studio-muted);
+      display: grid;
+      place-items: center;
+      gap: 4px;
+    }
+
+    #room-first-design-studio .icon-choice small {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: .66rem;
+      color: inherit;
+    }
+
+    #room-first-design-studio .icon-choice[aria-pressed="true"] {
+      border-color: transparent;
+      background: var(--studio-active);
+      color: var(--studio-active-text);
+      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--studio-active-text) 24%, transparent);
+    }
+
+    #room-first-design-studio .manager-form input {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 13px;
+      border: 1px solid color-mix(in srgb, var(--studio-muted) 28%, transparent);
+      border-radius: 12px;
+      background: var(--studio-bg);
+      color: var(--studio-text);
+      font: inherit;
+    }
+
+    #room-first-design-studio .manager-form button,
+    #room-first-design-studio .dialog-close {
+      min-height: 44px;
+      padding: 0 15px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--studio-hero);
+      color: var(--studio-hero-text);
+    }
+
+    #room-first-design-studio .manager-list {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0 18px;
+    }
+
+    #room-first-design-studio .manager-item {
+      min-height: 48px;
+      padding: 8px 8px 8px 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-radius: 14px;
+      background: var(--studio-scene);
+    }
+
+    #room-first-design-studio .manager-item button {
+      min-width: 44px;
+      min-height: 40px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .manager-actions { display: flex; gap: 4px; }
+    #room-first-design-studio .manager-label { display: inline-flex; align-items: center; gap: 9px; }
+    #room-first-design-studio .manager-actions .manager-edit { color: var(--studio-active-text); }
+    #room-first-design-studio .manager-actions .manager-remove { color: var(--studio-danger); }
+
+    #room-first-design-studio .manager-error {
+      min-height: 20px;
+      margin: 0;
+      color: var(--studio-danger);
+    }
+
+    #room-first-design-studio .dialog-close { width: 100%; }
+
+    #room-first-design-studio .scene-editor { width: min(calc(100% - 32px), 460px); }
+
+    #room-first-design-studio .scene-editor-intro {
+      margin-bottom: 16px;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .scene-action-list {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    #room-first-design-studio .scene-action-row {
+      padding: 14px;
+      border-radius: 17px;
+      background: var(--studio-scene);
+    }
+
+    #room-first-design-studio .scene-device-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    #room-first-design-studio .scene-device-heading strong { font-weight: 500; }
+    #room-first-design-studio .scene-device-heading small { color: var(--studio-muted); }
+
+    #room-first-design-studio .scene-action-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    #room-first-design-studio .scene-action-fields label {
+      display: grid;
+      gap: 6px;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .scene-action-fields select {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 10px;
+      border: 1px solid color-mix(in srgb, var(--studio-muted) 22%, transparent);
+      border-radius: 12px;
+      background: var(--studio-panel);
+      color: var(--studio-text);
+      font: inherit;
+    }
+
+    #room-first-design-studio .scene-device-options {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    #room-first-design-studio .scene-device-options[hidden] { display: none; }
+
+    #room-first-design-studio .scene-editor-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    #room-first-design-studio .scene-editor-actions button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .scene-editor-actions button:last-child {
+      background: var(--studio-hero);
+      color: var(--studio-hero-text);
+    }
+
+    #room-first-design-studio .device-wizard { width: min(calc(100% - 32px), 420px); }
+
+    #room-first-design-studio .wizard-progress {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .wizard-progress-track {
+      flex: 1;
+      height: 6px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--studio-scene);
+    }
+
+    #room-first-design-studio .wizard-progress-bar {
+      height: 100%;
+      width: 25%;
+      border-radius: inherit;
+      background: var(--studio-hero);
+      transition: width .2s ease;
+    }
+
+    #room-first-design-studio .wizard-step[hidden] { display: none; }
+    #room-first-design-studio .wizard-step h3 { margin-bottom: 6px; }
+    #room-first-design-studio .wizard-step > p { color: var(--studio-muted); }
+
+    #room-first-design-studio .device-choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+      margin: 16px 0 22px;
+    }
+
+    #room-first-design-studio .device-choice {
+      min-height: 82px;
+      padding: 12px;
+      border: 0;
+      border-radius: 16px;
+      background: var(--studio-scene);
+      color: var(--studio-muted);
+      display: grid;
+      place-items: center;
+      gap: 7px;
+    }
+
+    #room-first-design-studio .device-choice[aria-pressed="true"] {
+      background: var(--studio-active);
+      color: var(--studio-active-text);
+    }
+
+    #room-first-design-studio .wizard-fields {
+      display: grid;
+      gap: 14px;
+      margin: 18px 0 22px;
+    }
+
+    #room-first-design-studio .wizard-field { display: grid; gap: 7px; }
+    #room-first-design-studio .wizard-field label { color: var(--studio-muted); }
+
+    #room-first-design-studio .wizard-field input,
+    #room-first-design-studio .wizard-field select {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 13px;
+      border: 1px solid color-mix(in srgb, var(--studio-muted) 28%, transparent);
+      border-radius: 13px;
+      background: var(--studio-bg);
+      color: var(--studio-text);
+      font: inherit;
+    }
+
+    #room-first-design-studio .device-review {
+      display: grid;
+      gap: 9px;
+      margin: 18px 0 22px;
+    }
+
+    #room-first-design-studio .device-review div {
+      min-height: 46px;
+      padding: 10px 13px;
+      border-radius: 13px;
+      background: var(--studio-scene);
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    #room-first-design-studio .device-review span { color: var(--studio-muted); }
+
+    #room-first-design-studio .wizard-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    #room-first-design-studio .wizard-actions button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .model-request-button {
+      justify-self: start;
+      border: 0;
+      background: transparent;
+      color: var(--studio-active-text);
+      padding: 2px 0;
+      font: inherit;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    #room-first-design-studio .upload-hint {
+      margin: 0;
+      color: var(--studio-muted);
+      font-size: .78rem;
+      line-height: 1.45;
+    }
+
+    #room-first-design-studio .wizard-actions .wizard-primary {
+      background: var(--studio-hero);
+      color: var(--studio-hero-text);
+    }
+
+    #room-first-design-studio .wizard-error {
+      min-height: 20px;
+      margin: 0 0 8px;
+      color: var(--studio-danger);
+    }
+
+    #room-first-design-studio .device-detail[hidden],
+    #room-first-design-studio .devices-view[hidden],
+    #room-first-design-studio .automation-view[hidden],
+    #room-first-design-studio .more-view[hidden],
+    #room-first-design-studio .home-view[hidden] { display: none; }
+
+    #room-first-design-studio.show-device-detail .main-navigation { display: none; }
+    #room-first-design-studio.show-device-detail .app-shell { padding-bottom: 30px; }
+
+    #room-first-design-studio .detail-header {
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    #room-first-design-studio .detail-header div { text-align: center; }
+    #room-first-design-studio .detail-header p { margin-bottom: 3px; color: var(--studio-muted); }
+    #room-first-design-studio .detail-header h2 { margin-bottom: 0; }
+
+    #room-first-design-studio .detail-icon-action {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .detail-icon-placeholder { width: 44px; height: 44px; }
+
+    #room-first-design-studio .aircon-hero {
+      padding: 22px;
+      border-radius: 28px;
+      background: var(--studio-hero);
+      color: var(--studio-hero-text);
+      text-align: center;
+    }
+
+    #room-first-design-studio .aircon-hero.is-off { opacity: .7; }
+
+    #room-first-design-studio .aircon-power {
+      min-height: 44px;
+      padding: 0 15px;
+      border: 0;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--studio-hero-text) 14%, transparent);
+      color: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    #room-first-design-studio .aircon-kicker { margin: 20px 0 4px; opacity: .74; }
+
+    #room-first-design-studio .temperature-control {
+      display: grid;
+      grid-template-columns: 52px 1fr 52px;
+      align-items: center;
+      gap: 12px;
+      margin: 4px 0 8px;
+    }
+
+    #room-first-design-studio .temperature-control button {
+      width: 52px;
+      height: 52px;
+      border: 0;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--studio-hero-text) 14%, transparent);
+      color: inherit;
+      display: grid;
+      place-items: center;
+    }
+
+    #room-first-design-studio .temperature-value {
+      font-size: 3.5em;
+      font-weight: 500;
+      letter-spacing: -.05em;
+    }
+
+    #room-first-design-studio .aircon-summary { margin: 0; opacity: .82; }
+
+    #room-first-design-studio .control-block {
+      margin-top: 12px;
+      padding: 17px;
+      border-radius: 22px;
+      background: var(--studio-panel);
+      box-shadow: 0 10px 26px var(--studio-shadow);
+    }
+
+    #room-first-design-studio .control-block h3 { margin-bottom: 12px; }
+
+    #room-first-design-studio .segmented-control {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+
+    #room-first-design-studio .segmented-control button,
+    #room-first-design-studio .feature-toggle {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--studio-scene);
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .segmented-control button[aria-pressed="true"],
+    #room-first-design-studio .feature-toggle[aria-pressed="true"] {
+      background: var(--studio-active);
+      color: var(--studio-active-text);
+    }
+
+    #room-first-design-studio .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    #room-first-design-studio .feature-toggle {
+      min-height: 64px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    #room-first-design-studio.desktop-preview .device-detail {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    #room-first-design-studio .devices-header { margin-bottom: 16px; }
+
+    #room-first-design-studio .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    #room-first-design-studio .inventory-grid .device-tile { position: relative; }
+
+    #room-first-design-studio .inventory-room {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      color: inherit;
+      opacity: .68;
+    }
+
+    #room-first-design-studio .inventory-empty {
+      padding: 42px 16px;
+      text-align: center;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio.desktop-preview .devices-view {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    #room-first-design-studio.desktop-preview .inventory-grid { grid-template-columns: repeat(4, 1fr); }
+
+    #room-first-design-studio .automation-header { margin-bottom: 20px; }
+
+    #room-first-design-studio .automation-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    #room-first-design-studio .automation-item {
+      padding: 17px;
+      border-radius: 20px;
+      background: var(--studio-panel);
+      box-shadow: 0 10px 26px var(--studio-shadow);
+    }
+
+    #room-first-design-studio .automation-main {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #room-first-design-studio .automation-time {
+      min-width: 62px;
+      font-size: 1.4em;
+      font-weight: 500;
+    }
+
+    #room-first-design-studio .automation-copy strong { display: block; font-weight: 500; }
+    #room-first-design-studio .automation-copy small { display: block; margin-top: 5px; color: var(--studio-muted); }
+
+    #room-first-design-studio .automation-toggle {
+      min-width: 58px;
+      min-height: 42px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--studio-scene);
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .automation-toggle[aria-pressed="true"] {
+      background: var(--studio-active);
+      color: var(--studio-active-text);
+    }
+
+    #room-first-design-studio .automation-footer {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid color-mix(in srgb, var(--studio-muted) 16%, transparent);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    #room-first-design-studio .automation-delete {
+      min-height: 40px;
+      padding: 0 10px;
+      border: 0;
+      background: transparent;
+      color: var(--studio-danger);
+    }
+
+    #room-first-design-studio .automation-empty {
+      padding: 42px 16px;
+      text-align: center;
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .automation-intro {
+      margin: -8px 0 16px;
+      color: var(--studio-muted);
+      line-height: 1.55;
+    }
+
+    #room-first-design-studio .live-automation-item {
+      border: 1px solid color-mix(in srgb, var(--studio-muted) 14%, transparent);
+    }
+
+    #room-first-design-studio .live-automation-main {
+      display: grid;
+      grid-template-columns: 46px 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #room-first-design-studio .live-automation-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background: var(--studio-scene);
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .live-automation-item[data-warning="true"] .live-automation-icon {
+      background: color-mix(in srgb, #f59e0b 20%, var(--studio-scene));
+      color: #f59e0b;
+    }
+
+    #room-first-design-studio .automation-rule-controls {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid color-mix(in srgb, var(--studio-muted) 16%, transparent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    #room-first-design-studio .automation-rule-controls label {
+      color: var(--studio-muted);
+      font-size: .86rem;
+    }
+
+    #room-first-design-studio .automation-rule-controls select {
+      min-height: 40px;
+      padding: 0 34px 0 12px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .automation-history { margin-top: 26px; }
+    #room-first-design-studio .automation-history .section-row { margin-bottom: 10px; }
+    #room-first-design-studio .automation-event-list {
+      overflow: hidden;
+      border-radius: 20px;
+      background: var(--studio-panel);
+      box-shadow: 0 10px 26px var(--studio-shadow);
+    }
+
+    #room-first-design-studio .automation-event {
+      min-height: 66px;
+      padding: 13px 16px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 11px;
+    }
+
+    #room-first-design-studio .automation-event + .automation-event {
+      border-top: 1px solid color-mix(in srgb, var(--studio-muted) 13%, transparent);
+    }
+
+    #room-first-design-studio .automation-event strong,
+    #room-first-design-studio .automation-event small { display: block; }
+    #room-first-design-studio .automation-event small { margin-top: 3px; color: var(--studio-muted); }
+    #room-first-design-studio .automation-event time { color: var(--studio-muted); font-size: .78rem; }
+
+    #room-first-design-studio .weekday-picker {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+
+    #room-first-design-studio .weekday-picker button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--studio-scene);
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .weekday-picker button[aria-pressed="true"] {
+      background: var(--studio-active);
+      color: var(--studio-active-text);
+    }
+
+    #room-first-design-studio .automation-dialog-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    #room-first-design-studio .automation-dialog-actions button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .automation-dialog-actions button:last-child {
+      background: var(--studio-hero);
+      color: var(--studio-hero-text);
+    }
+
+    #room-first-design-studio.desktop-preview .automation-view {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    #room-first-design-studio .more-header { margin-bottom: 20px; }
+
+    #room-first-design-studio .settings-section + .settings-section { margin-top: 22px; }
+    #room-first-design-studio .settings-section > h3 { margin-bottom: 10px; }
+
+    #room-first-design-studio .settings-list,
+    #room-first-design-studio .system-panel,
+    #room-first-design-studio .theme-setting {
+      overflow: hidden;
+      border-radius: 22px;
+      background: var(--studio-panel);
+      box-shadow: 0 10px 26px var(--studio-shadow);
+    }
+
+    #room-first-design-studio .settings-row {
+      width: 100%;
+      min-height: 66px;
+      padding: 12px 15px;
+      border: 0;
+      background: transparent;
+      color: var(--studio-text);
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+    }
+
+    #room-first-design-studio .settings-row + .settings-row,
+    #room-first-design-studio .status-row + .status-row {
+      border-top: 1px solid color-mix(in srgb, var(--studio-muted) 16%, transparent);
+    }
+
+    #room-first-design-studio .settings-icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .settings-copy strong,
+    #room-first-design-studio .settings-copy small { display: block; }
+    #room-first-design-studio .settings-copy strong { font-weight: 500; }
+    #room-first-design-studio .settings-copy small { margin-top: 3px; color: var(--studio-muted); }
+    #room-first-design-studio .settings-row > svg { color: var(--studio-muted); }
+
+    #room-first-design-studio .theme-setting { padding: 15px; }
+    #room-first-design-studio .theme-setting .settings-copy { margin-bottom: 12px; }
+
+    #room-first-design-studio .theme-setting + .theme-setting { margin-top: 10px; }
+
+    #room-first-design-studio .theme-inline,
+    #room-first-design-studio .view-inline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    #room-first-design-studio .view-inline { grid-template-columns: repeat(3, 1fr); }
+
+    #room-first-design-studio .theme-inline button,
+    #room-first-design-studio .view-inline button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--studio-scene);
+      color: var(--studio-muted);
+    }
+
+    #room-first-design-studio .theme-inline button[aria-pressed="true"],
+    #room-first-design-studio .view-inline button[aria-pressed="true"] {
+      background: var(--studio-active);
+      color: var(--studio-active-text);
+    }
+
+    #room-first-design-studio .system-panel { padding: 4px 15px 15px; }
+
+    #room-first-design-studio .status-row {
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    #room-first-design-studio .status-row span:last-child { color: var(--studio-muted); }
+    #room-first-design-studio .status-row .is-online { color: var(--studio-confirm-text); }
+
+    #room-first-design-studio .system-check {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    #room-first-design-studio .system-check small { color: var(--studio-muted); }
+
+    #room-first-design-studio .system-check button {
+      min-height: 42px;
+      padding: 0 13px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .home-name-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    #room-first-design-studio .home-name-actions button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--studio-scene);
+      color: var(--studio-text);
+    }
+
+    #room-first-design-studio .home-name-actions button:last-child {
+      background: var(--studio-hero);
+      color: var(--studio-hero-text);
+    }
+
+    #room-first-design-studio.desktop-preview .more-view {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    #room-first-design-studio.desktop-preview .app-shell {
+      width: min(100%, 1920px);
+      min-height: min(100dvh, 1080px);
+      border-radius: 0;
+      padding: 48px 64px 48px 210px;
+    }
+
+    #room-first-design-studio.desktop-preview .main-navigation {
+      top: 0;
+      left: 0;
+      right: auto;
+      bottom: 0;
+      width: 168px;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(4, 84px);
+      align-content: start;
+      padding: 64px 16px 16px;
+      border-radius: 0;
+      border-right: 1px solid color-mix(in srgb, var(--studio-muted) 22%, transparent);
+      box-shadow: none;
+    }
+
+    #room-first-design-studio.desktop-preview .main-navigation button { min-height: 76px; }
+    #room-first-design-studio.desktop-preview .home-content {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
+      grid-template-areas: "scenes spaces" "sensors spaces";
+      align-items: start;
+      gap: 30px 42px;
+    }
+    #room-first-design-studio.desktop-preview .scenes-section { grid-area: scenes; }
+    #room-first-design-studio.desktop-preview .sensor-section { grid-area: sensors; }
+    #room-first-design-studio.desktop-preview .spaces-section { grid-area: spaces; }
+    #room-first-design-studio.desktop-preview .device-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    #room-first-design-studio.desktop-preview .scene-list { max-width: none; }
+    #room-first-design-studio.desktop-preview .devices-view { max-width: 1400px; }
+    #room-first-design-studio.desktop-preview .device-detail,
+    #room-first-design-studio.desktop-preview .sensor-detail { max-width: 960px; }
+    #room-first-design-studio.desktop-preview .automation-view { max-width: 1080px; }
+    #room-first-design-studio.desktop-preview .more-view { max-width: 960px; }
+
+    #room-first-design-studio .device-tile,
+    #room-first-design-studio .scene-list button { contain: layout paint style; }
+
+    @media (max-width: 360px) {
+      #room-first-design-studio .app-shell { border-radius: 22px; }
+    }
+  </style>
+
+  <div class="app-shell">
+    <div class="home-view" data-home-view>
+    <header class="top-row">
+      <div><p class="eyebrow">토요일 · 맑음 29°C</p><h2 data-home-title>우리 집</h2></div>
+      <button type="button" class="round-action" aria-label="기기 추가" data-open-device-wizard><i data-lucide="plus" aria-hidden="true"></i></button>
+    </header>
+    <div class="summary-strip"><span data-api-status data-state="busy">API 연결 확인 중…</span><span><b data-device-count>4</b>개 연결</span></div>
+    <aside class="automation-alert" data-automation-alert hidden role="status">
+      <i data-lucide="triangle-alert" aria-hidden="true"></i>
+      <span><strong data-automation-alert-title>문 열림 냉방 경고</strong><small data-automation-alert-message>문이 열린 채 에어컨이 켜져 있어요.</small></span>
+    </aside>
+    <div class="home-content">
+      <section class="scenes-section">
+        <div class="section-row"><h3>빠른 장면</h3><div class="section-meta"><small data-scene-count>3개</small><button type="button" class="section-manage" data-open-manager="scene">편집</button></div></div>
+        <div class="scene-list">
+          <button type="button" data-scene-card data-name="집에서" data-icon="house" aria-pressed="false"><i data-lucide="house" aria-hidden="true"></i><span>집에서</span><small data-scene-status>2개 동작</small></button>
+          <button type="button" data-scene-card data-name="외출" data-icon="door-open" aria-pressed="false"><i data-lucide="door-open" aria-hidden="true"></i><span>외출</span><small data-scene-status>3개 동작</small></button>
+          <button type="button" data-scene-card data-name="취침" data-icon="moon-star" aria-pressed="false"><i data-lucide="moon-star" aria-hidden="true"></i><span>취침</span><small data-scene-status>3개 동작</small></button>
+        </div>
+      </section>
+      <section class="sensor-section" data-sensor-section>
+        <div class="section-row sensor-section-heading">
+          <div>
+            <h3>집 상태</h3>
+            <small class="sensor-connection" data-sensor-connection data-state="loading">센서 연결 확인 중</small>
+          </div>
+          <div class="section-meta">
+            <small data-sensor-last-refresh>아직 확인 전</small>
+            <button type="button" class="section-manage sensor-refresh-button" data-refresh-sensors>
+              <i data-lucide="refresh-cw" aria-hidden="true"></i><span>새로고침</span>
+            </button>
+          </div>
+        </div>
+        <div class="sensor-overview-grid" data-sensor-overview aria-live="polite">
+          <div class="sensor-empty-state" data-sensor-loading>
+            <i data-lucide="radio" aria-hidden="true"></i>
+            <strong>센서 상태를 불러오는 중이에요</strong>
+            <small>Zigbee2MQTT에 저장된 최신 값을 확인합니다.</small>
+          </div>
+        </div>
+        <div class="sensor-refresh-policy">
+          <span><i data-lucide="clock-3" aria-hidden="true"></i><span data-sensor-policy-summary>07:00~19:00 자동 갱신 안 함</span></span>
+          <button type="button" data-open-sensor-settings>설정</button>
+        </div>
+      </section>
+      <section class="spaces-section">
+        <div class="section-row"><h3>공간</h3><div class="section-meta"><small data-room-count>2개</small><button type="button" class="section-manage" data-open-manager="room">편집</button></div></div>
+        <div class="room-tabs" aria-label="공간 선택">
+          <button type="button" data-room-tab data-system-room="true" data-icon="house" aria-pressed="true"><i data-lucide="house" aria-hidden="true"></i><span>전체</span></button>
+          <button type="button" data-room-tab data-icon="sofa" aria-pressed="false"><i data-lucide="sofa" aria-hidden="true"></i><span>거실</span></button>
+          <button type="button" data-room-tab data-icon="bed-double" aria-pressed="false"><i data-lucide="bed-double" aria-hidden="true"></i><span>침실</span></button>
+        </div>
+        <div class="device-grid">
+          <button type="button" class="device-tile" data-room="거실" data-device-kind="aircon" data-device-capabilities="power,mode,temperature,fan" aria-pressed="true"><i data-lucide="snowflake" aria-hidden="true"></i><strong>에어컨</strong><small>냉방 · 24°C · 강풍</small></button>
+          <button type="button" class="device-tile" data-room="거실" data-device-kind="switch" data-device-capabilities="power,brightness" data-demo-device="true" aria-pressed="true"><i data-lucide="lamp-floor" aria-hidden="true"></i><strong>스탠드 조명</strong><small>예시 · 켜짐 · 밝기 70%</small></button>
+          <button type="button" class="device-tile" data-room="거실" data-device-kind="switch" data-device-capabilities="power" data-demo-device="true" aria-pressed="false"><i data-lucide="tv" aria-hidden="true"></i><strong>TV</strong><small>예시 · 꺼짐</small></button>
+          <button type="button" class="device-tile" data-room="침실" data-device-kind="sensor" data-device-capabilities="status" data-demo-device="true" aria-pressed="true"><i data-lucide="wind" aria-hidden="true"></i><strong>공기질 센서</strong><small>예시 · 좋음 · 18㎍/㎥</small></button>
+        </div>
+      </section>
+    </div>
+    </div>
+
+    <section class="devices-view" data-devices-view hidden>
+      <header class="top-row devices-header">
+        <div><p class="eyebrow" data-inventory-count>전체 4개</p><h2>기기</h2></div>
+        <button type="button" class="round-action" aria-label="기기 추가" data-open-device-wizard><i data-lucide="plus" aria-hidden="true"></i></button>
+      </header>
+      <div class="room-tabs" aria-label="기기 공간 필터" data-device-room-filters></div>
+      <div class="inventory-grid" data-inventory-grid></div>
+      <p class="inventory-empty" data-inventory-empty hidden>이 공간에는 기기가 없어요.</p>
+    </section>
+
+    <section class="automation-view" data-automation-view hidden>
+      <header class="top-row automation-header">
+        <div><p class="eyebrow" data-automation-count>확인 중</p><h2>자동화</h2></div>
+      </header>
+      <p class="automation-intro">라즈베리파이에서 계속 실행되는 실제 안전 자동화예요. 브라우저를 닫아도 감시는 유지됩니다.</p>
+      <div class="automation-list" data-automation-list></div>
+      <p class="automation-empty" data-automation-empty hidden>등록된 자동화가 없어요.</p>
+      <section class="automation-history">
+        <div class="section-row"><h3>경고 기록</h3><small>최근 20개</small></div>
+        <div class="automation-event-list" data-automation-event-list></div>
+        <p class="automation-empty" data-automation-event-empty hidden>아직 경고 기록이 없어요.</p>
+      </section>
+    </section>
+
+    <section class="more-view" data-more-view hidden>
+      <header class="top-row more-header">
+        <div><p class="eyebrow">스마트홈 설정</p><h2>더보기</h2></div>
+      </header>
+
+      <section class="settings-section">
+        <h3>우리 집</h3>
+        <div class="settings-list">
+          <button type="button" class="settings-row" data-edit-home-name>
+            <span class="settings-icon"><i data-lucide="house" aria-hidden="true"></i></span>
+            <span class="settings-copy"><strong>집 이름</strong><small data-more-home-name>우리 집</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="settings-row" data-open-manager="room">
+            <span class="settings-icon"><i data-lucide="map-pin" aria-hidden="true"></i></span>
+            <span class="settings-copy"><strong>공간 관리</strong><small><span data-more-room-count>2</span>개 공간</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="settings-row" data-open-manager="scene">
+            <span class="settings-icon"><i data-lucide="sparkles" aria-hidden="true"></i></span>
+            <span class="settings-copy"><strong>빠른 장면 관리</strong><small><span data-more-scene-count>3</span>개 장면</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="settings-row" data-go-devices>
+            <span class="settings-icon"><i data-lucide="layout-grid" aria-hidden="true"></i></span>
+            <span class="settings-copy"><strong>기기 관리</strong><small><span data-more-device-count>4</span>개 연결</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>Zigbee 센서</h3>
+        <div class="settings-list">
+          <button type="button" class="settings-row" data-open-sensor-manager>
+            <span class="settings-icon"><i data-lucide="radio-tower" aria-hidden="true"></i></span>
+            <span class="settings-copy"><strong>센서 추가·관리</strong><small><span data-more-sensor-count>0</span>개 발견</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="settings-row" data-open-sensor-settings>
+            <span class="settings-icon"><i data-lucide="refresh-cw" aria-hidden="true"></i></span>
+            <span class="settings-copy"><strong>화면 자동 갱신</strong><small data-more-sensor-policy>07:00~19:00 자동 갱신 안 함</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>화면</h3>
+        <div class="theme-setting">
+          <div class="settings-copy"><strong>색상 테마</strong><small><span data-more-theme-label>라이트</span> 테마 사용 중</small></div>
+          <div class="theme-inline" aria-label="앱 색상 테마">
+            <button type="button" data-theme-choice="light" aria-pressed="true"><i data-lucide="sun" aria-hidden="true"></i> 라이트</button>
+            <button type="button" data-theme-choice="dark" aria-pressed="false"><i data-lucide="moon" aria-hidden="true"></i> 다크</button>
+          </div>
+        </div>
+        <div class="theme-setting">
+          <div class="settings-copy"><strong>화면 구성</strong><small><span data-more-view-label>자동</span> 모드 사용 중</small></div>
+          <div class="view-inline" aria-label="화면 구성 방식">
+            <button type="button" data-view="auto" aria-pressed="true"><i data-lucide="scan" aria-hidden="true"></i> 자동</button>
+            <button type="button" data-view="mobile" aria-pressed="false"><i data-lucide="smartphone" aria-hidden="true"></i> 휴대폰</button>
+            <button type="button" data-view="desktop" aria-pressed="false"><i data-lucide="monitor" aria-hidden="true"></i> PC</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <h3>연결 상태</h3>
+        <div class="system-panel">
+          <div class="status-row"><span>실행 환경</span><span>로컬 개발</span></div>
+          <div class="status-row"><span>라즈베리파이</span><span>키오스크 지원</span></div>
+          <div class="status-row"><span>웹 API</span><span class="is-online">포트 8001 연결됨</span></div>
+          <div class="system-check"><small data-system-last-check>방금 확인</small><button type="button" data-refresh-system>다시 확인</button></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="device-detail" data-aircon-detail hidden>
+      <header class="detail-header">
+        <button type="button" class="detail-icon-action" data-close-aircon aria-label="홈으로"><i data-lucide="arrow-left" aria-hidden="true"></i></button>
+        <div><p data-aircon-room>거실</p><h2 data-aircon-name>에어컨</h2></div>
+        <span class="detail-icon-placeholder" aria-hidden="true"></span>
+      </header>
+      <p class="detail-api-status" data-detail-api-status data-state="busy">API 연결 확인 중…</p>
+
+      <div class="aircon-hero" data-aircon-hero>
+        <button type="button" class="aircon-power" data-aircon-power aria-pressed="true"><i data-lucide="power" aria-hidden="true"></i><span data-aircon-power-label>전원 켜짐</span></button>
+        <p class="aircon-kicker">희망 온도</p>
+        <div class="temperature-control">
+          <button type="button" data-temp-down aria-label="온도 낮추기"><i data-lucide="minus" aria-hidden="true"></i></button>
+          <output class="temperature-value" data-target-temperature aria-live="polite">24°C</output>
+          <button type="button" data-temp-up aria-label="온도 높이기"><i data-lucide="plus" aria-hidden="true"></i></button>
+        </div>
+        <p class="aircon-summary" data-aircon-summary>냉방 · 강풍 · 풍향 움직임</p>
+      </div>
+
+      <section class="control-block">
+        <h3>운전 모드</h3>
+        <div class="segmented-control" data-aircon-mode>
+          <button type="button" aria-pressed="false">자동</button><button type="button" aria-pressed="true">냉방</button><button type="button" aria-pressed="false">제습</button><button type="button" aria-pressed="false">송풍</button>
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h3>풍량</h3>
+        <div class="segmented-control" data-aircon-fan>
+          <button type="button" aria-pressed="false">자동</button><button type="button" aria-pressed="false">약풍</button><button type="button" aria-pressed="false">중풍</button><button type="button" aria-pressed="true">강풍</button>
+        </div>
+      </section>
+
+      <section class="control-block">
+        <h3>추가 기능</h3>
+        <div class="feature-grid">
+          <button type="button" class="feature-toggle" data-aircon-feature="swing" aria-pressed="true"><i data-lucide="move-vertical" aria-hidden="true"></i><span>풍향 움직임</span></button>
+          <button type="button" class="feature-toggle" data-aircon-feature="economy" aria-pressed="false"><i data-lucide="leaf" aria-hidden="true"></i><span>경제운전</span></button>
+          <button type="button" class="feature-toggle" data-aircon-feature="turbo" aria-pressed="false"><i data-lucide="gauge" aria-hidden="true"></i><span>쾌속냉방</span></button>
+          <button type="button" class="feature-toggle" data-aircon-feature="led" aria-pressed="true"><i data-lucide="lightbulb" aria-hidden="true"></i><span>에어컨 LED</span></button>
+        </div>
+      </section>
+    </section>
+
+    <section class="sensor-detail" data-sensor-detail hidden>
+      <header class="detail-header">
+        <button type="button" class="detail-icon-action" data-close-sensor aria-label="이전 화면으로">
+          <i data-lucide="arrow-left" aria-hidden="true"></i>
+        </button>
+        <div><p data-sensor-detail-room>공간 미지정</p><h2 data-sensor-detail-name>센서</h2></div>
+        <button type="button" class="detail-icon-action" data-edit-current-sensor aria-label="센서 설정">
+          <i data-lucide="settings-2" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      <div class="sensor-detail-hero" data-sensor-detail-hero>
+        <span class="sensor-detail-icon"><i data-lucide="activity" data-sensor-detail-icon aria-hidden="true"></i></span>
+        <div data-sensor-detail-primary>상태 확인 중</div>
+        <p data-sensor-detail-secondary>마지막 저장값을 불러오고 있어요.</p>
+      </div>
+
+      <div class="sensor-detail-actions">
+        <button type="button" data-refresh-current-sensor><i data-lucide="refresh-cw" aria-hidden="true"></i>최신 저장값 확인</button>
+      </div>
+
+      <section class="control-block sensor-facts-block">
+        <h3>센서 정보</h3>
+        <dl class="sensor-facts" data-sensor-facts></dl>
+      </section>
+
+      <section class="control-block" data-door-history-block hidden>
+        <div class="sensor-block-heading"><h3>열림·닫힘 기록</h3><small>최근 20개 · 한국 시간</small></div>
+        <ol class="door-event-list" data-door-event-list></ol>
+        <p class="sensor-list-empty" data-door-event-empty hidden>아직 상태가 바뀐 기록이 없어요.</p>
+      </section>
+
+      <section class="control-block sensor-refresh-explanation" data-climate-refresh-note hidden>
+        <h3>새로고침 안내</h3>
+        <p>버튼은 서버에 저장된 최신 값을 다시 읽습니다. 배터리형 온습도 센서는 절전 중이라 웹에서 강제로 깨울 수 없고, 다음 Zigbee 보고가 오면 값이 갱신됩니다.</p>
+      </section>
+    </section>
+
+    <nav class="main-navigation" aria-label="주 메뉴">
+      <button type="button" data-nav="home" aria-current="page"><i data-lucide="house" aria-hidden="true"></i><small>홈</small></button>
+      <button type="button" data-nav="devices"><i data-lucide="layout-grid" aria-hidden="true"></i><small>기기</small></button>
+      <button type="button" data-nav="automation"><i data-lucide="workflow" aria-hidden="true"></i><small>자동화</small></button>
+      <button type="button" data-nav="more"><i data-lucide="ellipsis" aria-hidden="true"></i><small>더보기</small></button>
+    </nav>
+  </div>
+
+  <dialog class="manage-dialog" data-manager="scene">
+    <h3>빠른 장면 편집</h3>
+    <form class="manager-form" data-manager-form="scene">
+      <label for="scene-name-input">새 장면 이름</label>
+      <input id="scene-name-input" name="name" maxlength="12" placeholder="예: 영화 보기" required>
+      <button type="button" data-manager-add="scene">추가</button>
+      <div class="manager-icon-field"><span>장면 아이콘</span><div class="icon-picker" data-manager-icon-picker="scene"></div></div>
+    </form>
+    <p class="manager-error" role="alert" data-manager-error="scene"></p>
+    <div class="manager-list" data-manager-list="scene"></div>
+    <button type="button" class="dialog-close" data-close-manager>완료</button>
+  </dialog>
+
+  <dialog class="manage-dialog scene-editor" data-scene-editor>
+    <h3>장면 설정</h3>
+    <p class="scene-editor-intro">실행할 기기와 각 기기의 목표 상태를 정해요.</p>
+    <div class="wizard-field">
+      <label for="scene-editor-name">장면 이름</label>
+      <input id="scene-editor-name" maxlength="12" data-scene-editor-name>
+    </div>
+    <div class="wizard-field">
+      <span>장면 아이콘</span>
+      <div class="icon-picker" data-scene-editor-icon-picker></div>
+    </div>
+    <div class="scene-action-list" data-scene-action-list></div>
+    <p class="manager-error" role="alert" data-scene-editor-error></p>
+    <div class="scene-editor-actions">
+      <button type="button" data-close-scene-editor>취소</button>
+      <button type="button" data-save-scene-editor>저장</button>
+    </div>
+  </dialog>
+
+  <dialog class="manage-dialog" data-manager="room">
+    <h3>공간 편집</h3>
+    <form class="manager-form" data-manager-form="room">
+      <label for="room-name-input">새 공간 이름</label>
+      <input id="room-name-input" name="name" maxlength="12" placeholder="예: 부엌, 작업실" required>
+      <button type="button" data-manager-add="room">추가</button>
+      <div class="manager-icon-field"><span>공간 아이콘</span><div class="icon-picker" data-manager-icon-picker="room"></div></div>
+    </form>
+    <p class="manager-error" role="alert" data-manager-error="room"></p>
+    <div class="manager-list" data-manager-list="room"></div>
+    <button type="button" class="dialog-close" data-close-manager>완료</button>
+  </dialog>
+
+  <dialog class="manage-dialog" data-room-editor>
+    <h3>공간 설정</h3>
+    <div class="wizard-field">
+      <label for="room-editor-name">공간 이름</label>
+      <input id="room-editor-name" maxlength="12" data-room-editor-name>
+    </div>
+    <div class="wizard-field">
+      <span>공간 아이콘</span>
+      <div class="icon-picker" data-room-editor-icon-picker></div>
+    </div>
+    <p class="manager-error" role="alert" data-room-editor-error></p>
+    <div class="scene-editor-actions">
+      <button type="button" data-close-room-editor>취소</button>
+      <button type="button" data-save-room-editor>저장</button>
+    </div>
+  </dialog>
+
+  <dialog class="manage-dialog" data-home-name-dialog>
+    <h3>집 이름 변경</h3>
+    <div class="wizard-field">
+      <label for="home-name-input">집 이름</label>
+      <input id="home-name-input" maxlength="16" data-home-name-input placeholder="예: 우리 집">
+    </div>
+    <p class="manager-error" role="alert" data-home-name-error></p>
+    <div class="home-name-actions">
+      <button type="button" data-close-home-name>취소</button>
+      <button type="button" data-save-home-name>저장</button>
+    </div>
+  </dialog>
+
+  <dialog class="manage-dialog device-wizard" data-device-wizard>
+    <div class="wizard-progress"><span data-wizard-progress-label>1 / 4</span><div class="wizard-progress-track" aria-hidden="true"><div class="wizard-progress-bar" data-wizard-progress-bar></div></div></div>
+
+    <section class="wizard-step" data-device-step="1">
+      <h3>어떤 기기를 추가할까요?</h3>
+      <p>기기 종류에 맞는 제어 화면을 준비해요.</p>
+      <div class="device-choice-grid" data-device-type-choices>
+        <button type="button" class="device-choice" data-device-type="에어컨" data-device-icon="snowflake" aria-pressed="false"><i data-lucide="snowflake" aria-hidden="true"></i><span>에어컨</span></button>
+        <button type="button" class="device-choice" data-device-type="조명" data-device-icon="lamp-floor" aria-pressed="false"><i data-lucide="lamp-floor" aria-hidden="true"></i><span>조명</span></button>
+        <button type="button" class="device-choice" data-device-type="TV" data-device-icon="tv" aria-pressed="false"><i data-lucide="tv" aria-hidden="true"></i><span>TV</span></button>
+        <button type="button" class="device-choice" data-device-type="센서" data-device-icon="activity" aria-pressed="false"><i data-lucide="activity" aria-hidden="true"></i><span>센서</span></button>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-device-step="2" hidden>
+      <h3>어떻게 연결할까요?</h3>
+      <p>지금은 IR을 사용하고, 이후 다른 연결 방식도 추가할 수 있어요.</p>
+      <div class="device-choice-grid" data-connection-choices>
+        <button type="button" class="device-choice" data-connection="IR" aria-pressed="false"><i data-lucide="radio-tower" aria-hidden="true"></i><span>IR 리모컨</span></button>
+        <button type="button" class="device-choice" data-connection="Wi-Fi" aria-pressed="false"><i data-lucide="wifi" aria-hidden="true"></i><span>Wi-Fi / LAN</span></button>
+        <button type="button" class="device-choice" data-connection="GPIO" aria-pressed="false"><i data-lucide="cpu" aria-hidden="true"></i><span>GPIO</span></button>
+        <button type="button" class="device-choice" data-connection="기타" aria-pressed="false"><i data-lucide="plug" aria-hidden="true"></i><span>기타</span></button>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-device-step="3" hidden>
+      <h3>이름과 공간을 정해 주세요</h3>
+      <p>사용자가 알아보기 쉬운 이름으로 자유롭게 지정해요.</p>
+      <div class="wizard-fields">
+        <div class="wizard-field">
+          <label for="device-profile-select">지원 모델</label>
+          <select id="device-profile-select" data-device-profile><option value="">모델 불러오는 중…</option></select>
+          <button type="button" class="model-request-button" data-open-model-request>내 모델이 목록에 없어요</button>
+        </div>
+        <div class="wizard-field"><label for="device-name-input">기기 이름</label><input id="device-name-input" data-device-name maxlength="20" placeholder="예: 벽걸이 에어컨"></div>
+        <div class="wizard-field"><label for="device-room-select">공간</label><select id="device-room-select" data-device-room></select></div>
+        <div class="wizard-field"><span>기기 아이콘</span><div class="icon-picker" data-device-icon-picker></div></div>
+      </div>
+    </section>
+
+    <section class="wizard-step" data-device-step="4" hidden>
+      <h3>등록 내용을 확인해 주세요</h3>
+      <p>등록 후 해당 공간에 기기 카드가 생겨요.</p>
+      <div class="device-review">
+        <div><span>종류</span><strong data-review-type></strong></div>
+        <div><span>연결</span><strong data-review-connection></strong></div>
+        <div><span>모델</span><strong data-review-model></strong></div>
+        <div><span>이름</span><strong data-review-name></strong></div>
+        <div><span>공간</span><strong data-review-room></strong></div>
+        <div><span>아이콘</span><strong data-review-icon></strong></div>
+      </div>
+    </section>
+
+    <p class="wizard-error" role="alert" data-wizard-error></p>
+    <div class="wizard-actions">
+      <button type="button" data-wizard-back>이전</button>
+      <button type="button" class="wizard-primary" data-wizard-next>다음</button>
+    </div>
+  </dialog>
+
+  <dialog class="manage-dialog device-wizard" data-model-request-dialog>
+    <h3>새 모델 분석 요청</h3>
+    <p class="upload-hint">제품 사진은 필수예요. 리모컨 사진과 PDF 매뉴얼이 있으면 분석 속도와 정확도가 좋아져요.</p>
+    <form class="wizard-fields" data-model-request-form>
+      <div class="wizard-field"><label for="request-brand">브랜드</label><input id="request-brand" name="brand" maxlength="100" required placeholder="예: Carrier"></div>
+      <div class="wizard-field"><label for="request-model">정확한 모델명</label><input id="request-model" name="model" maxlength="100" required placeholder="예: CS-A061GS"></div>
+      <div class="wizard-field"><label for="request-product-photo">제품 사진 · 필수</label><input id="request-product-photo" name="product_photo" type="file" accept="image/jpeg,image/png,image/webp" required></div>
+      <div class="wizard-field"><label for="request-remote-photo">리모컨 사진 · 선택</label><input id="request-remote-photo" name="remote_photo" type="file" accept="image/jpeg,image/png,image/webp"></div>
+      <div class="wizard-field"><label for="request-manual">매뉴얼 PDF · 선택</label><input id="request-manual" name="manual" type="file" accept="application/pdf"></div>
+    </form>
+    <p class="wizard-error" role="alert" data-model-request-error></p>
+    <div class="wizard-actions">
+      <button type="button" data-close-model-request>취소</button>
+      <button type="button" class="wizard-primary" data-submit-model-request>요청 저장</button>
+    </div>
+  </dialog>
+
+  <dialog class="manage-dialog sensor-settings-dialog" data-sensor-settings-dialog>
+    <h3>센서 화면 자동 갱신</h3>
+    <p class="sensor-dialog-intro">센서를 깨우는 설정이 아니라, 이 화면이 서버의 최신 저장값을 다시 읽는 주기를 정합니다.</p>
+    <form data-sensor-settings-form>
+      <div class="sensor-form-grid">
+        <label>자동 갱신 안 함 시작<input type="time" name="pause_start" value="07:00" required></label>
+        <label>자동 갱신 다시 시작<input type="time" name="pause_end" value="19:00" required></label>
+      </div>
+      <label>허용 시간의 갱신 간격
+        <select name="interval_minutes">
+          <option value="1">1분</option>
+          <option value="5" selected>5분</option>
+          <option value="10">10분</option>
+          <option value="30">30분</option>
+          <option value="60">1시간</option>
+        </select>
+      </label>
+      <label class="sensor-checkbox"><input type="checkbox" name="enabled" checked><span>허용 시간에는 자동 갱신 사용</span></label>
+      <p class="sensor-settings-preview" data-sensor-settings-preview></p>
+      <div class="sensor-dialog-actions">
+        <button type="button" data-close-sensor-settings>취소</button>
+        <button type="submit">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="manage-dialog sensor-manager-dialog" data-sensor-manager-dialog>
+    <div class="sensor-dialog-heading">
+      <div><p class="eyebrow">Zigbee2MQTT</p><h3>센서 추가·관리</h3></div>
+      <button type="button" class="detail-icon-action" data-close-sensor-manager aria-label="닫기"><i data-lucide="x" aria-hidden="true"></i></button>
+    </div>
+    <p class="sensor-dialog-intro">연결 시간을 선택해 Zigbee 가입을 연 다음 센서의 리셋 버튼을 약 5초 누르세요. 창을 닫거나 시간이 끝나면 새 기기 연결도 자동으로 차단됩니다.</p>
+    <section class="sensor-join-panel" aria-label="Zigbee 센서 연결">
+      <div class="sensor-join-heading">
+        <div><strong>새 센서 연결</strong><small data-zigbee-join-status data-state="closed">상태 확인 중</small></div>
+        <label>허용 시간
+          <select data-zigbee-join-duration>
+            <option value="30">30초</option>
+            <option value="60" selected>60초</option>
+            <option value="120">120초</option>
+          </select>
+        </label>
+      </div>
+      <button type="button" class="sensor-join-button" data-open-zigbee-join><i data-lucide="radio-tower" aria-hidden="true"></i>연결 시작</button>
+      <button type="button" class="sensor-join-button sensor-join-stop" data-close-zigbee-join hidden><i data-lucide="shield-x" aria-hidden="true"></i>연결 즉시 종료</button>
+      <ol class="sensor-pairing-steps">
+        <li>연결 시작을 누릅니다.</li>
+        <li>센서 리셋 버튼을 약 5초 눌러 LED가 깜빡이게 합니다.</li>
+        <li>아래 목록에 연결됨이 표시될 때까지 기다립니다.</li>
+      </ol>
+      <div class="sensor-joined-heading"><strong>Zigbee2MQTT 기기</strong><small>Coordinator 제외</small></div>
+      <ul class="zigbee-device-list" data-zigbee-device-list></ul>
+      <p class="sensor-list-empty" data-zigbee-device-empty>연결된 Zigbee 기기를 불러오는 중이에요.</p>
+    </section>
+    <button type="button" class="sensor-discover-button" data-discover-sensors><i data-lucide="scan-search" aria-hidden="true"></i>발견된 센서 새로고침</button>
+    <div class="sensor-manager-list" data-sensor-manager-list></div>
+    <p class="sensor-list-empty" data-sensor-manager-empty hidden>아직 보고한 센서가 없어요. 페어링 후 센서를 한 번 작동시켜 주세요.</p>
+    <form class="sensor-editor-form" data-sensor-editor-form hidden>
+      <input type="hidden" name="device_id">
+      <label>화면에 표시할 이름<input type="text" name="display_name" maxlength="40" required></label>
+      <label>공간<select name="room" required></select></label>
+      <label>아이콘
+        <select name="icon" required>
+          <option value="door-open">문 센서</option>
+          <option value="thermometer-sun">온도계</option>
+          <option value="droplets">습도</option>
+          <option value="activity">상태 센서</option>
+          <option value="radio-tower">Zigbee</option>
+        </select>
+      </label>
+      <p class="sensor-editor-id" data-sensor-editor-id></p>
+      <div class="sensor-dialog-actions">
+        <button type="button" data-cancel-sensor-edit>취소</button>
+        <button type="submit">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="sr-only" aria-live="polite" data-announcer></div>
+  <script>
+    (async () => {
+      const root = document.getElementById('room-first-design-studio');
+      const announcer = root.querySelector('[data-announcer]');
+      const apiStatus = root.querySelector('[data-api-status]');
+      const PROFILE_ID = 'air_conditioner/Carrier/CS-A061GS';
+      const modeToApi = { '자동': 'auto', '냉방': 'cool', '제습': 'dry', '송풍': 'fan_only' };
+      const modeFromApi = { auto: '자동', cool: '냉방', dry: '제습', fan_only: '송풍' };
+      const fanToApi = { '자동': 'auto', '약풍': 'low', '중풍': 'medium', '강풍': 'high' };
+      const fanFromApi = { auto: '자동', low: '약풍', medium: '중풍', high: '강풍' };
+      const VIEW_MODE_KEY = 'smart-home.view-mode.v1';
+      const VIEW_MODES = new Set(['auto', 'mobile', 'desktop']);
+      const desktopMedia = window.matchMedia('(min-width: 900px)');
+      let supportedProfiles = [];
+      let activeDeviceId = '';
+      let transmitterInfo = { transport: 'unknown', hardware_output: false };
+
+      const ICON_OPTIONS = [
+        { name: 'house', label: '집' },
+        { name: 'sofa', label: '거실' },
+        { name: 'door-open', label: '외출' },
+        { name: 'moon-star', label: '취침' },
+        { name: 'sparkles', label: '장면' },
+        { name: 'film', label: '영화' },
+        { name: 'bed-double', label: '침실' },
+        { name: 'bath', label: '욕실' },
+        { name: 'utensils', label: '주방' },
+        { name: 'trees', label: '정원' },
+        { name: 'snowflake', label: '에어컨' },
+        { name: 'air-vent', label: '환기' },
+        { name: 'lamp-floor', label: '스탠드' },
+        { name: 'lightbulb', label: '조명' },
+        { name: 'tv', label: 'TV' },
+        { name: 'fan', label: '선풍기' },
+        { name: 'wind', label: '공기' },
+        { name: 'activity', label: '센서' },
+        { name: 'plug', label: '플러그' },
+        { name: 'radio-tower', label: 'IR' },
+        { name: 'washing-machine', label: '세탁기' },
+        { name: 'speaker', label: '스피커' },
+        { name: 'monitor', label: '화면' },
+        { name: 'gamepad-2', label: '게임' },
+        { name: 'coffee', label: '휴식' }
+      ];
+
+      const iconLabel = (name) => ICON_OPTIONS.find((item) => item.name === name)?.label || name;
+
+      const refreshIcons = () => {
+        if (!window.lucide) return;
+        window.lucide.createIcons({ attrs: { 'aria-hidden': 'true', 'stroke-width': 2 } });
+      };
+
+      const createIconNode = (name) => {
+        const icon = document.createElement('i');
+        icon.dataset.lucide = name;
+        icon.setAttribute('aria-hidden', 'true');
+        return icon;
+      };
+
+      const replaceElementIcon = (element, name) => {
+        element.querySelector('[data-lucide]')?.remove();
+        element.dataset.icon = name;
+        element.prepend(createIconNode(name));
+        refreshIcons();
+      };
+
+      const renderIconPicker = (container, selectedName, onSelect) => {
+        container.replaceChildren();
+        ICON_OPTIONS.forEach(({ name, label }) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'icon-choice';
+          button.dataset.iconChoice = name;
+          button.setAttribute('aria-label', label + ' 아이콘');
+          button.setAttribute('aria-pressed', String(name === selectedName));
+          const text = document.createElement('small');
+          text.textContent = label;
+          button.append(createIconNode(name), text);
+          button.addEventListener('click', () => {
+            container.querySelectorAll('[data-icon-choice]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+            onSelect(name);
+          });
+          container.append(button);
+        });
+        refreshIcons();
+      };
+
+      refreshIcons();
+
+      const setApiStatus = (message, state = 'ready') => {
+        apiStatus.textContent = message;
+        apiStatus.dataset.state = state;
+        const detailStatus = root.querySelector('[data-detail-api-status]');
+        detailStatus.textContent = message;
+        detailStatus.dataset.state = state;
+      };
+
+      const apiCall = async (path, options = {}) => {
+        const request = { ...options };
+        const isForm = request.body instanceof FormData;
+        request.headers = { Accept: 'application/json', ...(isForm ? {} : { 'Content-Type': 'application/json' }), ...(request.headers || {}) };
+        const response = await fetch(path, request);
+        const contentType = response.headers.get('content-type') || '';
+        const payload = contentType.includes('application/json') ? await response.json() : null;
+        if (!response.ok) {
+          const detail = payload?.detail;
+          throw new Error(typeof detail === 'string' ? detail : 'API 요청을 처리하지 못했어요.');
+        }
+        return payload;
+      };
+
+      root.querySelectorAll('[data-theme-choice]').forEach((button) => {
+        button.addEventListener('click', () => {
+          root.dataset.theme = button.dataset.themeChoice;
+          root.querySelectorAll('[data-theme-choice]').forEach((item) => item.setAttribute('aria-pressed', String(item.dataset.themeChoice === button.dataset.themeChoice)));
+          root.querySelector('[data-more-theme-label]').textContent = button.dataset.themeChoice === 'dark' ? '다크' : '라이트';
+          announcer.textContent = button.textContent.trim() + ' 테마 적용';
+        });
+      });
+
+      const loadViewMode = () => {
+        try {
+          const stored = window.localStorage.getItem(VIEW_MODE_KEY);
+          return VIEW_MODES.has(stored) ? stored : 'auto';
+        } catch (_error) {
+          return 'auto';
+        }
+      };
+
+      const applyViewMode = (mode, { persist = true, announce = true } = {}) => {
+        const nextMode = VIEW_MODES.has(mode) ? mode : 'auto';
+        const desktop = nextMode === 'desktop' || (nextMode === 'auto' && desktopMedia.matches);
+        const labels = { auto: '자동', mobile: '휴대폰', desktop: 'PC' };
+        root.dataset.viewMode = nextMode;
+        root.classList.toggle('desktop-preview', desktop);
+        root.querySelectorAll('[data-view]').forEach((item) => {
+          item.setAttribute('aria-pressed', String(item.dataset.view === nextMode));
+        });
+        root.querySelector('[data-more-view-label]').textContent = labels[nextMode];
+        if (persist) {
+          try {
+            window.localStorage.setItem(VIEW_MODE_KEY, nextMode);
+          } catch (_error) {
+            // 저장소가 차단된 환경에서도 현재 탭의 화면 모드는 그대로 적용한다.
+          }
+        }
+        if (announce) announcer.textContent = `${labels[nextMode]} 화면 모드 적용`;
+      };
+
+      root.querySelectorAll('[data-view]').forEach((button) => {
+        button.addEventListener('click', () => applyViewMode(button.dataset.view));
+      });
+      desktopMedia.addEventListener('change', () => {
+        if (root.dataset.viewMode === 'auto') applyViewMode('auto', { persist: false, announce: false });
+      });
+      applyViewMode(loadViewMode(), { persist: false, announce: false });
+
+      const setActiveNavigation = (name) => {
+        root.querySelectorAll('[data-nav]').forEach((button) => {
+          if (button.dataset.nav === name) button.setAttribute('aria-current', 'page');
+          else button.removeAttribute('aria-current');
+        });
+      };
+
+      const showHomeView = () => {
+        root.querySelector('[data-home-view]').hidden = false;
+        root.querySelector('[data-devices-view]').hidden = true;
+        root.querySelector('[data-automation-view]').hidden = true;
+        root.querySelector('[data-more-view]').hidden = true;
+        root.querySelector('[data-aircon-detail]').hidden = true;
+        root.classList.remove('show-device-detail');
+        setActiveNavigation('home');
+        announcer.textContent = '홈으로 이동';
+      };
+
+      const showAutomationView = () => {
+        root.querySelector('[data-home-view]').hidden = true;
+        root.querySelector('[data-devices-view]').hidden = true;
+        root.querySelector('[data-automation-view]').hidden = false;
+        root.querySelector('[data-more-view]').hidden = true;
+        root.querySelector('[data-aircon-detail]').hidden = true;
+        root.classList.remove('show-device-detail');
+        setActiveNavigation('automation');
+        announcer.textContent = '자동화 화면으로 이동';
+      };
+
+      const showDevicesView = () => {
+        root.querySelector('[data-home-view]').hidden = true;
+        root.querySelector('[data-devices-view]').hidden = false;
+        root.querySelector('[data-automation-view]').hidden = true;
+        root.querySelector('[data-more-view]').hidden = true;
+        root.querySelector('[data-aircon-detail]').hidden = true;
+        root.classList.remove('show-device-detail');
+        renderDeviceRoomFilters();
+        renderDevicesView(currentInventoryRoom);
+        setActiveNavigation('devices');
+        announcer.textContent = '기기 화면으로 이동';
+      };
+
+      const showMoreView = () => {
+        root.querySelector('[data-home-view]').hidden = true;
+        root.querySelector('[data-devices-view]').hidden = true;
+        root.querySelector('[data-automation-view]').hidden = true;
+        root.querySelector('[data-more-view]').hidden = false;
+        root.querySelector('[data-aircon-detail]').hidden = true;
+        root.classList.remove('show-device-detail');
+        updateMoreCounts();
+        setActiveNavigation('more');
+        announcer.textContent = '더보기 화면으로 이동';
+      };
+
+      root.querySelectorAll('[data-nav]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (button.dataset.nav === 'home') showHomeView();
+          else if (button.dataset.nav === 'devices') showDevicesView();
+          else if (button.dataset.nav === 'automation') showAutomationView();
+          else if (button.dataset.nav === 'more') showMoreView();
+        });
+      });
+
+      const sceneConfigs = new Map([
+        ['집에서', { icon: 'house', actions: {
+          '에어컨': { action: 'on', mode: '냉방', temperature: 24, fan: '강풍' },
+          '스탠드 조명': { action: 'on', brightness: 70 },
+          'TV': { action: 'keep' }
+        } }],
+        ['외출', { icon: 'door-open', actions: {
+          '에어컨': { action: 'off' },
+          '스탠드 조명': { action: 'off' },
+          'TV': { action: 'off' }
+        } }],
+        ['취침', { icon: 'moon-star', actions: {
+          '에어컨': { action: 'on', mode: '냉방', temperature: 26, fan: '약풍' },
+          '스탠드 조명': { action: 'off' },
+          'TV': { action: 'off' }
+        } }]
+      ]);
+
+      const getSceneActionCount = (name) => {
+        const actions = sceneConfigs.get(name)?.actions || {};
+        return Object.values(actions).filter((action) => action.action !== 'keep').length;
+      };
+
+      const updateSceneCardSummary = (button) => {
+        let status = button.querySelector('[data-scene-status]');
+        if (!status) {
+          status = document.createElement('small');
+          status.dataset.sceneStatus = '';
+          button.append(status);
+        }
+        const count = getSceneActionCount(button.dataset.name);
+        status.textContent = count ? count + '개 동작' : '설정 필요';
+      };
+
+      const applySceneAction = async (deviceName, config) => {
+        if (!config || config.action === 'keep') return;
+        const tile = [...root.querySelectorAll('.device-grid .device-tile')].find((item) => item.querySelector('strong').textContent.trim() === deviceName);
+        if (!tile) return;
+
+        if (tile.dataset.deviceKind === 'aircon') {
+          await changeAirconState((state) => ({
+            power: config.action === 'on',
+            ...(config.action === 'on' ? {
+              mode: config.mode || state.mode,
+              temperature: Number(config.temperature || state.temperature),
+              fan: config.fan || state.fan
+            } : {})
+          }), { tile });
+          return;
+        }
+
+        const enabled = config.action === 'on';
+        tile.setAttribute('aria-pressed', String(enabled));
+        const status = tile.querySelector('small');
+        if (!enabled) status.textContent = '꺼짐';
+        else if ((tile.dataset.deviceCapabilities || '').includes('brightness')) status.textContent = '켜짐 · 밝기 ' + Number(config.brightness || 70) + '%';
+        else status.textContent = '켜짐';
+      };
+
+      const runScene = (button) => {
+        const name = button.dataset.name;
+        const config = sceneConfigs.get(name);
+        const status = button.querySelector('[data-scene-status]');
+        if (!config || getSceneActionCount(name) === 0) {
+          status.textContent = '설정 필요';
+          announcer.textContent = name + ' 장면에 실행할 동작이 없음';
+          return;
+        }
+        button.disabled = true;
+        button.setAttribute('aria-pressed', 'true');
+        status.textContent = '실행 중…';
+        announcer.textContent = name + ' 장면 실행 중';
+        window.setTimeout(async () => {
+          try {
+            for (const [deviceName, action] of Object.entries(config.actions)) {
+              await applySceneAction(deviceName, action);
+            }
+            renderDevicesView(currentInventoryRoom);
+            status.textContent = '완료';
+            announcer.textContent = name + ' 장면 실행 완료';
+          } catch (error) {
+            status.textContent = '실패';
+            setApiStatus(error.message, 'error');
+            announcer.textContent = name + ' 장면 실행 실패';
+          }
+          window.setTimeout(() => {
+            button.disabled = false;
+            button.setAttribute('aria-pressed', 'false');
+            updateSceneCardSummary(button);
+          }, 700);
+        }, 500);
+      };
+
+      const attachSceneBehavior = (button) => {
+        updateSceneCardSummary(button);
+        button.addEventListener('click', () => runScene(button));
+      };
+
+      const applyRoomFilter = (roomName) => {
+        root.querySelectorAll('.device-grid .device-tile').forEach((tile) => {
+          tile.hidden = roomName !== '전체' && tile.dataset.room !== roomName;
+        });
+      };
+
+      const attachRoomBehavior = (button) => {
+        button.addEventListener('click', () => {
+          root.querySelectorAll('[data-room-tab]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+          const roomName = button.textContent.trim();
+          applyRoomFilter(roomName);
+          announcer.textContent = roomName + ' 공간 선택';
+        });
+      };
+
+      const newAirconState = () => ({ power: false, temperature: 24, mode: '냉방', fan: '강풍', swing: true, economy: false, turbo: false, led: true });
+      const airconStates = new Map();
+      const pendingDeviceCommands = new Set();
+      let airconState = newAirconState();
+      let activeAirconTile = null;
+      let detailReturnView = 'home';
+
+      const applyApiState = (state, target = airconState) => {
+        if (!state) return;
+        if (typeof state.power === 'boolean') target.power = state.power;
+        if (state.mode && modeFromApi[state.mode]) target.mode = modeFromApi[state.mode];
+        if (Number.isInteger(state.temperature_c)) target.temperature = state.temperature_c;
+        if (state.fan && fanFromApi[state.fan]) target.fan = fanFromApi[state.fan];
+      };
+
+      const renderAirconState = (tile, state) => {
+        tile.setAttribute('aria-pressed', String(state.power));
+        tile.querySelector('small').textContent = state.power ? `${state.mode} · ${state.temperature}°C · ${state.fan}` : '꺼짐';
+        if (activeAirconTile === tile) updateAirconView();
+      };
+
+      const sendAirconState = async (tile, state) => {
+        const deviceId = tile?.dataset.deviceId;
+        if (!deviceId) throw new Error('먼저 Carrier 에어컨을 등록해 주세요.');
+        setApiStatus('에어컨 명령 전송 중…', 'busy');
+        const payload = state.power
+          ? {
+              action: 'set_state',
+              power: true,
+              mode: modeToApi[state.mode],
+              temperature_c: state.temperature,
+              fan: fanToApi[state.fan]
+            }
+          : { action: 'set_state', power: false };
+        const result = await apiCall(`/api/v1/devices/${encodeURIComponent(deviceId)}/commands`, { method: 'POST', body: JSON.stringify(payload) });
+        applyApiState(result.device.last_desired_state, state);
+        renderAirconState(tile, state);
+        const mock = result.transmission.hardware_output === false;
+        setApiStatus(mock ? 'Mock IR 기록 완료 · 실제 송신 없음' : 'IR 명령 전송 완료');
+        return result;
+      };
+
+      const executeAirconCommand = async (commandId, tile) => {
+        const deviceId = tile?.dataset.deviceId;
+        if (!deviceId) throw new Error('먼저 Carrier 에어컨을 등록해 주세요.');
+        setApiStatus('에어컨 명령 전송 중…', 'busy');
+        const result = await apiCall(`/api/v1/devices/${encodeURIComponent(deviceId)}/commands`, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'execute', command_id: commandId })
+        });
+        setApiStatus(result.transmission.hardware_output === false ? 'Mock IR 기록 완료 · 실제 송신 없음' : 'IR 명령 전송 완료');
+        return result;
+      };
+
+      const changeAirconState = async (changes, { tile = activeAirconTile, commandId = null } = {}) => {
+        const deviceId = tile?.dataset.deviceId;
+        const state = airconStates.get(deviceId);
+        if (!state) throw new Error('먼저 Carrier 에어컨을 등록해 주세요.');
+        if (pendingDeviceCommands.has(deviceId)) throw new Error('이 에어컨의 이전 명령을 전송 중이에요. 잠시 후 다시 눌러 주세요.');
+        const previous = { ...state };
+        pendingDeviceCommands.add(deviceId);
+        Object.assign(state, typeof changes === 'function' ? changes(state) : changes);
+        renderAirconState(tile, state);
+        try {
+          if (commandId) await executeAirconCommand(commandId, tile);
+          else await sendAirconState(tile, state);
+        } catch (error) {
+          Object.assign(state, previous);
+          throw error;
+        } finally {
+          pendingDeviceCommands.delete(deviceId);
+          renderAirconState(tile, state);
+        }
+      };
+
+      const handleAirconChange = async (changes, options = {}) => {
+        try {
+          await changeAirconState(changes, options);
+          announcer.textContent = '에어컨 명령 전송 완료';
+        } catch (error) {
+          setApiStatus(error.message, 'error');
+          announcer.textContent = error.message;
+        }
+      };
+
+      const updateAirconView = () => {
+        const hero = root.querySelector('[data-aircon-hero]');
+        const powerButton = root.querySelector('[data-aircon-power]');
+        const summaryParts = [airconState.mode, airconState.fan, airconState.swing ? '풍향 움직임' : '풍향 고정'];
+        if (airconState.economy) summaryParts.push('경제운전');
+        if (airconState.turbo) summaryParts.push('쾌속냉방');
+        hero.classList.toggle('is-off', !airconState.power);
+        powerButton.setAttribute('aria-pressed', String(airconState.power));
+        root.querySelector('[data-aircon-power-label]').textContent = airconState.power ? '전원 켜짐' : '전원 꺼짐';
+        root.querySelector('[data-target-temperature]').textContent = airconState.temperature + '°C';
+        root.querySelector('[data-aircon-summary]').textContent = airconState.power ? summaryParts.join(' · ') : '전원이 꺼져 있어요';
+        root.querySelector('[data-aircon-feature="swing"] span').textContent = airconState.swing ? '풍향 움직임' : '풍향 고정';
+        root.querySelectorAll('[data-aircon-mode] button').forEach((button) => button.setAttribute('aria-pressed', String(button.textContent.trim() === airconState.mode)));
+        root.querySelectorAll('[data-aircon-fan] button').forEach((button) => button.setAttribute('aria-pressed', String(button.textContent.trim() === airconState.fan)));
+        root.querySelectorAll('[data-aircon-feature]').forEach((button) => button.setAttribute('aria-pressed', String(airconState[button.dataset.airconFeature])));
+        root.querySelectorAll('[data-aircon-power], [data-temp-down], [data-temp-up], [data-aircon-mode] button, [data-aircon-fan] button, [data-aircon-feature]').forEach((button) => {
+          button.disabled = !activeDeviceId || pendingDeviceCommands.has(activeDeviceId);
+        });
+        if (activeAirconTile) {
+          activeAirconTile.setAttribute('aria-pressed', String(airconState.power));
+          activeAirconTile.querySelector('small').textContent = airconState.power ? `${airconState.mode} · ${airconState.temperature}°C · ${airconState.fan}` : '꺼짐';
+        }
+      };
+
+      const openAirconDetail = (tile, returnView = 'home') => {
+        activeAirconTile = tile;
+        activeDeviceId = tile.dataset.deviceId || '';
+        airconState = airconStates.get(activeDeviceId) || newAirconState();
+        detailReturnView = returnView;
+        root.querySelector('[data-home-view]').hidden = true;
+        root.querySelector('[data-devices-view]').hidden = true;
+        root.querySelector('[data-automation-view]').hidden = true;
+        root.querySelector('[data-more-view]').hidden = true;
+        root.querySelector('[data-aircon-detail]').hidden = false;
+        root.classList.add('show-device-detail');
+        root.querySelector('[data-aircon-name]').textContent = tile.querySelector('strong').textContent;
+        root.querySelector('[data-aircon-room]').textContent = tile.dataset.room;
+        updateAirconView();
+        announcer.textContent = tile.querySelector('strong').textContent + ' 상세 제어 열림';
+      };
+
+      const closeAirconDetail = () => {
+        if (detailReturnView === 'devices') showDevicesView();
+        else showHomeView();
+      };
+
+      const attachDeviceBehavior = (button) => {
+        if (button.dataset.behaviorAttached === 'true') return;
+        button.dataset.behaviorAttached = 'true';
+        button.addEventListener('click', () => {
+          if (button.dataset.deviceKind === 'aircon') {
+            openAirconDetail(button);
+            return;
+          }
+          if (button.dataset.deviceKind === 'sensor') {
+            announcer.textContent = button.querySelector('strong').textContent + ' 상태 확인';
+            return;
+          }
+          const next = button.getAttribute('aria-pressed') !== 'true';
+          button.setAttribute('aria-pressed', String(next));
+          const status = button.querySelector('small');
+          if (next) status.textContent = button.dataset.onStatus || '켜짐';
+          else {
+            if (status.textContent !== '꺼짐') button.dataset.onStatus = status.textContent;
+            status.textContent = '꺼짐';
+          }
+          announcer.textContent = button.querySelector('strong').textContent + (next ? ' 켜짐' : ' 꺼짐');
+        });
+      };
+
+      const upsertAirconTile = (record) => {
+        const tiles = [...root.querySelectorAll('.device-grid .device-tile[data-device-kind="aircon"]')];
+        let tile = tiles.find((item) => item.dataset.deviceId === record.id)
+          || tiles.find((item) => !item.dataset.deviceId);
+        if (!tile) {
+          tile = document.createElement('button');
+          tile.type = 'button';
+          tile.className = 'device-tile';
+          tile.append(document.createElement('strong'), document.createElement('small'));
+          root.querySelector('.device-grid').append(tile);
+        }
+        tile.dataset.room = record.room;
+        tile.dataset.deviceKind = 'aircon';
+        tile.dataset.deviceCapabilities = 'power,mode,temperature,fan';
+        tile.dataset.deviceId = record.id;
+        tile.dataset.profileId = record.profile_id;
+        tile.querySelector('strong').textContent = record.name;
+        replaceElementIcon(tile, record.icon || 'snowflake');
+        const state = airconStates.get(record.id) || newAirconState();
+        applyApiState(record.last_desired_state, state);
+        airconStates.set(record.id, state);
+        renderAirconState(tile, state);
+        attachDeviceBehavior(tile);
+        if (record.room && record.room !== '전체' && !getNames('room').includes(record.room)) {
+          const room = document.createElement('button');
+          room.type = 'button';
+          room.dataset.roomTab = '';
+          room.dataset.icon = 'sofa';
+          room.setAttribute('aria-pressed', 'false');
+          const name = document.createElement('span');
+          name.textContent = record.room;
+          room.append(createIconNode('sofa'), name);
+          root.querySelector('.room-tabs').append(room);
+          attachRoomBehavior(room);
+        }
+        return tile;
+      };
+
+      const restoreRegisteredAircons = (devices) => {
+        const airconProfileIds = new Set(supportedProfiles
+          .filter((profile) => profile.device_type === 'air_conditioner')
+          .map((profile) => profile.id));
+        devices.filter((record) => airconProfileIds.has(record.profile_id)).forEach(upsertAirconTile);
+        const activeTile = [...root.querySelectorAll('.device-grid .device-tile[data-device-kind="aircon"]')]
+          .find((tile) => tile.dataset.deviceId === activeDeviceId)
+          || root.querySelector('.device-grid .device-tile[data-device-kind="aircon"][data-device-id]');
+        if (activeTile) {
+          activeAirconTile = activeTile;
+          activeDeviceId = activeTile.dataset.deviceId;
+          airconState = airconStates.get(activeDeviceId);
+          updateAirconView();
+        }
+        refreshIcons();
+        updateCounts();
+      };
+
+      const getNames = (kind) => {
+        const selector = kind === 'scene' ? '[data-scene-card]' : '[data-room-tab]:not([data-system-room])';
+        return [...root.querySelectorAll(selector)].map((item) => kind === 'scene' ? item.dataset.name : item.textContent.trim());
+      };
+
+      let currentInventoryRoom = '전체';
+
+      const renderDeviceRoomFilters = () => {
+        const filters = root.querySelector('[data-device-room-filters]');
+        const validRooms = ['전체', ...getNames('room')];
+        if (!validRooms.includes(currentInventoryRoom)) currentInventoryRoom = '전체';
+        filters.replaceChildren();
+        validRooms.forEach((name) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.textContent = name;
+          button.setAttribute('aria-pressed', String(name === currentInventoryRoom));
+          button.addEventListener('click', () => renderDevicesView(name));
+          filters.append(button);
+        });
+      };
+
+      const renderDevicesView = (roomName = '전체') => {
+        currentInventoryRoom = roomName;
+        root.querySelectorAll('[data-device-room-filters] button').forEach((button) => button.setAttribute('aria-pressed', String(button.textContent.trim() === roomName)));
+        const grid = root.querySelector('[data-inventory-grid]');
+        const sources = [...root.querySelectorAll('.device-grid .device-tile')];
+        const visibleSources = sources.filter((tile) => roomName === '전체' || tile.dataset.room === roomName);
+        grid.replaceChildren();
+        visibleSources.forEach((source) => {
+          const clone = source.cloneNode(true);
+          const room = document.createElement('span');
+          room.className = 'inventory-room';
+          room.textContent = source.dataset.room;
+          clone.append(room);
+          clone.addEventListener('click', () => {
+            if (source.dataset.deviceKind === 'aircon') {
+              openAirconDetail(source, 'devices');
+              return;
+            }
+            source.click();
+            clone.setAttribute('aria-pressed', source.getAttribute('aria-pressed'));
+            clone.querySelector('small').textContent = source.querySelector('small').textContent;
+          });
+          grid.append(clone);
+        });
+        root.querySelector('[data-inventory-count]').textContent = roomName === '전체' ? '전체 ' + sources.length + '개' : roomName + ' ' + visibleSources.length + '개 · 전체 ' + sources.length + '개';
+        root.querySelector('[data-inventory-empty]').hidden = visibleSources.length !== 0;
+      };
+
+      const updateCounts = () => {
+        root.querySelector('[data-scene-count]').textContent = getNames('scene').length + '개';
+        root.querySelector('[data-room-count]').textContent = getNames('room').length + '개';
+        updateMoreCounts();
+        renderDeviceRoomFilters();
+        renderDevicesView(currentInventoryRoom);
+      };
+
+      const updateMoreCounts = () => {
+        root.querySelector('[data-more-room-count]').textContent = String(getNames('room').length);
+        root.querySelector('[data-more-scene-count]').textContent = String(getNames('scene').length);
+        root.querySelector('[data-more-device-count]').textContent = String(root.querySelectorAll('.device-grid .device-tile').length);
+      };
+
+      const sceneEditor = root.querySelector('[data-scene-editor]');
+      const roomEditor = root.querySelector('[data-room-editor]');
+      const sceneEditorState = { originalName: '', icon: 'sparkles' };
+      const roomEditorState = { originalName: '', icon: 'sofa' };
+      const managerDraftIcons = { scene: 'sparkles', room: 'sofa' };
+
+      const createSceneSelect = (labelText, values, selectedValue, dataName) => {
+        const label = document.createElement('label');
+        label.append(document.createTextNode(labelText));
+        const select = document.createElement('select');
+        select.dataset[dataName] = '';
+        values.forEach(({ value, label: optionLabel }) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = optionLabel;
+          select.append(option);
+        });
+        select.value = String(selectedValue);
+        label.append(select);
+        return label;
+      };
+
+      const renderSceneActionRow = (tile, saved = { action: 'keep' }) => {
+        const deviceName = tile.querySelector('strong').textContent.trim();
+        const row = document.createElement('section');
+        row.className = 'scene-action-row';
+        row.dataset.sceneDevice = deviceName;
+        row.dataset.sceneDeviceKind = tile.dataset.deviceKind;
+        row.dataset.sceneCapabilities = tile.dataset.deviceCapabilities || 'power';
+
+        const heading = document.createElement('div');
+        heading.className = 'scene-device-heading';
+        const name = document.createElement('strong');
+        name.textContent = deviceName;
+        const room = document.createElement('small');
+        room.textContent = tile.dataset.room;
+        heading.append(name, room);
+
+        const fields = document.createElement('div');
+        fields.className = 'scene-action-fields';
+        const actionField = createSceneSelect('동작', [
+          { value: 'keep', label: '변경 안 함' },
+          { value: 'on', label: '켜기' },
+          { value: 'off', label: '끄기' }
+        ], saved.action || 'keep', 'sceneActionChoice');
+        fields.append(actionField);
+
+        const options = document.createElement('div');
+        options.className = 'scene-device-options';
+        options.hidden = saved.action !== 'on';
+        if (tile.dataset.deviceKind === 'aircon') {
+          options.append(
+            createSceneSelect('운전 모드', ['자동', '냉방', '제습', '송풍'].map((value) => ({ value, label: value })), saved.mode || '냉방', 'sceneMode'),
+            createSceneSelect('희망 온도', Array.from({ length: 14 }, (_, index) => ({ value: String(index + 17), label: (index + 17) + '°C' })), String(saved.temperature || 24), 'sceneTemperature'),
+            createSceneSelect('풍량', ['자동', '약풍', '중풍', '강풍'].map((value) => ({ value, label: value })), saved.fan || '강풍', 'sceneFan')
+          );
+        } else if ((tile.dataset.deviceCapabilities || '').includes('brightness')) {
+          options.append(createSceneSelect('밝기', [30, 50, 70, 100].map((value) => ({ value: String(value), label: value + '%' })), String(saved.brightness || 70), 'sceneBrightness'));
+        }
+
+        actionField.querySelector('select').addEventListener('change', (event) => {
+          options.hidden = event.target.value !== 'on';
+        });
+        fields.append(options);
+        row.append(heading, fields);
+        return row;
+      };
+
+      const openSceneEditor = (name) => {
+        const manager = root.querySelector('[data-manager="scene"]');
+        if (manager.open) manager.close();
+        sceneEditorState.originalName = name;
+        sceneEditorState.icon = sceneConfigs.get(name)?.icon || 'sparkles';
+        root.querySelector('[data-scene-editor-name]').value = name;
+        root.querySelector('[data-scene-editor-error]').textContent = '';
+        renderIconPicker(
+          root.querySelector('[data-scene-editor-icon-picker]'),
+          sceneEditorState.icon,
+          (icon) => { sceneEditorState.icon = icon; }
+        );
+        const list = root.querySelector('[data-scene-action-list]');
+        list.replaceChildren();
+        const actions = sceneConfigs.get(name)?.actions || {};
+        [...root.querySelectorAll('.device-grid .device-tile')]
+          .filter((tile) => tile.dataset.deviceKind !== 'sensor')
+          .forEach((tile) => {
+            const deviceName = tile.querySelector('strong').textContent.trim();
+            list.append(renderSceneActionRow(tile, actions[deviceName] || { action: 'keep' }));
+          });
+        sceneEditor.showModal();
+      };
+
+      const returnToSceneManager = () => {
+        sceneEditor.close();
+        renderManagerList('scene');
+        root.querySelector('[data-manager="scene"]').showModal();
+      };
+
+      root.querySelector('[data-close-scene-editor]').addEventListener('click', returnToSceneManager);
+
+      root.querySelector('[data-save-scene-editor]').addEventListener('click', () => {
+        const nextName = root.querySelector('[data-scene-editor-name]').value.trim();
+        const error = root.querySelector('[data-scene-editor-error]');
+        if (!nextName) {
+          error.textContent = '장면 이름을 입력해 주세요.';
+          return;
+        }
+        if (nextName !== sceneEditorState.originalName && getNames('scene').includes(nextName)) {
+          error.textContent = '이미 사용 중인 장면 이름이에요.';
+          return;
+        }
+
+        const actions = {};
+        root.querySelectorAll('[data-scene-device]').forEach((row) => {
+          const action = row.querySelector('[data-scene-action-choice]').value;
+          const config = { action };
+          if (action === 'on' && row.dataset.sceneDeviceKind === 'aircon') {
+            config.mode = row.querySelector('[data-scene-mode]').value;
+            config.temperature = Number(row.querySelector('[data-scene-temperature]').value);
+            config.fan = row.querySelector('[data-scene-fan]').value;
+          }
+          if (action === 'on' && row.querySelector('[data-scene-brightness]')) config.brightness = Number(row.querySelector('[data-scene-brightness]').value);
+          actions[row.dataset.sceneDevice] = config;
+        });
+
+        const card = [...root.querySelectorAll('[data-scene-card]')].find((item) => item.dataset.name === sceneEditorState.originalName);
+        if (nextName !== sceneEditorState.originalName) {
+          sceneConfigs.delete(sceneEditorState.originalName);
+          card.dataset.name = nextName;
+          card.querySelector('span').textContent = nextName;
+        }
+        replaceElementIcon(card, sceneEditorState.icon);
+        sceneConfigs.set(nextName, { icon: sceneEditorState.icon, actions });
+        updateSceneCardSummary(card);
+        updateCounts();
+        announcer.textContent = nextName + ' 장면 저장 완료';
+        returnToSceneManager();
+      });
+
+      const returnToRoomManager = () => {
+        roomEditor.close();
+        renderManagerList('room');
+        root.querySelector('[data-manager="room"]').showModal();
+      };
+
+      const openRoomEditor = (name) => {
+        const manager = root.querySelector('[data-manager="room"]');
+        if (manager.open) manager.close();
+        const tab = [...root.querySelectorAll('[data-room-tab]:not([data-system-room])')]
+          .find((item) => item.textContent.trim() === name);
+        roomEditorState.originalName = name;
+        roomEditorState.icon = tab?.dataset.icon || 'sofa';
+        root.querySelector('[data-room-editor-name]').value = name;
+        root.querySelector('[data-room-editor-error]').textContent = '';
+        renderIconPicker(
+          root.querySelector('[data-room-editor-icon-picker]'),
+          roomEditorState.icon,
+          (icon) => { roomEditorState.icon = icon; }
+        );
+        roomEditor.showModal();
+      };
+
+      root.querySelector('[data-close-room-editor]').addEventListener('click', returnToRoomManager);
+
+      root.querySelector('[data-save-room-editor]').addEventListener('click', () => {
+        const nextName = root.querySelector('[data-room-editor-name]').value.trim();
+        const error = root.querySelector('[data-room-editor-error]');
+        if (!nextName || nextName === '전체') {
+          error.textContent = nextName ? '전체는 기본 공간 이름이라 사용할 수 없어요.' : '공간 이름을 입력해 주세요.';
+          return;
+        }
+        if (nextName !== roomEditorState.originalName && getNames('room').includes(nextName)) {
+          error.textContent = '이미 사용 중인 공간 이름이에요.';
+          return;
+        }
+        const tab = [...root.querySelectorAll('[data-room-tab]:not([data-system-room])')]
+          .find((item) => item.textContent.trim() === roomEditorState.originalName);
+        if (!tab) {
+          error.textContent = '공간을 찾지 못했어요.';
+          return;
+        }
+        if (nextName !== roomEditorState.originalName) {
+          tab.querySelector('span').textContent = nextName;
+          root.querySelectorAll('.device-grid .device-tile').forEach((tile) => {
+            if (tile.dataset.room === roomEditorState.originalName) tile.dataset.room = nextName;
+          });
+          if (currentInventoryRoom === roomEditorState.originalName) currentInventoryRoom = nextName;
+        }
+        replaceElementIcon(tab, roomEditorState.icon);
+        updateCounts();
+        announcer.textContent = nextName + ' 공간 저장 완료';
+        returnToRoomManager();
+      });
+
+      const renderManagerList = (kind) => {
+        const list = root.querySelector(`[data-manager-list="${kind}"]`);
+        list.replaceChildren();
+        getNames(kind).forEach((name) => {
+          const row = document.createElement('div');
+          row.className = 'manager-item';
+          const label = document.createElement('span');
+          label.className = 'manager-label';
+          const managedElement = kind === 'scene'
+            ? [...root.querySelectorAll('[data-scene-card]')].find((item) => item.dataset.name === name)
+            : [...root.querySelectorAll('[data-room-tab]:not([data-system-room])')].find((item) => item.textContent.trim() === name);
+          label.append(createIconNode(managedElement?.dataset.icon || (kind === 'scene' ? 'sparkles' : 'sofa')), document.createTextNode(name));
+          const actions = document.createElement('div');
+          actions.className = 'manager-actions';
+          const edit = document.createElement('button');
+          edit.type = 'button';
+          edit.className = 'manager-edit';
+          edit.textContent = '설정';
+          edit.setAttribute('aria-label', name + ' 설정');
+          edit.addEventListener('click', () => kind === 'scene' ? openSceneEditor(name) : openRoomEditor(name));
+          actions.append(edit);
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'manager-remove';
+          remove.textContent = '삭제';
+          remove.setAttribute('aria-label', name + ' 삭제');
+          remove.addEventListener('click', () => {
+            if (kind === 'scene') {
+              const target = [...root.querySelectorAll('[data-scene-card]')].find((item) => item.dataset.name === name);
+              target?.remove();
+              sceneConfigs.delete(name);
+            } else {
+              const target = [...root.querySelectorAll('[data-room-tab]:not([data-system-room])')].find((item) => item.textContent.trim() === name);
+              const wasSelected = target?.getAttribute('aria-pressed') === 'true';
+              target?.remove();
+              if (wasSelected) {
+                root.querySelector('[data-system-room]')?.setAttribute('aria-pressed', 'true');
+                applyRoomFilter('전체');
+              }
+            }
+            updateCounts();
+            renderManagerList(kind);
+            announcer.textContent = name + ' 삭제';
+          });
+          actions.append(remove);
+          row.append(label, actions);
+          list.append(row);
+        });
+        refreshIcons();
+      };
+
+      root.querySelectorAll('[data-scene-card]').forEach(attachSceneBehavior);
+      root.querySelectorAll('[data-room-tab]').forEach(attachRoomBehavior);
+
+      root.querySelectorAll('[data-open-manager]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const kind = button.dataset.openManager;
+          const dialog = root.querySelector(`[data-manager="${kind}"]`);
+          root.querySelector(`[data-manager-error="${kind}"]`).textContent = '';
+          renderIconPicker(
+            root.querySelector(`[data-manager-icon-picker="${kind}"]`),
+            managerDraftIcons[kind],
+            (icon) => { managerDraftIcons[kind] = icon; }
+          );
+          renderManagerList(kind);
+          dialog.showModal();
+        });
+      });
+
+      root.querySelectorAll('[data-close-manager]').forEach((button) => {
+        button.addEventListener('click', () => button.closest('dialog').close());
+      });
+
+      root.querySelector('[data-go-devices]').addEventListener('click', showDevicesView);
+
+      const homeNameDialog = root.querySelector('[data-home-name-dialog]');
+      root.querySelector('[data-edit-home-name]').addEventListener('click', () => {
+        root.querySelector('[data-home-name-input]').value = root.querySelector('[data-home-title]').textContent.trim();
+        root.querySelector('[data-home-name-error]').textContent = '';
+        homeNameDialog.showModal();
+      });
+
+      root.querySelector('[data-close-home-name]').addEventListener('click', () => homeNameDialog.close());
+
+      root.querySelector('[data-save-home-name]').addEventListener('click', () => {
+        const nextName = root.querySelector('[data-home-name-input]').value.trim();
+        if (!nextName) {
+          root.querySelector('[data-home-name-error]').textContent = '집 이름을 입력해 주세요.';
+          return;
+        }
+        root.querySelector('[data-home-title]').textContent = nextName;
+        root.querySelector('[data-more-home-name]').textContent = nextName;
+        homeNameDialog.close();
+        announcer.textContent = '집 이름이 ' + nextName + '(으)로 변경됨';
+      });
+
+      root.querySelector('[data-refresh-system]').addEventListener('click', async () => {
+        const lastCheck = root.querySelector('[data-system-last-check]');
+        lastCheck.textContent = '확인 중…';
+        try {
+          await apiCall('/health');
+          lastCheck.textContent = '방금 확인';
+          announcer.textContent = '연결 상태 확인 완료';
+          setApiStatus(transmitterInfo.hardware_output === false ? 'Mock IR 연결 · 실제 송신 없음' : 'IR 송신기 연결됨');
+        } catch (error) {
+          lastCheck.textContent = '확인 실패';
+          setApiStatus(error.message, 'error');
+        }
+      });
+
+      const addManagerItem = (kind, form) => {
+        const error = root.querySelector(`[data-manager-error="${kind}"]`);
+        try {
+          const input = form.querySelector('input[name="name"]');
+          const name = input.value.trim();
+          if (!name || getNames(kind).includes(name) || (kind === 'room' && name === '전체')) {
+            error.textContent = !name ? '이름을 입력해 주세요.' : '이미 사용 중인 이름이에요.';
+            return;
+          }
+          error.textContent = '';
+          if (kind === 'scene') {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.sceneCard = '';
+            button.dataset.name = name;
+            button.dataset.icon = managerDraftIcons.scene;
+            button.setAttribute('aria-pressed', 'false');
+            button.append(createIconNode(managerDraftIcons.scene));
+            const sceneName = document.createElement('span');
+            const sceneStatus = document.createElement('small');
+            sceneStatus.dataset.sceneStatus = '';
+            button.append(sceneName, sceneStatus);
+            button.querySelector('span').textContent = name;
+            sceneConfigs.set(name, { icon: managerDraftIcons.scene, actions: {} });
+            root.querySelector('.scene-list').append(button);
+            attachSceneBehavior(button);
+          } else {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.roomTab = '';
+            button.dataset.icon = managerDraftIcons.room;
+            button.setAttribute('aria-pressed', 'false');
+            const roomName = document.createElement('span');
+            roomName.textContent = name;
+            button.append(createIconNode(managerDraftIcons.room), roomName);
+            root.querySelector('.room-tabs').append(button);
+            attachRoomBehavior(button);
+          }
+          input.value = '';
+          updateCounts();
+          renderManagerList(kind);
+          refreshIcons();
+          announcer.textContent = name + ' 추가';
+        } catch (problem) {
+          error.textContent = '추가하지 못했어요. 다시 시도해 주세요.';
+          console.error(problem);
+        }
+      };
+
+      root.querySelectorAll('[data-manager-add]').forEach((button) => {
+        button.addEventListener('click', () => {
+          addManagerItem(button.dataset.managerAdd, button.closest('form'));
+        });
+      });
+
+      root.querySelectorAll('[data-manager-form]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          addManagerItem(form.dataset.managerForm, form);
+        });
+      });
+
+      root.querySelector('[data-close-aircon]').addEventListener('click', closeAirconDetail);
+
+      root.querySelector('[data-aircon-power]').addEventListener('click', () => {
+        handleAirconChange((state) => ({ power: !state.power }));
+      });
+
+      root.querySelector('[data-temp-down]').addEventListener('click', () => {
+        handleAirconChange((state) => ({ temperature: Math.max(17, state.temperature - 1) }));
+      });
+
+      root.querySelector('[data-temp-up]').addEventListener('click', () => {
+        handleAirconChange((state) => ({ temperature: Math.min(30, state.temperature + 1) }));
+      });
+
+      root.querySelectorAll('[data-aircon-mode] button').forEach((button) => {
+        button.addEventListener('click', () => {
+          handleAirconChange({ mode: button.textContent.trim() });
+        });
+      });
+
+      root.querySelectorAll('[data-aircon-fan] button').forEach((button) => {
+        button.addEventListener('click', () => {
+          handleAirconChange({ fan: button.textContent.trim() });
+        });
+      });
+
+      root.querySelectorAll('[data-aircon-feature]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const key = button.dataset.airconFeature;
+          const commandIds = { swing: 'swing_toggle', economy: 'economy', turbo: 'turbo', led: 'led_toggle' };
+          handleAirconChange((state) => ({ [key]: !state[key] }), { commandId: commandIds[key] });
+        });
+      });
+
+      const wizard = root.querySelector('[data-device-wizard]');
+      const wizardError = root.querySelector('[data-wizard-error]');
+      const wizardState = { step: 1, type: '', icon: 'box', connection: '', profileId: '', name: '', room: '' };
+
+      const populateDeviceRooms = () => {
+        const select = root.querySelector('[data-device-room]');
+        const previous = select.value;
+        select.replaceChildren();
+        getNames('room').forEach((name) => {
+          const option = document.createElement('option');
+          option.value = name;
+          option.textContent = name;
+          select.append(option);
+        });
+        if (getNames('room').includes(previous)) select.value = previous;
+      };
+
+      const populateProfileSelect = () => {
+        const select = root.querySelector('[data-device-profile]');
+        const previous = select.value || wizardState.profileId;
+        select.replaceChildren();
+        const matches = supportedProfiles.filter((profile) => profile.device_type === 'air_conditioner');
+        if (wizardState.type !== '에어컨' || wizardState.connection !== 'IR' || matches.length === 0) {
+          const option = document.createElement('option');
+          option.value = '';
+          option.textContent = wizardState.type === '에어컨' ? '지원 모델이 없어요' : '현재는 에어컨 IR만 연결할 수 있어요';
+          select.append(option);
+          return;
+        }
+        matches.forEach((profile) => {
+          const option = document.createElement('option');
+          option.value = profile.id;
+          option.textContent = profile.brand + ' · ' + profile.model;
+          select.append(option);
+        });
+        select.value = matches.some((profile) => profile.id === previous) ? previous : matches[0].id;
+        wizardState.profileId = select.value;
+      };
+
+      const renderWizard = () => {
+        root.querySelectorAll('[data-device-step]').forEach((section) => {
+          section.hidden = Number(section.dataset.deviceStep) !== wizardState.step;
+        });
+        root.querySelector('[data-wizard-progress-label]').textContent = wizardState.step + ' / 4';
+        root.querySelector('[data-wizard-progress-bar]').style.width = (wizardState.step * 25) + '%';
+        const back = root.querySelector('[data-wizard-back]');
+        const next = root.querySelector('[data-wizard-next]');
+        back.textContent = wizardState.step === 1 ? '취소' : '이전';
+        next.textContent = wizardState.step === 4 ? '등록' : '다음';
+        wizardError.textContent = '';
+        if (wizardState.step === 3) {
+          populateDeviceRooms();
+          populateProfileSelect();
+          renderIconPicker(
+            root.querySelector('[data-device-icon-picker]'),
+            wizardState.icon,
+            (icon) => { wizardState.icon = icon; }
+          );
+        }
+        if (wizardState.step === 4) {
+          root.querySelector('[data-review-type]').textContent = wizardState.type;
+          root.querySelector('[data-review-connection]').textContent = wizardState.connection;
+          const profile = supportedProfiles.find((item) => item.id === wizardState.profileId);
+          root.querySelector('[data-review-model]').textContent = profile ? profile.brand + ' ' + profile.model : '미지원';
+          root.querySelector('[data-review-name]').textContent = wizardState.name;
+          root.querySelector('[data-review-room]').textContent = wizardState.room;
+          root.querySelector('[data-review-icon]').textContent = iconLabel(wizardState.icon);
+        }
+      };
+
+      const resetWizard = () => {
+        Object.assign(wizardState, { step: 1, type: '', icon: 'box', connection: '', profileId: '', name: '', room: '' });
+        root.querySelectorAll('[data-device-type], [data-connection]').forEach((button) => button.setAttribute('aria-pressed', 'false'));
+        root.querySelector('[data-device-name]').value = '';
+        renderWizard();
+      };
+
+      root.querySelectorAll('[data-open-device-wizard]').forEach((button) => {
+        button.addEventListener('click', () => {
+          resetWizard();
+          wizard.showModal();
+        });
+      });
+
+      root.querySelectorAll('[data-device-type]').forEach((button) => {
+        button.addEventListener('click', () => {
+          root.querySelectorAll('[data-device-type]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+          wizardState.type = button.dataset.deviceType;
+          wizardState.icon = button.dataset.deviceIcon;
+          wizardError.textContent = '';
+        });
+      });
+
+      root.querySelectorAll('[data-connection]').forEach((button) => {
+        button.addEventListener('click', () => {
+          root.querySelectorAll('[data-connection]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+          wizardState.connection = button.dataset.connection;
+          wizardError.textContent = '';
+        });
+      });
+
+      root.querySelector('[data-device-profile]').addEventListener('change', (event) => {
+        wizardState.profileId = event.target.value;
+        wizardError.textContent = '';
+      });
+
+      root.querySelector('[data-wizard-back]').addEventListener('click', () => {
+        if (wizardState.step === 1) {
+          wizard.close();
+          return;
+        }
+        wizardState.step -= 1;
+        renderWizard();
+      });
+
+      root.querySelector('[data-wizard-next]').addEventListener('click', async () => {
+        if (wizardState.step === 1 && !wizardState.type) {
+          wizardError.textContent = '기기 종류를 선택해 주세요.';
+          return;
+        }
+        if (wizardState.step === 2 && !wizardState.connection) {
+          wizardError.textContent = '연결 방식을 선택해 주세요.';
+          return;
+        }
+        if (wizardState.step === 3) {
+          wizardState.profileId = root.querySelector('[data-device-profile]').value;
+          const name = root.querySelector('[data-device-name]').value.trim();
+          const room = root.querySelector('[data-device-room]').value;
+          const duplicate = [...root.querySelectorAll('.device-tile strong')].some((item) => item.textContent.trim() === name);
+          if (!wizardState.profileId || !name || !room || duplicate) {
+            wizardError.textContent = !wizardState.profileId ? '지원 모델을 선택하거나 새 모델 분석을 요청해 주세요.' : (!name ? '기기 이름을 입력해 주세요.' : (!room ? '먼저 공간을 추가해 주세요.' : '이미 사용 중인 기기 이름이에요.'));
+            return;
+          }
+          wizardState.name = name;
+          wizardState.room = room;
+        }
+        if (wizardState.step < 4) {
+          wizardState.step += 1;
+          renderWizard();
+          return;
+        }
+
+        const submitButton = root.querySelector('[data-wizard-next]');
+        submitButton.disabled = true;
+        wizardError.textContent = '등록 중…';
+        try {
+          const record = await apiCall('/api/v1/devices', {
+            method: 'POST',
+            body: JSON.stringify({ name: wizardState.name, room: wizardState.room, profile_id: wizardState.profileId, icon: wizardState.icon })
+          });
+          const tile = upsertAirconTile(record);
+          refreshIcons();
+          activeDeviceId = record.id;
+          activeAirconTile = tile;
+          airconState = airconStates.get(record.id);
+          updateAirconView();
+          root.querySelector('[data-device-count]').textContent = String(airconStates.size);
+          const roomTab = [...root.querySelectorAll('[data-room-tab]')].find((item) => item.textContent.trim() === wizardState.room);
+          if (roomTab) {
+            root.querySelectorAll('[data-room-tab]').forEach((item) => item.setAttribute('aria-pressed', String(item === roomTab)));
+            applyRoomFilter(wizardState.room);
+          }
+          renderDeviceRoomFilters();
+          renderDevicesView(wizardState.room);
+          updateMoreCounts();
+          wizard.close();
+          setApiStatus('Carrier 에어컨 등록 완료');
+          announcer.textContent = wizardState.name + ' 기기 등록 완료';
+        } catch (error) {
+          wizardError.textContent = error.message;
+          setApiStatus(error.message, 'error');
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+
+      const modelRequestDialog = root.querySelector('[data-model-request-dialog]');
+      const modelRequestForm = root.querySelector('[data-model-request-form]');
+      const modelRequestError = root.querySelector('[data-model-request-error]');
+
+      root.querySelector('[data-open-model-request]').addEventListener('click', () => {
+        wizard.close();
+        modelRequestForm.reset();
+        modelRequestError.textContent = '';
+        modelRequestDialog.showModal();
+      });
+
+      root.querySelector('[data-close-model-request]').addEventListener('click', () => {
+        modelRequestDialog.close();
+        wizard.showModal();
+      });
+
+      root.querySelector('[data-submit-model-request]').addEventListener('click', async () => {
+        if (!modelRequestForm.reportValidity()) return;
+        const submitButton = root.querySelector('[data-submit-model-request]');
+        submitButton.disabled = true;
+        modelRequestError.textContent = '사진과 모델 정보를 저장 중…';
+        try {
+          const formData = new FormData(modelRequestForm);
+          formData.append('device_type', 'air_conditioner');
+          const result = await apiCall('/api/v1/device-requests', { method: 'POST', body: formData });
+          modelRequestDialog.close();
+          setApiStatus('새 모델 요청 저장 완료 · 분석 대기');
+          announcer.textContent = result.brand + ' ' + result.model + ' 모델 요청 저장 완료';
+        } catch (error) {
+          modelRequestError.textContent = error.message;
+          setApiStatus(error.message, 'error');
+        } finally {
+          submitButton.disabled = false;
+        }
+      });
+
+      const bootstrapApi = async () => {
+        try {
+          const [profiles, transmitter, registered] = await Promise.all([
+            apiCall('/api/v1/device-profiles'),
+            apiCall('/api/v1/ir/transmitter'),
+            apiCall('/api/v1/devices')
+          ]);
+          supportedProfiles = profiles.items;
+          transmitterInfo = transmitter;
+          let devices = registered.items;
+          let primary = devices.find((device) => device.profile_id === PROFILE_ID);
+          if (!primary) {
+            primary = await apiCall('/api/v1/devices', {
+              method: 'POST',
+              body: JSON.stringify({ name: '에어컨', room: '거실', profile_id: PROFILE_ID, icon: 'snowflake' })
+            });
+            devices = [...devices, primary];
+          }
+          activeDeviceId = primary.id;
+          restoreRegisteredAircons(devices);
+          root.querySelector('[data-device-count]').textContent = String(devices.length);
+          populateProfileSelect();
+          const isMock = transmitterInfo.hardware_output === false;
+          setApiStatus(isMock ? 'Mock IR 연결 · 실제 송신 없음' : 'IR 송신기 연결됨');
+        } catch (error) {
+          setApiStatus('API 연결 실패 · ' + error.message, 'error');
+        }
+      };
+
+      root.querySelectorAll('.device-grid .device-tile').forEach(attachDeviceBehavior);
+      renderDeviceRoomFilters();
+      renderDevicesView('전체');
+      updateMoreCounts();
+      await bootstrapApi();
+    })();
+  </script>
+<script src="/static/sensors.js?v=20260912-1"></script>
+<script src="/static/automations.js?v=20260908-1"></script>
+</div>
+</body>
+</html>

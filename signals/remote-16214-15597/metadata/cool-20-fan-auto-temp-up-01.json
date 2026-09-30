@@ -1,0 +1,32 @@
+{
+  "capture_id": "cool-20-fan-auto-temp-up-01",
+  "captured_at": "2026-08-29T21:20:17+09:00",
+  "timestamp_note": "Timestamp recorded when the user confirmed the display; the IR capture completed shortly before.",
+  "remote_id": "remote-16214-15597",
+  "button": "temperature_up",
+  "display_state_before": {"mode": "cool", "temperature_c": 19, "fan": "no_arrow_auto_candidate"},
+  "display_state_after": {"mode": "cool", "temperature_c": 20, "fan": "no_arrow_auto_candidate", "confirmed_by_user": true},
+  "receiver": {"module": "HW-477 V0.2", "gpio_bcm": 17, "physical_pin": 11, "device": "/dev/lirc0"},
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 178973,
+    "median_data_pulse_us": 564,
+    "median_short_space_us": 515,
+    "median_long_space_us": 1610,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": ["b2", "4d", "bf", "40", "20", "df"],
+    "matches_gray_code_prediction": true,
+    "temperature_encoding_confirmed": {
+      "kind": "gray_code",
+      "offset_expression": "temperature_c - 17",
+      "encoded_in": "high_nibble_of_byte_5",
+      "complement_in_byte_6": true
+    }
+  },
+  "raw_compact_file": "../raw/cool-20-fan-auto-temp-up-01.compact",
+  "send_format_file": "../raw/cool-20-fan-auto-temp-up-01.ir"
+}

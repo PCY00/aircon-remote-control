@@ -1,0 +1,90 @@
+# Raspberry Pi reboot: USB host and Zigbee coordinator recovery
+# 2026-09-08 KST. User approved one normal reboot and temperature-only testing.
+# Code/config/firmware/network keys/registered devices were not replaced or deleted.
+# Authentication input and boot IDs are excluded from the public record.
+
+Pi$ date --iso-8601=seconds
+2026-09-08T08:43:36+09:00
+Pi$ sudo reboot
+# Password entered only at the sudo prompt; not saved.
+Connection to [REDACTED_HOST] closed.
+
+# Read-only SSH reconnect check; compared boot ID with the pre-reboot value:
+REBOOT_OBSERVATION_STARTED_KST=2026-09-08T08:44:15.7547706+09:00
+SSH temporarily unavailable
+BOOT_ID_CHANGED=True
+SSH_RETURNED_AT=2026-09-08T08:44:22+09:00
+BOOT_START=2026-09-08 08:43:54
+REBOOT_VERIFIED=True
+
+# Pi: date; lsusb; ls -l /dev/ttyUSB*; vcgencmd get_throttled
+# systemctl --user is-active aircon-controller; systemctl is-active aircon-kiosk
+# docker inspect status/StartedAt/RestartCount for both containers
+# docker logs since the CURRENT Zigbee2MQTT StartedAt, filtered for startup/errors/temperature
+# journalctl -k -b | grep -E 'xHCI host|HC died|under-voltage|Under-voltage'
+# GET sensor status, temperature state, device registry, and join status
+2026-09-08T08:45:03+09:00
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 003: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+crw-rw---- 1 root dialout 188, 0 Sep  8 08:44 /dev/ttyUSB0
+throttled=0x0
+active
+active
+/aircon-mosquitto running StartedAt=2026-09-07T23:44:19.728154912Z RestartCount=0
+/aircon-zigbee2mqtt running StartedAt=2026-09-07T23:44:19.736327208Z RestartCount=0
+2026-09-07T23:44:21.551622263Z Starting Zigbee2MQTT without watchdog.
+2026-09-07T23:44:28.456598684Z [2026-09-08 08:44:28] info: 	z2m: Starting Zigbee2MQTT version 2.14.1 (commit #3c3d8c1a71cabb31f1b97ad268681dd3f747ce19
+2026-09-07T23:44:28.461117944Z [2026-09-08 08:44:28] info: 	z2m: Starting zigbee-herdsman (10.9.2)
+2026-09-07T23:45:00.347009480Z [2026-09-08 08:45:00] info: 	z2m: zigbee-herdsman started (resumed)
+2026-09-07T23:45:00.351214091Z [2026-09-08 08:45:00] info: 	z2m: Coordinator firmware version: '{"meta":{"maintrel":1,"majorrel":2,"minorrel":7,"product":1,"revision":20240710,"transportrev":2},"type":"ZStack3x0"}'
+2026-09-07T23:45:00.353473221Z [2026-09-08 08:45:00] info: 	z2m: sensor_temperature_01 ([REDACTED_IEEE]): TH01 - Zbeacon Temperature and humidity sensor (EndDevice)
+2026-09-07T23:45:00.622109739Z [2026-09-08 08:45:00] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"online"}'
+2026-09-07T23:45:00.790849832Z [2026-09-08 08:45:00] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/sensor_temperature_01/availability', payload '{"state":"online"}'
+2026-09-07T23:45:00.908787554Z [2026-09-08 08:45:00] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/sensor_temperature_01', payload '{"battery":100,"device":{"applicationVersion":147,"friendlyName":"sensor_temperature_01","hardwareVersion":0,"ieeeAddr":"[REDACTED_IEEE]","manufacturerID":4742,"manufacturerName":"Zbeacon","model":"TH01","networkAddress":[REDACTED],"powerSource":"Battery","softwareBuildID":"0122052017","stackVersion":2,"type":"EndDevice","zclVersion":3},"humidity":38.92,"last_seen":"2026-09-07T13:52:29.393Z","temperature":24.86,"voltage":3000}'
+2026-09-07T23:45:00.911697406Z [2026-09-08 08:45:00] info: 	z2m: Zigbee2MQTT started!
+API_CHECKED_AT_KST=2026-09-08T08:45:03.7185183+09:00
+{"enabled":true,"running":true,"connected":true,"last_connected_at":"2026-09-08T08:44:21.16356+09:00","last_disconnected_at":"2026-09-08T08:44:20.107489+09:00","last_message_at":"2026-09-08T08:45:00.956+09:00","last_error":null,"stored_sensor_count":2}
+{"state":{"temperature_c":24.86,"humidity_percent":38.92,"battery_percent":100,"voltage_mv":3000,"linkquality":138},"last_reported_at":"2026-09-07T22:52:29.393+09:00","last_received_at":"2026-09-08T08:45:00.915403+09:00","source_timestamp":"2026-09-07T22:52:29.393+09:00"}
+[{"friendly_name":"sensor_door_01","model":"TS0203","supported":true,"interview_state":"SUCCESSFUL","interviewing":false},{"friendly_name":"sensor_temperature_01","model":"TH01","supported":true,"interview_state":"SUCCESSFUL","interviewing":false}]
+{"supported":true,"permit_join":false,"permit_join_end":null,"remaining_seconds":0,"max_duration_seconds":120}
+
+# Explicitly close join after recovery: DELETE /api/v1/zigbee/join
+# Then GET join state and inspect actual bridge/response/permit_join log:
+JOIN_CLOSE_STARTED_KST=2026-09-08T08:45:24.9983177+09:00
+{"supported":true,"permit_join":false,"permit_join_end":null,"remaining_seconds":0,"max_duration_seconds":120}
+{"supported":true,"permit_join":false,"permit_join_end":null,"remaining_seconds":0,"max_duration_seconds":120}
+2026-09-07T23:45:25.823990294Z [2026-09-08 08:45:25] info: 	z2m: Zigbee: disabling joining new devices.
+2026-09-07T23:45:26.056098977Z [2026-09-08 08:45:26] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/response/permit_join', payload '{"data":{"time":0},"status":"ok","transaction":"[REDACTED]"}'
+
+# Result: new boot verified; USB and gateway startup recovered.
+# Coordinator acknowledged join closure with status=ok, time=0.
+# Both registered sensors retained. No door test requested.
+# Temperature publish at startup still carried YESTERDAY's last_seen.
+# Post-reboot temperature observation continues below.
+# Root cause of the earlier controller hang remains undetermined.
+
+# Temperature-only observation after short-button guidance (user action not confirmed):
+# GET temperature state every 2 seconds for 90 seconds; fresh last_reported_at required.
+TEMPERATURE_WATCH_STARTED_KST=2026-09-08T08:45:47.0517963+09:00
+OBSERVED_AT_KST=2026-09-08T08:45:47.1337428+09:00
+{"state":{"temperature_c":24.86,"humidity_percent":38.92,"battery_percent":100,"voltage_mv":3000,"linkquality":138},"last_reported_at":"2026-09-07T22:52:29.393+09:00","last_received_at":"2026-09-08T08:45:00.915403+09:00","source_timestamp":"2026-09-07T22:52:29.393+09:00"}
+FRESH_TEMPERATURE_REPORT_OBSERVED=False
+TEMPERATURE_WATCH_ENDED_KST=2026-09-08T08:47:18.6890546+09:00
+
+# Final read-only GET /health, GET temperature state, Docker status, current-boot xHCI log check:
+FINAL_CHECKED_AT_KST=2026-09-08T08:48:02.6938399+09:00
+HEALTH_HTTP_STATUS=200
+{"state":{"temperature_c":25.08,"humidity_percent":38.92,"battery_percent":100,"voltage_mv":3000,"linkquality":171},"last_reported_at":"2026-09-08T08:47:26.291+09:00","last_received_at":"2026-09-08T08:47:26.320427+09:00","source_timestamp":"2026-09-08T08:47:26.291+09:00"}
+/aircon-mosquitto running RestartCount=0
+/aircon-zigbee2mqtt running RestartCount=0
+# The 90-second watch ended before the new message. The final check found it.
+# User button manipulation was not confirmed; do not assume what triggered the report.
+
+Pi$ docker logs --since '2026-09-07T23:45:27Z' --timestamps aircon-zigbee2mqtt 2>&1 | grep -F sensor_temperature_01
+2026-09-07T23:47:26.314205329Z [2026-09-08 08:47:26] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/sensor_temperature_01', payload '{"battery":100,"device":{"applicationVersion":147,"friendlyName":"sensor_temperature_01","hardwareVersion":0,"ieeeAddr":"[REDACTED_IEEE]","manufacturerID":4742,"manufacturerName":"Zbeacon","model":"TH01","networkAddress":[REDACTED],"powerSource":"Battery","softwareBuildID":"0122052017","stackVersion":2,"type":"EndDevice","zclVersion":3},"humidity":38.92,"last_seen":"2026-09-07T23:47:26.291Z","linkquality":171,"temperature":25.08,"voltage":3000}'
+
+# Verified: new TH01 report at 08:47:26 KST, temperature=25.08 C, humidity=38.92%.
+# Same fresh last_seen appears in MQTT and API; this is NOT startup cache replay.
+# Door sensor live test remains deferred. Root cause and long-term stability are unresolved.

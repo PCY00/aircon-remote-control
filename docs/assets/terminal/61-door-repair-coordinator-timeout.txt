@@ -1,0 +1,46 @@
+# Approved door re-pair attempt: coordinator command timeouts
+# 2026-09-08 KST. One join-open attempt plus close cleanup.
+# No code transfer, service restart, registration deletion, or history deletion.
+# User was told NOT to hold RESET because opening join did not succeed.
+
+# POST /api/v1/zigbee/join with {"duration_seconds":120}
+{"last_reported_at":"2026-09-07T20:22:39.473+09:00","last_received_at":"2026-09-07T21:47:22.161361+09:00","last_changed_at":"2026-09-07T20:15:53.743+09:00"}
+REGISTERED_BEFORE=2
+[{"friendly_name":"sensor_door_01","model":"TS0203","supported":true,"interview_state":"SUCCESSFUL","interviewing":false},{"friendly_name":"sensor_temperature_01","model":"TH01","supported":true,"interview_state":"SUCCESSFUL","interviewing":false}]
+OPERATION_ERROR_TYPE=HttpResponseException
+
+# finally: DELETE /api/v1/zigbee/join, then GET /api/v1/zigbee/devices
+JOIN_CLOSE_ERROR_TYPE=HttpResponseException
+REGISTERED_AFTER=2
+[{"friendly_name":"sensor_door_01","model":"TS0203","supported":true,"interview_state":"SUCCESSFUL","interviewing":false},{"friendly_name":"sensor_temperature_01","model":"TH01","supported":true,"interview_state":"SUCCESSFUL","interviewing":false}]
+
+# GET /api/v1/zigbee/join and GET /api/v1/sensors/status
+# Pi commands: date --iso-8601=seconds; lsusb; ls -l /dev/ttyUSB*
+# docker inspect --format "{{.Name}} {{.State.Status}} RestartCount={{.RestartCount}} Devices={{json .HostConfig.Devices}}" aircon-zigbee2mqtt
+# docker logs --since 5m --timestamps aircon-zigbee2mqtt 2>&1 | grep -E "permit_join|error|warn|joined|interview|sensor_door_01"
+# Exact output excerpts, identifiers redacted:
+CHECKED_AT_KST=2026-09-08T08:32:51.4312692+09:00
+{"supported":true,"permit_join":false,"permit_join_end":null,"remaining_seconds":0,"max_duration_seconds":120}
+{"enabled":true,"running":true,"connected":true,"last_connected_at":"2026-09-08T07:42:15.988701+09:00","last_disconnected_at":null,"last_message_at":"2026-09-08T08:32:24.337131+09:00","last_error":null,"stored_sensor_count":2}
+2026-09-08T08:32:52+09:00
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 004: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+Bus 001 Device 010: ID 27c0:0859 Cadwell Laboratories, Inc. TouchScreen
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+crw-rw---- 1 root dialout 188, 0 Sep  7 21:46 /dev/ttyUSB0
+/aircon-zigbee2mqtt running RestartCount=0 Devices=[{"PathOnHost":"/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_[REDACTED]","PathInContainer":"/dev/ttyUSB0","CgroupPermissions":"rwm"}]
+2026-09-07T23:32:18.163521583Z [2026-09-08 08:32:18] error: 	z2m: Request 'zigbee2mqtt/bridge/request/permit_join' failed with error: 'SRSP - ZDO - mgmtPermitJoinReq after 6000ms'
+2026-09-07T23:32:18.244379488Z [2026-09-08 08:32:18] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/response/permit_join', payload '{"data":{},"error":"SRSP - ZDO - mgmtPermitJoinReq after 6000ms","status":"error","transaction":"[REDACTED]"}'
+2026-09-07T23:32:24.315246112Z [2026-09-08 08:32:24] error: 	z2m: Request 'zigbee2mqtt/bridge/request/permit_join' failed with error: 'SRSP - AF - dataRequestExt after 6000ms'
+2026-09-07T23:32:24.334711340Z [2026-09-08 08:32:24] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/response/permit_join', payload '{"data":{},"error":"SRSP - AF - dataRequestExt after 6000ms","status":"error","transaction":"[REDACTED]"}'
+
+Pi$ cd /home/air/aircon-controller && bash scripts/zigbee_join_control.sh status
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+# bridge/info and API report join=false, but coordinator did not ACK close.
+# Cached software status is not independent verification of the radio state.
+# USB enumeration does not establish that coordinator serial commands work.
+# Root cause unresolved. Propose Zigbee2MQTT-only restart under new approval.
+

@@ -1,0 +1,76 @@
+# Rename only when exactly one matching model exists
+$ ./scripts/rename_zigbee_devices.sh
+RENAME_TH01=ok
+RENAME_TS0203=ok
+VERIFY_TH01_FRIENDLY_NAME=sensor_temperature_01
+VERIFY_TS0203_FRIENDLY_NAME=sensor_door_01
+ZIGBEE_DEVICE_RENAME_STATUS=success
+
+# Create a consistent runtime backup; archive contains secrets and is not published
+$ ./scripts/backup_zigbee_stack.sh
+Container aircon-zigbee2mqtt  Stopping
+Container aircon-zigbee2mqtt  Stopped
+Container aircon-mosquitto     Stopping
+Container aircon-mosquitto     Stopped
+Container aircon-mosquitto     Starting
+Container aircon-mosquitto     Started
+Container aircon-zigbee2mqtt   Starting
+Container aircon-zigbee2mqtt   Started
+[REDACTED_SHA256]  /home/air/aircon-controller/runtime/zigbee/backups/zigbee-stack-20260906T235356Z.tar.gz
+BACKUP_STATUS=success
+BACKUP_CONTAINS_SECRETS=true
+
+$ ./scripts/check_zigbee_stack.sh
+# Sanitized selected output; identifiers, ANSI codes, and command columns removed
+[containers]
+aircon-mosquitto     eclipse-mosquitto:2.1.2-alpine      Up   127.0.0.1:1883->1883/tcp
+aircon-zigbee2mqtt   ghcr.io/koenkk/zigbee2mqtt:2.14.1   Up   127.0.0.1:8080->8080/tcp
+
+[zigbee2mqtt current-start milestones]
+[2026-09-07 08:54:11] zh:zstack:znp: Serialport opened
+[2026-09-07 08:54:22] z2m: Coordinator firmware revision: 20240710
+[2026-09-07 08:54:22] z2m: Connected to MQTT server
+[2026-09-07 08:54:22] z2m: MQTT bridge state: online
+[2026-09-07 08:54:23] z2m: Zigbee2MQTT started!
+
+[mqtt bridge state]
+{"state":"online"}
+
+[host listeners]
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+
+[existing application]
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+
+# Read-only verification after the restart
+$ ./scripts/zigbee_device_summary.sh
+DEVICE_COUNT=2
+DEVICE_1_TYPE=EndDevice
+DEVICE_1_MODEL=TH01
+DEVICE_1_VENDOR=Zbeacon
+DEVICE_1_FRIENDLY_NAME=sensor_temperature_01
+DEVICE_1_INTERVIEW_COMPLETED=true
+DEVICE_1_SUPPORTED=true
+DEVICE_2_TYPE=EndDevice
+DEVICE_2_MODEL=TS0203
+DEVICE_2_VENDOR=Tuya
+DEVICE_2_FRIENDLY_NAME=sensor_door_01
+DEVICE_2_INTERVIEW_COMPLETED=true
+DEVICE_2_SUPPORTED=true
+
+# First metadata command used GNU stat %n as a newline by mistake
+$ stat -c "BACKUP_FILE=%n%nBACKUP_SIZE_BYTES=%s%nBACKUP_MODE=%a%nBACKUP_OWNER=%U:%G" [BACKUP_PATH]
+BACKUP_FILE=[BACKUP_PATH][BACKUP_PATH]BACKUP_SIZE_BYTES=41449[BACKUP_PATH]
+BACKUP_MODE=600[BACKUP_PATH]BACKUP_OWNER=air:air
+
+# Corrected read-only metadata verification
+$ printf "BACKUP_FILE=%s\n" "$(basename "$latest")"
+$ stat -c "BACKUP_SIZE_BYTES=%s" "$latest"
+$ stat -c "BACKUP_MODE=%a" "$latest"
+$ stat -c "BACKUP_OWNER=%U:%G" "$latest"
+BACKUP_FILE=zigbee-stack-20260906T235356Z.tar.gz
+BACKUP_SIZE_BYTES=41449
+BACKUP_MODE=600
+BACKUP_OWNER=air:air

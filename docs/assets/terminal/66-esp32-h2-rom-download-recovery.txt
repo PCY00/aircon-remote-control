@@ -1,0 +1,29 @@
+ESP32-H2 SuperMini ROM download recovery
+Date: 2026-09-11 KST
+
+Symptom
+  - With the external IR circuit disconnected, the board repeatedly appeared
+    and disappeared as a Windows COM port.
+  - Another board was stable with the same PC USB setup.
+
+Recovery procedure
+  1. Disconnect USB.
+  2. Hold BOOT.
+  3. Connect USB while continuing to hold BOOT.
+  4. Release BOOT after about two seconds.
+
+Result
+  COM6=present and stable
+
+Chip communication check
+  > python -m esptool --port COM6 chip_id
+  Detecting chip type... ESP32-H2
+  Chip is ESP32-H2 (revision v1.2)
+  Features: BLE, IEEE802.15.4
+  Crystal is 32MHz
+  MAC: [REDACTED]
+
+Conclusion at this point
+  The USB interface and ROM bootloader are operational. A successful flash and
+  stable boot are still required before attributing the original loop to the
+  previous flash image.

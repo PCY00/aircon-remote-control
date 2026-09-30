@@ -1,0 +1,31 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee Step 1 - Docker host installation verification
+# Private addresses, device serials, and credentials are omitted.
+
+$ docker --version
+Docker version 26.1.5+dfsg1, build a72d7cd
+
+$ docker compose version
+Docker Compose version 2.26.1-4
+
+$ systemctl is-enabled docker.service
+enabled
+
+$ systemctl is-active docker.service
+active
+
+$ id
+uid=1000(air) gid=1000(air) groups=air,adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,docker,gpio,i2c,spi,render,input,lpadmin
+
+$ docker info >/dev/null && echo DOCKER_ACCESS=ok
+DOCKER_ACCESS=ok
+
+$ systemctl --user is-active aircon-controller
+active
+
+$ curl --fail --silent '<TAILSCALE-IP>:8001/health' >/dev/null && echo AIRCON_8001_HEALTH=ok
+AIRCON_8001_HEALTH=ok
+
+$ ss '<ports 1883 and 8080 before stack startup>'
+MQTT_1883=0
+Z2M_8080=0

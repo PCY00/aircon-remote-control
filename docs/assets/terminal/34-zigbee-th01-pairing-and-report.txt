@@ -1,0 +1,70 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee/MQTT Step 2 - Z3-P3-L / Zbeacon TH01 pairing and sensor report
+# IEEE address, network address, credentials, private addresses, and client IDs are omitted.
+
+PS> scp scripts/zigbee_join_control.sh air@AC:/home/air/aircon-controller/scripts/zigbee_join_control.sh
+$ chmod 755 scripts/zigbee_join_control.sh
+$ bash -n scripts/zigbee_join_control.sh
+LOCAL_SHA256=d491898207d0c2c0bdefaec9da60c5388e6c7e82660d1fd218bb652abcc5c395
+REMOTE_SHA256=d491898207d0c2c0bdefaec9da60c5388e6c7e82660d1fd218bb652abcc5c395
+DEPLOYED_FILE_COUNT=1
+SERVICE_RESTARTED=false
+
+$ ./scripts/zigbee_join_control.sh open 180
+PERMIT_JOIN_REQUEST=open
+PERMIT_JOIN_SECONDS=180
+PERMIT_JOIN_TARGET=coordinator
+PERMIT_JOIN=true
+
+# User held the Z3-P3-L RESET button for 5 seconds and released it.
+Device '[REDACTED_IEEE]' joined
+Starting interview of '[REDACTED_IEEE]'
+Successfully interviewed '[REDACTED_IEEE]', device has successfully been paired
+Device '[REDACTED_IEEE]' is supported, identified as:
+Zbeacon Temperature and humidity sensor (TH01)
+Successfully configured '[REDACTED_IEEE]' (definition v0.0.0)
+
+[exposes]
+battery       %
+temperature   °C
+humidity      %
+voltage       mV
+linkquality   lqi
+
+[first complete MQTT state]
+MODEL=TH01
+VENDOR=Zbeacon
+TYPE=EndDevice
+BATTERY=100
+VOLTAGE_MV=3000
+TEMPERATURE_C=25.59
+HUMIDITY_RH=39.73
+
+$ ./scripts/zigbee_join_control.sh close
+PERMIT_JOIN_REQUEST=closed
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+Zigbee: disabling joining new devices.
+
+# User warmed the sensor by hand and briefly pressed RESET to wake it.
+[updated MQTT state]
+BATTERY=100
+VOLTAGE_MV=3000
+TEMPERATURE_C=25.77
+HUMIDITY_RH=48.15
+
+$ ./scripts/zigbee_device_summary.sh
+DEVICE_COUNT=1
+DEVICE_1_TYPE=EndDevice
+DEVICE_1_MODEL=TH01
+DEVICE_1_VENDOR=Zbeacon
+DEVICE_1_INTERVIEW_COMPLETED=true
+DEVICE_1_SUPPORTED=true
+
+$ ./scripts/check_zigbee_stack.sh
+{"state":"online"}
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+

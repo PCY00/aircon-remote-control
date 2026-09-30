@@ -1,0 +1,48 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee/MQTT Step 2 - sensor inventory and pairing preflight
+# Private addresses, device serials, credentials, IEEE addresses, and MQTT client IDs are omitted.
+
+PS> '<copy 13 supplied product/manual photos without modifying their contents>'
+SHELL_SYNTAX=passed
+PHOTO_COUNT=13
+PHOTO_HASH_SETS=identical
+
+$ ./scripts/check_zigbee_stack.sh
+[containers]
+aircon-mosquitto     eclipse-mosquitto:2.1.2-alpine      Up   127.0.0.1:1883->1883/tcp
+aircon-zigbee2mqtt   ghcr.io/koenkk/zigbee2mqtt:2.14.1   Up   127.0.0.1:8080->8080/tcp
+
+[zigbee2mqtt current-start milestones]
+Starting Zigbee2MQTT version 2.14.1
+Serialport opened
+Coordinator firmware version: '{..."revision":20240710,..."type":"ZStack3x0"}'
+Connected to MQTT server
+MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"online"}'
+Zigbee2MQTT started!
+
+[mqtt bridge state]
+{"state":"online"}
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+Currently 0 devices are joined.
+
+$ grep -R '<model>' /app/node_modules/zigbee-herdsman-converters/dist/devices
+grep: expected converter path not found
+# Container uses a pnpm virtual-store path; this read-only lookup changed no state.
+
+$ find /app/node_modules/.pnpm -maxdepth 2 -type d -name 'zigbee-herdsman-converters*'
+/app/node_modules/.pnpm/zigbee-herdsman-converters@26.105.0
+
+$ '<search the located device definitions for the two physical label models>'
+MODEL=UZ-8D DIRECT_DEFINITION_MATCH=False MATCH_COUNT=0
+MODEL=Z3-P3-L DIRECT_DEFINITION_MATCH=False MATCH_COUNT=0
+
+# A PowerShell text pipe converted line endings and produced CRLF/BASH_SOURCE errors.
+# Re-running the same LF file through Git Bash input redirection succeeded.
+$ ./scripts/zigbee_join_control.sh status
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+SHELL_SYNTAX=passed
+

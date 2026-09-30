@@ -1,0 +1,78 @@
+$ ./scripts/deploy.ps1 -Include [8 APP FILES]
+MODE=PREVIEW
+TARGET=air@[HOST]:/home/air/aircon-controller
+FILE_COUNT=8
+TOTAL_BYTES=237336
+NO_REMOTE_CHANGES=preview-only
+
+$ ssh air@[HOST] 'systemctl --user is-active aircon-controller && sha256sum [8 APP FILES]'
+active
+[REMOTE SHA-256 OUTPUT]
+# 로컬 체크섬과 달라 8개 파일 모두 배포 대상임을 확인했다.
+
+$ ./scripts/deploy.ps1 -Apply -Include [8 APP FILES]
+MODE=APPLY
+TARGET=air@[HOST]:/home/air/aircon-controller
+FILE_COUNT=8
+TOTAL_BYTES=237336
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+$ ssh air@[HOST] 'cd /home/air/aircon-controller && .venv/bin/python -m pip install -e .'
+Successfully uninstalled aircon-remote-controller-0.5.0
+Successfully installed aircon-remote-controller-0.6.0
+
+$ systemctl --user restart aircon-controller
+$ systemctl --user is-active aircon-controller
+active
+
+$ # 첫 API 점검 스크립트
+HEALTH_STATUS=ok
+APP_VERSION=None
+MQTT_CONNECTED=true
+SENSOR_COUNT=1
+AttributeError: 'str' object has no attribute 'get'
+
+# 원인: {"items": [...]} 응답을 배열로 가정했고 heredoc 인용도 잘못됐다.
+# 해결: 최상위 키를 확인한 뒤 items 배열을 명시적으로 읽고 원격 명령을 단일 인용했다.
+
+$ # 수정한 운영 API 점검
+HEALTH=ok
+PACKAGE_VERSION=0.6.0
+MQTT_CONNECTED=true
+SENSOR_COUNT=2
+SENSOR_METADATA=true
+JOIN_SUPPORTED=true
+PERMIT_JOIN=false
+ZIGBEE_DEVICE_COUNT=2
+
+$ # 실제 Zigbee2MQTT permit_join MQTT 요청·응답 시험
+OPEN_PERMIT_JOIN=true
+OPEN_REMAINING_SECONDS=30
+CLOSED_PERMIT_JOIN=false
+CLOSED_REMAINING_SECONDS=0
+DEVICE_COUNT_BEFORE=2
+DEVICE_COUNT_AFTER=2
+
+$ sudo systemctl restart aircon-kiosk.service
+$ systemctl is-active aircon-kiosk.service
+active
+
+$ # 서비스와 최신 UI 최종 점검
+aircon-controller=active  restarts=0
+aircon-kiosk=active       restarts=0
+UI_ASSET_VERSION=20260907-2
+RECENT_WARNINGS=none
+
+# 운영 화면에서 가입 차단 상태와 Coordinator 제외 기존 기기 2개를 확인했다.
+# 런타임 DB, MQTT 비밀, Zigbee2MQTT 설정과 장치 고유 ID는 출력하거나 변경하지 않았다.
+# 키오스크 URL의 마우스 커서 숨김도 유지했다.
+
+$ # 첫 커서 점검: 구현과 다른 선택자 문자열을 찾아 거짓 실패
+KIOSK_QUERY=true
+KIOSK_CURSOR_RULE=false
+
+# 원인: 실제 선택자는 kiosk-mode가 아니라 html[data-kiosk="true"]였다.
+$ # 실행 인자와 실제 CSS 규칙을 분리해 재검증
+KIOSK_QUERY=true
+KIOSK_CURSOR_RULE=true

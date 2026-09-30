@@ -1,0 +1,31 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee Step 1 - retained-state check fix deployment and verification
+# Private addresses, device serials, credentials, and MQTT client IDs are omitted.
+
+PS> scp scripts/check_zigbee_stack.sh air@AC:/home/air/aircon-controller/scripts/check_zigbee_stack.sh
+
+$ bash -n scripts/check_zigbee_stack.sh
+$ sha256sum scripts/check_zigbee_stack.sh
+LOCAL_SHA256=54c7929d9c101fa0e6d01a498e1ddc8ac283f4ff39d9ce148e6e9c6ac3349801
+REMOTE_SHA256=54c7929d9c101fa0e6d01a498e1ddc8ac283f4ff39d9ce148e6e9c6ac3349801
+CHECKSUM_MATCH=True
+
+$ ./scripts/check_zigbee_stack.sh
+[containers]
+aircon-mosquitto     eclipse-mosquitto:2.1.2-alpine      Up   127.0.0.1:1883->1883/tcp
+aircon-zigbee2mqtt   ghcr.io/koenkk/zigbee2mqtt:2.14.1   Up   127.0.0.1:8080->8080/tcp
+
+[zigbee2mqtt milestones]
+Coordinator firmware version: '{..."revision":20240710,..."type":"ZStack3x0"}'
+Zigbee2MQTT started!
+
+[mqtt bridge state]
+{"state":"online"}
+
+[host listeners]
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+
+[existing application]
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success

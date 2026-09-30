@@ -1,0 +1,26 @@
+ESP32-H2 ESP-IDF Windows path troubleshooting
+Date: 2026-09-11 KST
+
+Initial build
+  > powershell -ExecutionPolicy Bypass -File scripts/esp32_h2_firmware.ps1 build
+  -- Project sdkconfig file C:/Users/[REDACTED]/OneDrive/Desktop/����/������_����_����/firmware/esp32-h2-ir-node/sdkconfig
+  UnicodeDecodeError: 'cp949' codec can't decode byte 0xec ...
+  CMake Error: Failed to run kconfgen
+
+Cause
+  ESP-IDF/CMake resolved the ASCII junction back to the original Korean path.
+  A generated JSON environment file was then opened with the Windows cp949
+  codec and could not decode its UTF-8 Korean path bytes.
+
+Fix
+  The build helper now copies only firmware source files to:
+    C:\esp\aircon-h2-ir-node-build
+  Generated sdkconfig and build output stay in that ASCII-only directory.
+  The Korean workspace remains the source of truth.
+
+Verification
+  -- Project sdkconfig file C:/esp/aircon-h2-ir-node-build/sdkconfig
+  -- Configuring done
+  -- Build files have been written to: C:/esp/aircon-h2-ir-node-build/build
+  Project build complete.
+

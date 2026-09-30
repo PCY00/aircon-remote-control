@@ -1,0 +1,45 @@
+{
+  "capture_id": "cool-18-high-temp-up-01",
+  "captured_at": "2026-08-29T21:00:34+09:00",
+  "remote_id": "remote-16214-15597",
+  "button": "temperature_up",
+  "display_state_before": {
+    "mode": "cool",
+    "temperature_c": 17,
+    "fan": "high"
+  },
+  "display_state_after": {
+    "mode": "cool",
+    "temperature_c": 18,
+    "fan": "high",
+    "confirmed_by_user": true
+  },
+  "receiver": {
+    "module": "HW-477 V0.2",
+    "gpio_bcm": 17,
+    "physical_pin": 11,
+    "device": "/dev/lirc0"
+  },
+  "conditions": {
+    "distance_cm": "5-10",
+    "press_count": 1,
+    "capture_mode": "one-shot"
+  },
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 178971,
+    "median_data_pulse_us": 596,
+    "median_short_space_us": 487,
+    "median_long_space_us": 1537,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": ["b2", "4d", "3f", "c0", "10", "ef"],
+    "same_bits_as_temperature_down": true,
+    "interpretation": "unexpected; compare a different function and consider a longer receive timeout"
+  },
+  "raw_compact_file": "../raw/cool-18-high-temp-up-01.compact",
+  "send_format_file": "../raw/cool-18-high-temp-up-01.ir"
+}

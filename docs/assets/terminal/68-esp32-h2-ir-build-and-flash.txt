@@ -1,0 +1,37 @@
+ESP32-H2 IR firmware build and flash
+Date: 2026-09-11 KST
+
+Build
+  > powershell -ExecutionPolicy Bypass -File scripts/esp32_h2_firmware.ps1 build
+  ESP-IDF v5.5.4
+  Building ESP-IDF components for target esp32h2
+  Successfully created esp32h2 image.
+  Generated C:/esp/aircon-h2-ir-node-build/build/aircon_h2_ir_node.bin
+  aircon_h2_ir_node.bin binary size 0x2d000 bytes.
+  Smallest app partition is 0x100000 bytes. 0xd3000 bytes (82%) free.
+  Project build complete.
+
+Flash
+  > powershell -ExecutionPolicy Bypass -File scripts/esp32_h2_firmware.ps1 flash -Port COM6
+  Serial port COM6
+  Chip is ESP32-H2 (revision v1.2)
+  Features: BLE, IEEE802.15.4
+  USB mode: USB-Serial/JTAG
+  MAC: [REDACTED]
+  Writing bootloader ... 100%
+  Hash of data verified.
+  Writing application ... 100%
+  Hash of data verified.
+  Writing partition table ... 100%
+  Hash of data verified.
+  Hard resetting via RTS pin...
+  Done
+
+State after flashing
+  COM6 remained present, but the board still reported:
+    boot:0x0 (USB_BOOT)
+    wait usb download
+
+  The flash write is verified, but a normal power cycle without holding BOOT is
+  required before the application boot log can be accepted as verified.
+

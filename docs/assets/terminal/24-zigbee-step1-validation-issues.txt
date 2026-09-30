@@ -1,0 +1,30 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee Step 1 - Windows validation issues and resolutions
+# Private addresses, device serials, and credentials are omitted.
+
+PS> python -m pytest -q
+E   ModuleNotFoundError: No module named 'fastapi'
+!!!!!!!!!!!!!!!!!!! Interrupted: 4 errors during collection !!!!!!!!!!!!!!!!!!!
+4 errors in 0.23s
+
+# Cause: the system Python was used instead of the project virtual environment.
+PS> .\.venv\Scripts\python.exe -m pytest -q
+...............................                                          [100%]
+31 passed in 1.01s
+
+PS> bash -n scripts/install_zigbee_host.sh scripts/setup_zigbee_stack.sh ...
+<3>WSL (9) ERROR: CreateProcessCommon:559: execvpe(/bin/bash) failed: No such file or directory
+
+# Cause: Windows bash.exe was a WSL launcher, but no Linux distribution was installed.
+PS> & 'C:\Program Files\Git\bin\bash.exe' -n scripts/install_zigbee_host.sh ...
+shell syntax: OK (Git Bash)
+
+# A long double-quoted SSH command contained nested $(), quotes, and a sed expression.
+PS> ssh ... "ts_ip=\$(...); sed -E ..."
+Unexpected token ')' in expression or statement.
+Missing type name after '['.
+
+# Resolution: send a short remote Bash command in a PowerShell single-quoted argument,
+# and do not print or post-process the private address.
+PS> ssh ... 'ts_ip=$(tailscale ip -4 | head -n1); if curl ...; then echo ...; fi'
+AIRCON_8001_HEALTH=ok

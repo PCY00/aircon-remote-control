@@ -1,0 +1,45 @@
+$ ./.venv/Scripts/python.exe -m pytest -q
+................................................................
+64 passed
+
+$ ./.venv/Scripts/python.exe -m ruff check tests/test_sensor_ui_assets.py
+All checks passed!
+
+$ node --check app/static/sensors.js
+# 출력 없음: JavaScript 문법 검사 통과
+
+$ msedge --headless --window-size=1920,1080 --screenshot=[OUTPUT].png http://127.0.0.1:8766/
+# 렌더 결과: 좌측 내비게이션 · 2열 홈 · 상단 디자인 도구 모음 없음
+
+$ scp app/static/index.html air@[HOST]:/home/air/aircon-controller/app/static/index.html
+$ scp app/static/sensors.js air@[HOST]:/home/air/aircon-controller/app/static/sensors.js
+# 두 명령 모두 전송 완료
+
+$ sha256sum app/static/index.html app/static/sensors.js
+[SHA-256]  app/static/index.html
+[SHA-256]  app/static/sensors.js
+# 로컬 기준본과 Raspberry Pi의 두 파일 SHA-256이 각각 일치했다.
+
+$ page=$(curl -fsS http://[TAILSCALE-IP]:8001/)
+$ printf '%s' "$page" | grep -q 'data-view="auto"' && echo VIEW_MODE_UI=present
+VIEW_MODE_UI=present  # 자동·휴대폰·PC 세 항목
+$ printf '%s' "$page" | grep -q '따뜻한 A' || echo DESIGN_BADGE=removed
+DESIGN_BADGE=removed # 따뜻한 A · 장면 먼저 제거
+$ printf '%s' "$page" | grep -q 'sensors.js?v=20260907-1' && echo SENSOR_JS_CACHE_KEY=updated
+SENSOR_JS_CACHE_KEY=updated
+
+$ sudo systemctl restart aircon-kiosk.service
+$ systemctl is-active aircon-kiosk.service
+active
+
+$ systemctl show aircon-kiosk.service -p NRestarts --value
+0
+
+$ find /run/user/1000 -maxdepth 1 -type s -name 'wayland-*' -printf '%f\n'
+wayland-0
+
+$ pgrep -c -f '/usr/lib/chromium/chromium'
+11
+
+$ curl -o /dev/null -s -w '%{http_code}\n' http://[TAILSCALE-IP]:8001/health
+200

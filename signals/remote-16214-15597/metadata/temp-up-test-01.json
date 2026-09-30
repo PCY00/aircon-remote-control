@@ -1,0 +1,59 @@
+{
+  "capture_id": "temp-up-test-01",
+  "captured_at": "2026-08-29T20:46:37+09:00",
+  "remote_id": "remote-16214-15597",
+  "remote_model_status": "pcb_identifier_only",
+  "button": "temperature_up",
+  "display_state_before": "not_recorded",
+  "display_state_after": {
+    "power": "not_visible",
+    "mode": "cool",
+    "temperature_c": 18,
+    "fan": "high",
+    "swing": "not_visible",
+    "confirmed_by_user": true
+  },
+  "later_display_photo": {
+    "path": "../../../docs/assets/hardware/remote-control/06-remote-front-controls-lcd.jpg",
+    "observed_temperature_c": 18,
+    "observed_mode_candidate": "cool",
+    "observed_fan_candidate": "high",
+    "same_state_as_capture_confirmed": true
+  },
+  "receiver": {
+    "module": "HW-477 V0.2",
+    "gpio_bcm": 17,
+    "physical_pin": 11,
+    "device": "/dev/lirc0"
+  },
+  "conditions": {
+    "distance_cm": "5-10",
+    "orientation": "remote pointed at receiver, away from air conditioner",
+    "press_count": 1,
+    "capture_window_seconds": 20
+  },
+  "observations": {
+    "timing_token_count": 200,
+    "pulse_count": 100,
+    "space_count": 100,
+    "total_duration_us": 196032,
+    "median_data_pulse_us": 546,
+    "median_short_space_us": 517,
+    "median_long_space_us": 1611,
+    "frame_header_us": [
+      [4298, 4365],
+      [4383, 4321]
+    ],
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": ["b2", "4d", "3f", "c0", "10", "ef"],
+    "complement_pairs_observed": true,
+    "protocol": "not_yet_identified",
+    "carrier_hz": "not_measured; receiver module is nominally 38 kHz"
+  },
+  "capture_command": "timeout --signal=INT 20s ir-ctl --receive --device=/dev/lirc0",
+  "capture_exit": "timeout ended the observation window after valid data was received",
+  "raw_compact_file": "../raw/temp-up-test-01.compact",
+  "send_format_file": "../raw/temp-up-test-01.ir"
+}

@@ -1,0 +1,163 @@
+# Step 3 Pi 0.7.0 deployment — 2026-09-08
+# Actual command output; SSH identity, host and addresses redacted.
+
+PS> .\.venv\Scripts\python.exe -m ruff check app tests
+PS> .\.venv\Scripts\python.exe -m pytest -q
+All checks passed!
+........................................................................ [ 97%]
+..                                                                       [100%]
+74 passed in 4.10s
+
+PS> node --test tests/test_sensor_refresh_policy.cjs
+TAP version 13
+# Subtest: default pause begins at exactly 07:00 KST
+ok 1 - default pause begins at exactly 07:00 KST
+  ---
+  duration_ms: 19.7631
+  ...
+# Subtest: default pause ends at exactly 19:00 KST
+ok 2 - default pause ends at exactly 19:00 KST
+  ---
+  duration_ms: 1.7256
+  ...
+# Subtest: disabled automatic refresh cannot refresh even outside pause hours
+ok 3 - disabled automatic refresh cannot refresh even outside pause hours
+  ---
+  duration_ms: 0.6124
+  ...
+# Subtest: five minute interval allows first refresh and rejects early repeats
+ok 4 - five minute interval allows first refresh and rejects early repeats
+  ---
+  duration_ms: 1.3037
+  ...
+# Subtest: manual refresh bypasses disabled state, pause hours, and interval
+ok 5 - manual refresh bypasses disabled state, pause hours, and interval
+  ---
+  duration_ms: 0.7319
+  ...
+# Subtest: pause intervals crossing midnight include both sides of midnight
+ok 6 - pause intervals crossing midnight include both sides of midnight
+  ---
+  duration_ms: 1.8429
+  ...
+# Subtest: equal pause boundaries fail closed for automatic refresh
+ok 7 - equal pause boundaries fail closed for automatic refresh
+  ---
+  duration_ms: 1.6607
+  ...
+# Subtest: browser default timezone cannot change KST pause boundaries
+ok 8 - browser default timezone cannot change KST pause boundaries
+  ---
+  duration_ms: 220.9818
+  ...
+# Subtest: live climate events do not change displayed state or trigger rendering
+ok 9 - live climate events do not change displayed state or trigger rendering
+  ---
+  duration_ms: 1.2584
+  ...
+# Subtest: door SSE still updates state, history, and the currently open detail
+ok 10 - door SSE still updates state, history, and the currently open detail
+  ---
+  duration_ms: 2.341
+  ...
+# Subtest: automatic REST refresh consults climate policy even on forced reconnect
+ok 11 - automatic REST refresh consults climate policy even on forced reconnect
+  ---
+  duration_ms: 0.5579
+  ...
+# Subtest: automation listener restores server state on stream.ready reconnect
+ok 12 - automation listener restores server state on stream.ready reconnect
+  ---
+  duration_ms: 0.2261
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 352.9227
+
+# Back up the six existing code files before applying this approved deployment.
+Pi$ mkdir -p runtime/deployment-backups
+Pi$ tar -czf runtime/deployment-backups/pre-0.7.0-<TIMESTAMP>.tar.gz \
+  app/main.py app/sensors/service.py app/devices/service.py \
+  app/static/index.html app/static/sensors.js pyproject.toml
+PREVIOUS_CODE_BACKUP=created
+
+# $files contains exactly the 11 FILE paths below; no runtime/data files included.
+PS> .\scripts\deploy.ps1 -Apply -Include $files
+MODE=APPLY
+TARGET=[PI_USER]@[PI_HOST]:[PI_PROJECT]
+FILE_COUNT=11
+TOTAL_BYTES=227084
+FILE=app/automations/__init__.py BYTES=64 SHA256=ff1bd480d463926f4f771c58d95f02a6f88df907e9dc6f68d1c08c2ba3698e89
+FILE=app/automations/service.py BYTES=7541 SHA256=47c2281f24a3f37fc3b9637183b0edecf6a7d6674d7e3d06a468a205290b0fc6
+FILE=app/automations/store.py BYTES=8954 SHA256=8def73b8362ec6f5584a62a984ce5592bbab70833b6781bcad29fb511b68c17d
+FILE=app/devices/service.py BYTES=2776 SHA256=1f7af562c925ed10af5a9b350664f7ffb956fd9d9ddd083056aa5c28e103cda1
+FILE=app/events.py BYTES=2303 SHA256=3d99a67851644f06d546c613f773da3c8c0b003de4c6ca2b349b837a2790b51f
+FILE=app/main.py BYTES=21860 SHA256=00002a7188e29a0bcae25aac1028759128be6b2b433727808bbbe5a5494a9952
+FILE=app/sensors/service.py BYTES=7479 SHA256=636d2d834406132d5c5136de01ff583739ca0d619e69168cdd5965add89dcb53
+FILE=app/static/automations.js BYTES=7763 SHA256=8f16466e2a0cb12ac93d5dcc8692ad4d0e4a7b67fbbf9539db24e1f8f3476161
+FILE=app/static/index.html BYTES=126421 SHA256=33c53e309372dde78a1c9b1ac403020d885d46e89f293817f48a9c6d12cfe028
+FILE=app/static/sensors.js BYTES=41166 SHA256=ebe207c7f6167d80091aab08c8c3f6423c4373cdc741f5253a816676af2b89a2
+FILE=pyproject.toml BYTES=757 SHA256=6fdcea2314c82db7d53dd89a15b5903003508cbeee8ba416b92f5fd43721321b
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+# Package installation and its recovered failure: see record 56.
+Pi$ systemctl --user restart aircon-controller
+Pi$ sudo systemctl restart aircon-kiosk
+# Password input intentionally not recorded.
+Pi$ systemctl --user show aircon-controller -p ActiveState -p SubState -p NRestarts
+Pi$ systemctl show aircon-kiosk -p ActiveState -p SubState -p NRestarts
+Pi$ docker ps --format '{{.Names}} {{.Status}}'
+# Inspect only chromium processes for --kiosk and ?kiosk=1; count recent app errors.
+APP_SERVICE
+NRestarts=0
+ActiveState=active
+SubState=running
+KIOSK_SERVICE
+NRestarts=0
+ActiveState=active
+SubState=running
+aircon-zigbee2mqtt Up 10 hours
+aircon-mosquitto Up 10 hours
+KIOSK_URL_FLAG=true
+APP_RECENT_ERROR_COUNT=0
+
+PS> Get-Content -Raw scripts/verify_live_dashboard.py | ssh <SSH_OPTIONS> [PI] \
+  'cd [PI_PROJECT] && tr -d "\r" | .venv/bin/python -'
+HEALTH=ok
+API_VERSION=0.7.0
+MQTT_CONNECTED=true
+SENSOR_COUNT=2
+SENSOR_KINDS=door_contact,temperature_humidity
+ZIGBEE_DEVICE_COUNT=2
+PERMIT_JOIN=false
+AUTOMATION_COUNT=1
+RULE_ENABLED=true
+RULE_DELAY_SECONDS=300
+WARNING_ACTIVE=false
+AUTOMATION_EVENT_COUNT=0
+UI_ASSET_REVISION=20260908-1
+KIOSK_CURSOR_CSS=true
+SSE_HTTP=200 text/event-stream
+SSE_READY=true
+SSE_KEEPALIVE=true
+SSE_SENSOR_EVENTS_OBSERVED=0
+IR_COMMANDS_SENT=0
+DASHBOARD_SMOKE=passed
+
+# PC requests to the Pi's Tailscale address (not localhost).
+PS> Invoke-RestMethod 'http://[TAILSCALE_IP]:8001/health'
+PS> Invoke-RestMethod 'http://[TAILSCALE_IP]:8001/openapi.json'
+PC_TO_PI_TAILSCALE_HEALTH=ok
+PC_TO_PI_API_VERSION=0.7.0
+
+# Recompute remote SHA-256 for the same 11 files and compare with Get-FileHash.
+POST_RESTART_CHECKSUMS=11/11 matched
+
+# No physical door transition or air-conditioner actuation was requested in this check.

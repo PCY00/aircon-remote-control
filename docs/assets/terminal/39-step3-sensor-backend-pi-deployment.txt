@@ -1,0 +1,36 @@
+# Step 3 센서 백엔드 Raspberry Pi 배포 — 2026-09-07
+# 인증정보, 사설 IP와 장치 고유 ID는 출력하지 않음
+
+> .\scripts\deploy.ps1 -Apply -Include <approved-11-files>
+MODE=APPLY
+TARGET=air@AC:/home/air/aircon-controller
+FILE_COUNT=11
+TOTAL_BYTES=46397
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+> ssh air@AC "cd /home/air/aircon-controller && .venv/bin/python -m pip install -e ."
+Collecting paho-mqtt<3.0,>=2.1
+Successfully built aircon-remote-controller
+Successfully installed aircon-remote-controller-0.5.0 paho-mqtt-2.1.0
+
+> ssh air@AC "cd /home/air/aircon-controller && bash scripts/setup_app_mqtt.sh"
+APP_MQTT_ENV=created mode=600
+SERVICE_UNIT=updated
+SERVICE_RESTART=completed
+
+> # 서비스·권한·API 상태를 읽기 전용으로 확인
+active
+enabled
+APP_ENV_MODE=600 OWNER=air:air
+PAHO_VERSION=2.1.0
+SENSOR_DB=present
+HEALTH=ok
+MQTT_ENABLED=True
+MQTT_RUNNING=True
+MQTT_CONNECTED=True
+STORED_SENSOR_COUNT=0
+LAST_ERROR=
+
+# 저장 센서 0대는 앱 구독 이후 새 센서 보고가 아직 없다는 뜻이다.
+# 다음 실제 자율 보고 또는 현장 조작으로 상태·도어 이력을 검증한다.

@@ -1,0 +1,62 @@
+# USB dongle reinserted by user; gateway remained stopped
+# Read-only diagnosis - 2026-09-08 KST
+# No service start/restart or pairing API write by the operator in this check.
+# Identifiers are redacted. Error excerpts are for reading, not JSON parsing.
+
+# Pi: date, lsusb, ls -l /dev/ttyUSB*, docker inspect,
+# docker logs --since 5m --timestamps aircon-zigbee2mqtt | tail -n 65
+# journalctl -k --since '2026-09-08 08:33:00' | grep -Ei 'usb|cp210|ttyUSB|voltage'
+2026-09-08T08:35:19+09:00
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 011: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+crw-rw---- 1 root dialout 188, 0 Sep  8 08:34 /dev/ttyUSB0
+/aircon-mosquitto running StartedAt=2026-09-07T12:46:38.497593021Z RestartCount=0
+/aircon-zigbee2mqtt exited StartedAt=2026-09-07T12:46:38.652883614Z RestartCount=1
+2026-09-07T23:32:12.156632637Z [2026-09-08 08:32:12] info: 	z2m: Zigbee: allowing new devices to join.
+2026-09-07T23:32:18.163521583Z [2026-09-08 08:32:18] error: 	z2m: Request 'zigbee2mqtt/bridge/request/permit_join' failed with error: 'SRSP - ZDO - mgmtPermitJoinReq after 6000ms'
+2026-09-07T23:32:18.244379488Z [2026-09-08 08:32:18] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/response/permit_join', payload '{"data":{},"error":"SRSP - ZDO - mgmtPermitJoinReq after 6000ms","status":"error","transaction":"[REDACTED]"}'
+2026-09-07T23:32:18.311102239Z [2026-09-08 08:32:18] info: 	z2m: Zigbee: disabling joining new devices.
+2026-09-07T23:32:24.315246112Z [2026-09-08 08:32:24] error: 	z2m: Request 'zigbee2mqtt/bridge/request/permit_join' failed with error: 'SRSP - AF - dataRequestExt after 6000ms'
+2026-09-07T23:32:24.334711340Z [2026-09-08 08:32:24] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/response/permit_join', payload '{"data":{},"error":"SRSP - AF - dataRequestExt after 6000ms","status":"error","transaction":"[REDACTED]"}'
+2026-09-07T23:34:29.208887088Z [2026-09-08 08:34:29] info: 	zh:zstack:znp: Port closed
+2026-09-07T23:34:29.211468403Z [2026-09-08 08:34:29] info: 	zh:zstack:znp: closing
+2026-09-07T23:34:29.214417529Z [2026-09-08 08:34:29] error: 	z2m: Adapter disconnected, stopping
+2026-09-07T23:34:29.222399084Z [2026-09-08 08:34:29] info: 	z2m: Stopping Zigbee2MQTT (restart=false, code=2, signal=undefined)
+2026-09-07T23:34:29.243051757Z [2026-09-08 08:34:29] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"offline"}'
+2026-09-07T23:34:29.245190283Z [2026-09-08 08:34:29] info: 	z2m: Disconnecting from MQTT server
+2026-09-07T23:34:29.267501934Z [2026-09-08 08:34:29] info: 	z2m: Stopping zigbee-herdsman...
+2026-09-07T23:34:29.280310736Z [2026-09-08 08:34:29] info: 	z2m: Stopped zigbee-herdsman
+2026-09-07T23:34:29.280813599Z [2026-09-08 08:34:29] info: 	z2m: Stopped Zigbee2MQTT
+Sep 08 08:34:21 AC kernel: usb 1-1.1: USB disconnect, device number 10
+Sep 08 08:34:29 AC kernel: usb 1-1.2: USB disconnect, device number 4
+Sep 08 08:34:29 AC kernel: cp210x ttyUSB0: failed set request 0x7 status: -19
+Sep 08 08:34:29 AC kernel: cp210x ttyUSB0: failed set request 0x12 status: -19
+Sep 08 08:34:29 AC kernel: cp210x ttyUSB0: failed set request 0x0 status: -19
+Sep 08 08:34:29 AC kernel: cp210x ttyUSB0: cp210x converter now disconnected from ttyUSB0
+Sep 08 08:34:29 AC kernel: cp210x 1-1.2:1.0: device disconnected
+Sep 08 08:34:32 AC kernel: usb 1-1.2: new full-speed USB device number 11 using xhci_hcd
+Sep 08 08:34:32 AC kernel: usb 1-1.2: New USB device found, idVendor=10c4, idProduct=ea60, bcdDevice= 1.00
+Sep 08 08:34:32 AC kernel: usb 1-1.2: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+Sep 08 08:34:32 AC kernel: usb 1-1.2: Product: CP2102N USB to UART Bridge Controller
+Sep 08 08:34:32 AC kernel: usb 1-1.2: Manufacturer: Silicon Labs
+Sep 08 08:34:32 AC kernel: usb 1-1.2: SerialNumber: [REDACTED]
+Sep 08 08:34:32 AC kernel: cp210x 1-1.2:1.0: cp210x converter detected
+Sep 08 08:34:32 AC kernel: usb 1-1.2: cp210x converter now attached to ttyUSB0
+
+# docker inspect State / RestartPolicy / Devices after the failure
+2026-09-08T08:35:40+09:00
+State={"Status":"exited","Running":false,"Paused":false,"Restarting":false,"OOMKilled":false,"Dead":false,"Pid":0,"ExitCode":2,"Error":"error gathering device information while adding custom device \"/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_[REDACTED]": no such file or directory","StartedAt":"2026-09-07T12:46:38.652883614Z","FinishedAt":"2026-09-07T23:34:29.322037355Z"} RestartPolicy={"Name":"unless-stopped","MaximumRetryCount":0} Devices=[{"PathOnHost":"/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_[REDACTED]","PathInContainer":"/dev/ttyUSB0","CgroupPermissions":"rwm"}]
+HOST_SERIAL_DEVICE_PRESENT=true
+
+# test -c on the exact HostConfig.Devices.PathOnHost configured in Docker
+CONFIGURED_SERIAL_DEVICE_PRESENT=true
+STATUS=exited
+
+# USB device is present again, but the gateway process is NOT running.
+# Adapter disconnect stopped the process; automatic restart encountered
+# a missing mapped device path while the USB adapter was absent.
+# New door reporting cannot be verified until the gateway starts successfully.
+# Next proposed action: docker start aircon-zigbee2mqtt (separate approval).
+

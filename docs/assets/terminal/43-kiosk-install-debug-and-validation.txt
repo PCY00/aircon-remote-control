@@ -1,0 +1,65 @@
+# Raspberry Pi OS Lite 키오스크 설치, 오류 분석과 최종 검증
+
+# 첫 설치 시도
+> sudo ./scripts/setup_kiosk.sh
+sudo: ./scripts/setup_kiosk.sh: command not found
+
+# 원인
+# Windows에서 새로 전송한 스크립트에 Linux 실행 비트가 아직 없었다.
+# Bash 문법 검사는 이미 통과했으므로 인터프리터를 직접 지정해 재실행했다.
+
+> sudo bash scripts/setup_kiosk.sh
+Fetched 302 MB in 1min 7s
+Created symlink '/etc/systemd/system/multi-user.target.wants/aircon-kiosk.service'
+Kiosk packages installed and aircon-kiosk.service enabled.
+
+# 첫 서비스 검증
+> systemctl is-enabled aircon-kiosk.service
+enabled
+> systemctl is-active aircon-kiosk.service
+inactive
+
+Process: ExecStart=/home/air/aircon-controller/scripts/run_kiosk.sh
+         (code=killed, signal=HUP)
+Result=success
+NRestarts=0
+
+# 저널의 실행 순서
+Started aircon-kiosk.service
+Stopping getty@tty1.service
+Stopped getty@tty1.service
+aircon-kiosk.service: Deactivated successfully
+
+# 원인과 수정
+# tty1 키오스크가 먼저 시작된 뒤 기존 getty가 종료되며 SIGHUP이 전달된 순서 경쟁이었다.
+# unit의 After=에 getty@tty1.service를 추가해 getty 종료 후 키오스크가 시작되게 했다.
+
+> sudo systemctl daemon-reload
+> sudo systemctl restart aircon-kiosk.service
+
+# 최종 상태
+> systemctl is-enabled aircon-kiosk.service
+enabled
+> systemctl is-active aircon-kiosk.service
+active
+ActiveState=active
+SubState=running
+Result=success
+NRestarts=0
+ExecMainStatus=0
+
+# 현재 디스플레이가 연결되지 않아 런처는 5초 간격으로 안전하게 대기한다.
+Main process: bash /home/air/aircon-controller/scripts/run_kiosk.sh
+Child process: sleep 5
+HDMI-A-1: disconnected
+HDMI-A-2: disconnected
+
+# 기존 서비스 영향 확인
+aircon-controller.service (user): active
+tailscaled.service: active
+
+# 배포 일치 확인
+run_kiosk.sh: local SHA-256 = remote SHA-256
+setup_kiosk.sh: local SHA-256 = remote SHA-256
+aircon-kiosk.service: local SHA-256 = project SHA-256 = /etc unit SHA-256
+kiosk-display.md: local SHA-256 = remote SHA-256

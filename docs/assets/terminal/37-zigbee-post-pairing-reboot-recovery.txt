@@ -1,0 +1,83 @@
+Zigbee/MQTT Step 2 — 페어링 완료 후 Raspberry Pi 전체 재부팅 복구
+실행일: 2026-09-07 KST
+
+$ ssh air@[REDACTED_HOST] "cd /home/air/aircon-controller && ./scripts/zigbee_join_control.sh status"
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+$ ssh air@[REDACTED_HOST] "cd /home/air/aircon-controller && ./scripts/check_zigbee_stack.sh"
+MQTT_BRIDGE_STATE=online
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+AIRCON_API_HEALTH=ok
+ZIGBEE_STACK_STATUS=success
+
+$ ssh air@[REDACTED_HOST] "sudo -n systemctl reboot"
+sudo: a password is required
+
+# 비밀번호를 명령에 넣지 않고 대화형 TTY에서 다시 실행했다.
+$ ssh -tt air@[REDACTED_HOST] "sudo systemctl reboot"
+[sudo] password for air: [REDACTED]
+Connection to [REDACTED_HOST] closed.
+
+WAIT_STARTED_AT=2026-09-07T00:05:15Z
+OFFLINE_OBSERVED_AT=2026-09-07T00:05:18Z
+ONLINE_OBSERVED_AT=2026-09-07T00:05:52Z
+OFFLINE_WAS_OBSERVED=true
+
+$ ssh air@[REDACTED_HOST] "uptime -s"
+2026-09-07 09:05:13
+
+$ ssh air@[REDACTED_HOST] "cd /home/air/aircon-controller && ./scripts/check_zigbee_stack.sh"
+MOSQUITTO_CONTAINER=up
+ZIGBEE2MQTT_CONTAINER=up
+SERIAL_PORT_OPENED=true
+COORDINATOR_INITIALIZED=true
+MQTT_CONNECTED=true
+MQTT_BRIDGE_STATE=online
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+AIRCON_API_HEALTH=ok
+ZIGBEE_STACK_STATUS=success
+
+$ ssh air@[REDACTED_HOST] "cd /home/air/aircon-controller && ./scripts/zigbee_join_control.sh status"
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+$ ./scripts/zigbee_device_summary.sh
+DEVICE_COUNT=2
+DEVICE_1_TYPE=EndDevice
+DEVICE_1_MODEL=TH01
+DEVICE_1_VENDOR=Zbeacon
+DEVICE_1_FRIENDLY_NAME=sensor_temperature_01
+DEVICE_1_INTERVIEW_COMPLETED=true
+DEVICE_1_SUPPORTED=true
+DEVICE_2_TYPE=EndDevice
+DEVICE_2_MODEL=TS0203
+DEVICE_2_VENDOR=Tuya
+DEVICE_2_FRIENDLY_NAME=sensor_door_01
+DEVICE_2_INTERVIEW_COMPLETED=true
+DEVICE_2_SUPPORTED=true
+
+$ ssh air@[REDACTED_HOST] "systemctl 상태 요약"
+AIRCON_ENABLED=enabled
+AIRCON_ACTIVE=active
+DOCKER_ENABLED=enabled
+DOCKER_ACTIVE=active
+TAILSCALED_ENABLED=enabled
+TAILSCALED_ACTIVE=active
+
+# 재부팅 직후 센서별 MQTT retained payload 확인
+$ ./scripts/zigbee_sensor_state_summary.sh
+DEVICE=sensor_temperature_01
+PAYLOAD_AVAILABLE=false
+DEVICE=sensor_door_01
+PAYLOAD_AVAILABLE=false
+
+# 판정
+# - Pi 전체 재부팅과 실제 SSH 단절/복귀 확인
+# - Mosquitto, Zigbee2MQTT, Tailscale, 8001 앱 자동 복구 성공
+# - 두 센서의 등록, 내부 이름, 지원/인터뷰 상태 유지
+# - 가입 허용은 재부팅 뒤에도 닫힌 상태 유지
+# - 센서 상태 메시지는 retained 재생되지 않으므로 앱이 마지막 상태·이력을 보존해야 함
+# - 배터리 센서의 재부팅 후 새 실측 보고는 현장 조작이 가능한 때 별도 검증

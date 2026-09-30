@@ -1,0 +1,71 @@
+USB power hypothesis - read-only checks, 2026-09-08 KST
+No reboot, service change or configuration change in this check.
+SSH destination and identity omitted from this public transcript.
+
+[08:57 baseline; relation to physical USB removal time is unknown]
+Commands on Pi:
+date --iso-8601=seconds
+tr -d "\000" < /proc/device-tree/model; printf "\n"
+vcgencmd get_throttled
+vcgencmd measure_temp
+journalctl -k -b --no-pager | grep -Ei "under.?voltage|over.?current|xHCI.*(not responding|died)|HC died|Host halt failed|Voltage normalised" | tail -n 20
+lsusb
+
+Actual output:
+2026-09-08T08:57:24+09:00
+Raspberry Pi 4 Model B Rev 1.4
+throttled=0x0
+temp=40.4'C
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 003: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+
+[After user reports removing the display USB]
+Commands on Pi:
+date --iso-8601=seconds
+vcgencmd get_throttled
+journalctl -k -b --no-pager | grep -Ei "under.?voltage|over.?current|xHCI.*(not responding|died)|HC died|Host halt failed|Voltage normalised" | tail -n 20
+lsusb
+systemctl --user is-active aircon-controller
+docker ps --filter name=aircon- --format "{{.Names}}={{.Status}}"
+curl -fsS http://127.0.0.1:8001/api/v1/sensors/sensor_temperature_01
+
+Actual output:
+2026-09-08T08:58:04+09:00
+throttled=0x0
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 003: ID 10c4:ea60 Silicon Labs CP210x UART Bridge
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+active
+aircon-zigbee2mqtt=Up 13 minutes
+aircon-mosquitto=Up 13 minutes
+curl: (7) Failed to connect to 127.0.0.1 port 8001 after 0 ms: Could not connect to server
+
+[API address correction: use existing Tailscale endpoint, not Pi loopback]
+Read-only HTTP GET /health and /api/v1/sensors/sensor_temperature_01
+Actual host/IP omitted; API state/time fields selected in PowerShell.
+No service restart was needed.
+HEALTH_HTTP_STATUS=200
+{
+  "state": {
+    "temperature_c": 25.08,
+    "humidity_percent": 38.92,
+    "battery_percent": 100,
+    "voltage_mv": 3000,
+    "linkquality": 171
+  },
+  "last_reported_at": "2026-09-08T08:47:26.291+09:00",
+  "last_received_at": "2026-09-08T08:47:26.320427+09:00",
+  "source_timestamp": "2026-09-08T08:47:26.291+09:00"
+}
+2026-09-08T08:58:18+09:00
+
+Interpretation:
+- CP210x dongle enumerated; app active; gateway and broker running.
+- Current-boot voltage/xHCI error filter returned no matching lines.
+- throttled=0x0 is not a USB current or voltage measurement.
+- Latest TH01 report remains 08:47:26; no new post-removal sensor report verified here.
+- Display removal is user-reported; actual display load was not measured.
+- Power shortage is a hypothesis, not a confirmed cause of the prior xHCI failure.

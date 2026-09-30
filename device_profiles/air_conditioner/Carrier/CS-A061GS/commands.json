@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "profile_id": "air_conditioner/Carrier/CS-A061GS",
+  "carrier_hz": 38000,
+  "carrier_verification": "seller_specification_not_measured",
+  "bit_order": "msb_first_observed",
+  "timing_us": {
+    "leader_pulse": 4350,
+    "leader_space": 4350,
+    "bit_pulse": 560,
+    "zero_space": 520,
+    "one_space": 1610,
+    "inter_frame_space": 5150,
+    "verification": "representative_values_from_hw477_captures"
+  },
+  "encoders": {
+    "cool_state": {
+      "kind": "carrier_gray_code_48",
+      "prefix": [
+        "b2",
+        "4d"
+      ],
+      "temperature_min_c": 17,
+      "temperature_max_c": 30,
+      "temperature_rule": "high_nibble(gray(temperature_c - 17))",
+      "fan_bytes": {
+        "auto": [
+          "bf",
+          "40"
+        ],
+        "low": [
+          "9f",
+          "60"
+        ],
+        "medium": [
+          "5f",
+          "a0"
+        ],
+        "high": [
+          "3f",
+          "c0"
+        ]
+      },
+      "repeat_count": 2,
+      "verification": "fan values measured; temperature rule measured at 17, 18, 19, and 20 degrees"
+    }
+  },
+  "commands": {
+    "power_off": {
+      "kind": "state",
+      "frames_hex": [
+        [
+          "b2",
+          "4d",
+          "7b",
+          "84",
+          "e0",
+          "1f"
+        ],
+        [
+          "b2",
+          "4d",
+          "7b",
+          "84",
+          "e0",
+          "1f"
+        ]
+      ],
+      "source_capture": "power-off-from-cool-17-high-01",
+      "verification": "captured",
+      "effective_state": {
+        "power": false
+      }
+    },
+    "mode_auto": {
+      "kind": "state",
+      "frames_hex": [
+        [
+          "b2",
+          "4d",
+          "1f",
+          "e0",
+          "08",
+          "f7"
+        ],
+        [
+          "b2",
+          "4d",
+          "1f",
+          "e0",
+          "08",
+          "f7"
+        ]
+      ],
+      "source_capture": "mode-auto-17-high-01",
+      "verification": "captured",
+      "effective_state": {
+        "power": true,
+        "mode": "auto",
+        "temperature_c": 17,
+        "fan": "high"
+      }
+    },
+    "mode_dry": {
+      "kind": "state",
+      "frames_hex": [
+        [
+          "b2",
+          "4d",
+          "1f",
+          "e0",
+          "04",
+          "fb"
+        ],
+        [
+          "b2",
+          "4d",
+          "1f",
+          "e0",
+          "04",
+          "fb"
+        ]
+      ],
+      "source_capture": "mode-dry-17-high-01",
+      "verification": "captured",
+      "effective_state": {
+        "power": true,
+        "mode": "dry",
+        "temperature_c": 17,
+        "fan": "high"
+      }
+    },
+    "mode_fan_only": {
+      "kind": "state",
+      "frames_hex": [
+        [
+          "b2",
+          "4d",
+          "3f",
+          "c0",
+          "e4",
+          "1b"
+        ],
+        [
+          "b2",
+          "4d",
+          "3f",
+          "c0",
+          "e4",
+          "1b"
+        ]
+      ],
+      "source_capture": "mode-fan-only-17-high-01",
+      "verification": "captured",
+      "effective_state": {
+        "power": true,
+        "mode": "fan_only",
+        "temperature_c": 17,
+        "fan": "high"
+      }
+    },
+    "economy": {
+      "kind": "instant",
+      "frames_hex": [
+        [
+          "b2",
+          "4d",
+          "e0",
+          "1f",
+          "03",
+          "fc"
+        ],
+        [
+          "b2",
+          "4d",
+          "bf",
+          "40",
+          "00",
+          "ff"
+        ],
+        [
+          "b2",
+          "4d",
+          "bf",
+          "40",
+          "00",
+          "ff"
+        ]
+      ],
+      "source_capture": "economy-press-01-multiframe",
+      "verification": "captured_from_cool_17_high"
+    },
+    "turbo": {
+      "kind": "instant",
+      "frames_hex": [
+        [
+          "b5",
+          "4a",
+          "f5",
+          "0a",
+          "a2",
+          "5d"
+        ],
+        [
+          "b5",
+          "4a",
+          "f5",
+          "0a",
+          "a2",
+          "5d"
+        ]
+      ],
+      "source_capture": "turbo-cool-press-01",
+      "verification": "captured"
+    },
+    "led_toggle": {
+      "kind": "toggle",
+      "frames_hex": [
+        [
+          "b5",
+          "4a",
+          "f5",
+          "0a",
+          "a5",
+          "5a"
+        ],
+        [
+          "b5",
+          "4a",
+          "f5",
+          "0a",
+          "a5",
+          "5a"
+        ]
+      ],
+      "source_capture": "led-command-press-01",
+      "verification": "captured; appliance LED effect still needs physical confirmation"
+    },
+    "airflow_fix": {
+      "kind": "instant",
+      "frames_hex": [
+        [
+          "b2",
+          "4d",
+          "0f",
+          "f0",
+          "e0",
+          "1f"
+        ]
+      ],
+      "source_capture": "airflow-fix-command-press-01",
+      "verification": "captured"
+    },
+    "swing_toggle": {
+      "kind": "toggle",
+      "frames_hex": [
+        [
+          "b2",
+          "4d",
+          "6b",
+          "94",
+          "e0",
+          "1f"
+        ],
+        [
+          "b2",
+          "4d",
+          "6b",
+          "94",
+          "e0",
+          "1f"
+        ]
+      ],
+      "source_capture": "airflow-swing-toggle-press-01",
+      "verification": "captured_and_appliance_behavior_confirmed"
+    }
+  }
+}

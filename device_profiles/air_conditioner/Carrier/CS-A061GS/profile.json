@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "id": "air_conditioner/Carrier/CS-A061GS",
+  "device_type": "air_conditioner",
+  "brand": "Carrier",
+  "model": "CS-A061GS",
+  "display_name": "Carrier CS-A061GS",
+  "default_icon": "snowflake",
+  "transport": "ir",
+  "status": "experimental",
+  "remote_profile_id": "carrier-16214-15597",
+  "model_identification": {
+    "source": "user_confirmed",
+    "confirmed_at": "2026-08-30"
+  },
+  "capabilities": {
+    "power": true,
+    "modes": [
+      "auto",
+      "cool",
+      "dry",
+      "fan_only"
+    ],
+    "temperature_c": {
+      "minimum": 17,
+      "maximum": 30,
+      "step": 1
+    },
+    "fan": [
+      "auto",
+      "low",
+      "medium",
+      "high"
+    ],
+    "instant_actions": [
+      "economy",
+      "turbo",
+      "led_toggle",
+      "airflow_fix",
+      "swing_toggle"
+    ],
+    "timer_policy": "server_side"
+  },
+  "files": {
+    "commands": "commands.json",
+    "packet_notes": "packet.md",
+    "captures": "captures/README.md",
+    "assets": "assets/README.md"
+  },
+  "limitations": [
+    "IR carrier frequency is based on the module seller specification and has not been measured.",
+    "Generated cooling temperatures from 21 to 30 degrees follow a verified Gray-code rule but have not been captured individually.",
+    "IR is one-way, so the stored state is the requested state rather than confirmed appliance state.",
+    "The ir-ctl sender is implemented, but the selected transistor circuit and physical appliance response still require Step 4 verification."
+  ]
+}

@@ -1,0 +1,38 @@
+# 증상 재현과 원인
+열림·닫힘 이력: 0건
+화면의 마지막 상태 변경: 9. 7. 12:22
+최신 Zigbee 원문 last_seen: 2026-09-07T07:22:43.117Z
+한국 시간 변환: 2026-09-07 16:22:43 Asia/Seoul
+
+# 판단
+16:22는 정상적인 최신 보고 시각이다.
+12:22는 최초 접점 상태를 실제 변경으로 잘못 표시한 값이다.
+
+> .\.venv\Scripts\python.exe -m pytest -q
+..............................................................           [100%]
+62 passed in 2.12s
+
+> .\.venv\Scripts\python.exe -m ruff check app/sensors/store.py tests/test_sensor_service.py tests/test_sensor_ui_assets.py
+All checks passed!
+
+> node --check app/static/sensors.js
+EXIT=0
+
+# 수정 결과
+최초 접점 보고: 기준 상태만 저장, 마지막 변경 시각 없음
+실제 closed/open 전환: 변경 시각과 이력 저장
+화면의 절대 시각: Asia/Seoul 고정
+기존 상태와 실제 이벤트: 보존
+
+# 첫 Raspberry Pi 배포 검증
+서비스: active, 재시작 횟수 0
+health: HTTP 200
+센서 수: 2
+도어 이벤트: 0건
+잘못된 마지막 변경 시각: 남아 있음
+
+# 원인과 후속 수정
+최초 수신 시각과 센서 원문 보고 시각이 달라 좁은 동등 비교 조건이 불일치했다.
+실제 전환은 반드시 도어 이벤트를 함께 만든다는 규칙을 사용한다.
+보정 조건: 도어 이벤트 0건 + 마지막 변경 시각 있음
+실제 이벤트가 있는 센서: 변경하지 않음

@@ -1,0 +1,50 @@
+# Step 3 door test report inspection — 2026-09-08 (KST)
+# User reported operating the door around 07:40. Read-only checks; no restart/reset.
+
+# Pi API through its existing Tailscale address; timestamps converted to Asia/Seoul.
+PS> Invoke-RestMethod 'http://[PI_TAILSCALE_IP]:8001/health'
+PS> Invoke-RestMethod 'http://[PI_TAILSCALE_IP]:8001/api/v1/sensors/status'
+PS> Invoke-RestMethod 'http://[PI_TAILSCALE_IP]:8001/api/v1/sensors'
+PS> Invoke-RestMethod 'http://[PI_TAILSCALE_IP]:8001/api/v1/sensors/[DOOR_ID]/events?limit=200'
+# Select only state and timestamps; omit unique identifiers.
+HEALTH=ok
+MQTT_CONNECTED=True
+DOOR_SENSOR_COUNT=1
+CURRENT_DOOR_STATE=closed
+LAST_CHANGED_KST=2026-09-07 20:15:53.000 +09:00
+LAST_REPORTED_KST=2026-09-07 20:22:39.000 +09:00
+LAST_RECEIVED_KST=2026-09-07 21:47:22.000 +09:00
+RECENT_EVENT_COUNT=6
+{"previous":"open","state":"closed","occurred_kst":"2026-09-07 20:15:53.000 +09:00","received_kst":"2026-09-07 20:15:53.000 +09:00","source_kst":"2026-09-07 20:15:53.000 +09:00"}
+{"previous":"closed","state":"open","occurred_kst":"2026-09-07 20:15:46.000 +09:00","received_kst":"2026-09-07 20:15:46.000 +09:00","source_kst":"2026-09-07 20:15:46.000 +09:00"}
+{"previous":"open","state":"closed","occurred_kst":"2026-09-07 20:00:17.000 +09:00","received_kst":"2026-09-07 20:00:17.000 +09:00","source_kst":"2026-09-07 20:00:17.000 +09:00"}
+{"previous":"closed","state":"open","occurred_kst":"2026-09-07 20:00:15.000 +09:00","received_kst":"2026-09-07 20:00:15.000 +09:00","source_kst":"2026-09-07 20:00:15.000 +09:00"}
+{"previous":"open","state":"closed","occurred_kst":"2026-09-07 20:00:13.000 +09:00","received_kst":"2026-09-07 20:00:13.000 +09:00","source_kst":"2026-09-07 20:00:13.000 +09:00"}
+{"previous":"closed","state":"open","occurred_kst":"2026-09-07 20:00:01.000 +09:00","received_kst":"2026-09-07 20:00:01.000 +09:00","source_kst":"2026-09-07 20:00:01.000 +09:00"}
+
+# Pi clock and app restart timestamp.
+Pi$ date --iso-8601=seconds
+Pi$ systemctl --user show aircon-controller -p ActiveState -p NRestarts -p ActiveEnterTimestamp
+PI_CLOCK=2026-09-08T07:56:59+09:00
+APP_SERVICE
+NRestarts=0
+ActiveState=active
+ActiveEnterTimestamp=Tue 2026-09-08 07:42:14 KST
+aircon-zigbee2mqtt Up 10 hours
+aircon-mosquitto Up 10 hours
+
+# KST 07:20 = UTC 22:20 on the previous day.
+Pi$ docker logs --since 2026-09-07T22:20:00Z aircon-zigbee2mqtt 2>&1 | grep -E -c 'topic .*zigbee2mqtt/sensor_door_01'
+Pi$ docker logs --since 2026-09-07T22:20:00Z aircon-zigbee2mqtt 2>&1 | grep -E -c 'warn|error'
+Pi$ docker logs --since 2026-09-07T22:20:00Z aircon-zigbee2mqtt 2>&1 | grep 'bridge/health' | tail -1
+WINDOW_START_KST=2026-09-08T07:20:00+09:00
+WINDOW_END_KST=2026-09-08T07:57:39+09:00
+DOOR_PUBLISH_COUNT=0
+ZIGBEE_WARN_ERROR_COUNT=0
+LATEST_BRIDGE_HEALTH
+[2026-09-08 07:57:22] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/health', payload '{"response_time":1788821842139,"os":{"load_average":[0,0.01,0],"memory_used_mb":748.26,"memory_percent":40.5628},"process":{"uptime_sec":36622,"memory_used_mb":123.3,"memory_percent":6.6843},"mqtt":{"connected":true,"queued":0,"published":157,"received":12},"devices":{"[REDACTED_IEEE]":{"messages":6,"messages_per_sec":0.0002,"leave_count":0,"network_address_changes":0}}}'
+
+# Interpretation: no new door publication or saved transition in the observed window.
+# A healthy MQTT connection does not prove this battery device is reporting.
+# Cause unresolved: physical activation, power, and radio link require follow-up.
+# Stored state "closed" is an old cached value, not proof of the present physical state.

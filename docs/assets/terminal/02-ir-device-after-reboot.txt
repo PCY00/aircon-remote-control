@@ -1,0 +1,28 @@
+air@AC:~ $ uptime -p
+up 0 minutes
+
+air@AC:~ $ systemctl is-system-running
+running
+air@AC:~ $ systemctl --user is-active aircon-controller
+active
+air@AC:~ $ curl http://<TAILSCALE-IP>:8001/health
+{"status":"ok","service":"aircon-controller"}
+
+air@AC:~ $ grep -F dtoverlay=gpio-ir,gpio_pin=17 /boot/firmware/config.txt
+dtoverlay=gpio-ir,gpio_pin=17
+air@AC:~ $ pinctrl get 17
+17: ip    pu | hi // GPIO17 = input
+
+air@AC:~ $ ls -l /dev/lirc0
+crw-rw---- 1 root video 250, 0 Aug 29 20:41 /dev/lirc0
+air@AC:~ $ lsmod | grep '^gpio_ir_recv'
+gpio_ir_recv
+
+air@AC:~ $ ir-ctl --device=/dev/lirc0 --features
+Receive features /dev/lirc0:
+ - Device can receive raw IR
+ - Can report decoded scancodes and protocol
+ - Receiving timeout 12664 microseconds
+ - Can set receiving timeout min 1 microseconds, max 1250000 microseconds
+Send features /dev/lirc0:
+ - Device cannot send

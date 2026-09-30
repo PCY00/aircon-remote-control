@@ -1,0 +1,45 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee Step 1 - consistent backup and retained offline diagnosis
+# Private addresses, device serials, credentials, and backup hashes are omitted.
+
+$ ./scripts/backup_zigbee_stack.sh
+Container aircon-zigbee2mqtt  Stopping
+Container aircon-zigbee2mqtt  Stopped
+Container aircon-mosquitto     Stopping
+Container aircon-mosquitto     Stopped
+[SHA256 REDACTED]  runtime/zigbee/backups/zigbee-stack-[TIMESTAMP].tar.gz
+Container aircon-mosquitto     Starting
+Container aircon-mosquitto     Started
+Container aircon-zigbee2mqtt   Starting
+Container aircon-zigbee2mqtt   Started
+BACKUP_STATUS=success
+BACKUP_CONTAINS_SECRETS=true
+
+$ stat '<latest backup>'
+BACKUP_MODE=600 BACKUP_OWNER=air:air BACKUP_BYTES=39102
+
+$ ./scripts/check_zigbee_stack.sh
+[mqtt bridge state]
+{"state":"offline"}
+
+[host listeners]
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+
+[existing application]
+{"status":"ok","service":"aircon-controller"}
+MQTT bridge state is not online.
+
+# Diagnosis: Zigbee2MQTT publishes a retained offline state while stopping.
+# The check read exactly one retained message immediately after restart and exited
+# before the new online state was published about two seconds later.
+
+$ ./scripts/check_zigbee_stack.sh
+[mqtt bridge state]
+{"state":"online"}
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+
+# Local correction: poll the retained state for up to 60 seconds and accept only online.

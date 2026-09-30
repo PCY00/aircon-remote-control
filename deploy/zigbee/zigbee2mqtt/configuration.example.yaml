@@ -1,0 +1,38 @@
+version: 5
+
+mqtt:
+  base_topic: zigbee2mqtt
+  server: "!secret.yaml server"
+  user: "!secret.yaml user"
+  password: "!secret.yaml password"
+  include_device_information: true
+
+serial:
+  port: /dev/ttyUSB0
+  adapter: zstack
+
+advanced:
+  channel: 20
+  network_key: "!secret.yaml network_key"
+  pan_id: GENERATE
+  ext_pan_id: GENERATE
+  cache_state: true
+  cache_state_persistent: true
+  cache_state_send_on_startup: true
+  last_seen: ISO_8601
+  log_level: info
+  log_output:
+    - console
+  log_rotation: true
+  log_directories_to_keep: 5
+
+availability:
+  enabled: true
+
+frontend:
+  enabled: true
+  port: 8080
+  auth_token: "!secret.yaml frontend_auth_token"
+
+homeassistant:
+  enabled: false

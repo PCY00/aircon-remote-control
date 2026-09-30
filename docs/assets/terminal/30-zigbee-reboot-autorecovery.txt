@@ -1,0 +1,49 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee Step 1 - Raspberry Pi reboot and automatic recovery
+# Private addresses, device serials, credentials, and MQTT client IDs are omitted.
+
+$ sudo reboot
+Connection closed by remote host.
+
+PS> ssh '<wait for host>'
+WAITING_FOR_SSH attempt=1
+WAITING_FOR_SSH attempt=2
+WAITING_FOR_SSH attempt=3
+SSH_READY
+up 0 minutes
+
+$ systemctl is-enabled docker.service
+enabled
+
+$ systemctl is-active docker.service
+active
+
+$ ./scripts/check_zigbee_stack.sh
+[containers]
+aircon-mosquitto     eclipse-mosquitto:2.1.2-alpine      Up   127.0.0.1:1883->1883/tcp
+aircon-zigbee2mqtt   ghcr.io/koenkk/zigbee2mqtt:2.14.1   Up   127.0.0.1:8080->8080/tcp
+
+[mqtt bridge state]
+{"state":"online"}
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+
+# The first check could have read the pre-reboot retained online state. Verify only logs
+# written after the current container StartedAt timestamp.
+$ docker inspect aircon-zigbee2mqtt
+STARTED_AT=2026-09-06T14:16:07Z RESTARTS=0 STATUS=running
+
+$ docker logs --since '<current StartedAt>' aircon-zigbee2mqtt
+Starting Zigbee2MQTT version 2.14.1
+Serialport opened
+Coordinator firmware version: '{..."revision":20240710,..."type":"ZStack3x0"}'
+Connected to MQTT server
+MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"online"}'
+Zigbee2MQTT started!
+
+# Result: Docker, both containers, the Coordinator, MQTT, and the existing web app
+# all recovered automatically after a real Raspberry Pi reboot.
+# Local hardening: wait for "Zigbee2MQTT started!" from the current container start
+# before accepting the retained MQTT online state.

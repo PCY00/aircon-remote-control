@@ -1,0 +1,46 @@
+{
+  "capture_id": "cool-17-high-temp-down-01",
+  "captured_at": "2026-08-29T20:55:00+09:00",
+  "remote_id": "remote-16214-15597",
+  "button": "temperature_down",
+  "display_state_before": {
+    "mode": "cool",
+    "temperature_c": 18,
+    "fan": "high"
+  },
+  "display_state_after": {
+    "mode": "cool",
+    "temperature_c": 17,
+    "fan": "high",
+    "confirmed_by_user": true
+  },
+  "receiver": {
+    "module": "HW-477 V0.2",
+    "gpio_bcm": 17,
+    "physical_pin": 11,
+    "device": "/dev/lirc0"
+  },
+  "conditions": {
+    "distance_cm": "5-10",
+    "press_count": 1,
+    "capture_mode": "one-shot"
+  },
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 178962,
+    "median_data_pulse_us": 563,
+    "median_short_space_us": 518,
+    "median_long_space_us": 1593,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": ["b2", "4d", "3f", "c0", "10", "ef"],
+    "same_bits_as_temp_up_test_01": true,
+    "interpretation": "unexpected; first button identity or relative-command protocol must be checked"
+  },
+  "capture_command": "timeout --signal=INT 90s ir-ctl --one-shot --receive --device=/dev/lirc0",
+  "raw_compact_file": "../raw/cool-17-high-temp-down-01.compact",
+  "send_format_file": "../raw/cool-17-high-temp-down-01.ir"
+}

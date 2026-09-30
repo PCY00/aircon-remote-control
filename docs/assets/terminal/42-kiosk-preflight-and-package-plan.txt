@@ -1,0 +1,33 @@
+# Raspberry Pi OS Lite 키오스크 설치 사전 검사
+
+# 로컬 회귀 테스트
+> .venv\Scripts\python.exe -m pytest -q
+.......................................................... [100%]
+58 passed in 1.87s
+
+# 새 키오스크 테스트 정적 검사
+> .venv\Scripts\python.exe -m ruff check tests/test_kiosk_assets.py
+All checks passed!
+
+# 원격 대상 파일 확인: 기존 파일을 덮어쓰지 않음
+MISSING scripts/run_kiosk.sh
+MISSING scripts/setup_kiosk.sh
+MISSING deploy/systemd/aircon-kiosk.service
+MISSING docs/operations/kiosk-display.md
+
+# Pi에서 전송 파일의 Bash 문법 검사
+> bash -n scripts/run_kiosk.sh scripts/setup_kiosk.sh
+exit=0
+
+# 실제 APT 설치 계획
+The following packages will be upgraded:
+  libdrm-common libdrm2
+2 upgraded, 129 newly installed, 0 to remove and 96 not upgraded.
+Need to get 302 MB of archives.
+After this operation, 798 MB of additional disk space will be used.
+
+# 핵심 패키지
+cage
+chromium
+chromium-sandbox
+fonts-noto-cjk

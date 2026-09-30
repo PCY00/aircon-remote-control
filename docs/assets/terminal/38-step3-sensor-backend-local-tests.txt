@@ -1,0 +1,18 @@
+# Step 3 센서 백엔드 로컬 검증 — 2026-09-07
+# Raspberry Pi 변경 없이 Windows 프로젝트 가상환경에서 실행
+
+> .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+Successfully installed aircon-remote-controller-0.5.0 paho-mqtt-2.1.0
+
+> .\.venv\Scripts\python.exe -m ruff check app tests
+All checks passed!
+
+> .\.venv\Scripts\python.exe -m pytest -q
+...................................................                      [100%]
+51 passed in 1.95s
+
+# 성공 기준
+# - MQTT/센서 코드와 기존 에어컨 기능의 전체 회귀 테스트 통과
+# - 첫 도어 관측은 기준 상태만 저장
+# - 실제 open/closed 전환만 이벤트 이력에 추가
+# - 온습도·배터리 부분 보고 병합과 SQLite 재시작 복원 확인

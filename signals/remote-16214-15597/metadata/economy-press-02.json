@@ -1,0 +1,65 @@
+{
+  "capture_id": "economy-press-02",
+  "captured_at": "2026-08-29T21:30:16+09:00",
+  "timestamp_note": "Timestamp recorded after the four-capture sequence completed.",
+  "remote_id": "remote-16214-15597",
+  "capture_group": "economy-and-turbo-sequence-01",
+  "sequence_index": 2,
+  "button": "economy",
+  "intended_press": "second_press",
+  "display_state_before": {
+    "power": "on",
+    "mode": "cool",
+    "temperature_c": 17,
+    "fan": "no_arrow_auto_candidate"
+  },
+  "display_state_after": {
+    "power": "on",
+    "mode": "cool",
+    "temperature_c": 17,
+    "fan": "no_arrow_auto_candidate",
+    "option_indicator_visible": false,
+    "visible_change": false,
+    "confirmed_by_user": true
+  },
+  "receiver": {
+    "module": "HW-477 V0.2",
+    "gpio_bcm": 17,
+    "physical_pin": 11,
+    "device": "/dev/lirc0"
+  },
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 178932,
+    "median_data_pulse_us": 556,
+    "median_short_space_us": 515,
+    "median_long_space_us": 1610,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_frames_observed": [
+      [
+        "b2",
+        "4d",
+        "bf",
+        "40",
+        "00",
+        "ff"
+      ],
+      [
+        "b2",
+        "4d",
+        "bf",
+        "40",
+        "00",
+        "ff"
+      ]
+    ],
+    "all_byte_pairs_are_bitwise_complements": true,
+    "semantic_interpretation": "Second economy press caused no additional visible change and transmitted the current cool-17-auto-fan-candidate state."
+  },
+  "raw_compact_file": "../raw/economy-press-02.compact",
+  "send_format_file": "../raw/economy-press-02.ir"
+}

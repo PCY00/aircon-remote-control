@@ -1,0 +1,80 @@
+# Zigbee2MQTT start attempted; Raspberry Pi USB host stopped responding
+# 2026-09-08 KST. User approved service recovery and temperature-sensor validation.
+# Door manipulation is unavailable and was not requested.
+# No code/config/network-key/DB edits; no Pi reboot in this attempt.
+
+# Before: GET /api/v1/sensors/sensor_temperature_01 (selected fields)
+# Verify the exact configured serial path, then:
+Pi$ docker start aircon-zigbee2mqtt
+BEFORE_START_KST=2026-09-08T08:38:58.3887436+09:00
+{"state":{"temperature_c":24.86,"humidity_percent":38.92,"battery_percent":100,"voltage_mv":3000,"linkquality":138},"last_reported_at":"2026-09-07T22:52:29.393+09:00","last_received_at":"2026-09-07T22:52:29.404068+09:00","source_timestamp":"2026-09-07T22:52:29.393+09:00"}
+CONFIGURED_SERIAL_DEVICE_PRESENT=true
+2026-09-08T08:38:59+09:00
+aircon-zigbee2mqtt
+STATUS=running STARTED_AT=2026-09-07T23:39:00.269824861Z
+START_COMMAND_EXIT=0
+
+# Read-only diagnostics after startup failed (output excerpts):
+# docker inspect State / Devices; lsusb; ls -l /dev/ttyUSB* /dev/serial/by-id/*
+# journalctl -k --since '2026-09-08 08:38:00' --no-pager
+# docker logs --since '2026-09-07T23:39:00Z' --timestamps aircon-zigbee2mqtt
+# Docker virtual-network chatter omitted; identifiers redacted.
+2026-09-08T08:39:46+09:00
+STATE={"Status":"exited","Running":false,"Paused":false,"Restarting":false,"OOMKilled":false,"Dead":false,"Pid":0,"ExitCode":1,"Error":"error gathering device information while adding custom device \"/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_[REDACTED]\": no such file or directory","StartedAt":"2026-09-07T23:39:00.269824861Z","FinishedAt":"2026-09-07T23:39:13.478144789Z"} DEVICES=[{"PathOnHost":"/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_[REDACTED]","PathInContainer":"/dev/ttyUSB0","CgroupPermissions":"rwm"}]
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+ls: cannot access '/dev/ttyUSB*': No such file or directory
+ls: cannot access '/dev/serial/by-id/*': No such file or directory
+Sep 08 08:39:13 AC kernel: xhci_hcd 0000:01:00.0: xHCI host not responding to stop endpoint command
+Sep 08 08:39:13 AC kernel: xhci_hcd 0000:01:00.0: Host halt failed, -110
+Sep 08 08:39:13 AC kernel: xhci_hcd 0000:01:00.0: xHCI host controller not responding, assume dead
+Sep 08 08:39:13 AC kernel: xhci_hcd 0000:01:00.0: HC died; cleaning up
+Sep 08 08:39:13 AC kernel: cp210x ttyUSB0: failed set request 0x0 status: -110
+Sep 08 08:39:13 AC kernel: usb 1-1: USB disconnect, device number 2
+Sep 08 08:39:13 AC kernel: usb 1-1.2: USB disconnect, device number 11
+Sep 08 08:39:13 AC kernel: cp210x ttyUSB0: cp210x_open - Unable to enable UART
+Sep 08 08:39:13 AC kernel: cp210x ttyUSB0: cp210x converter now disconnected from ttyUSB0
+Sep 08 08:39:13 AC kernel: cp210x 1-1.2:1.0: device disconnected
+2026-09-07T23:39:00.270434038Z Using '/app/data' as data directory
+2026-09-07T23:39:00.371489470Z Starting Zigbee2MQTT without watchdog.
+2026-09-07T23:39:02.924246886Z [2026-09-08 08:39:02] info: 	z2m: Logging to console
+2026-09-07T23:39:02.970511002Z [2026-09-08 08:39:02] info: 	z2m: Starting Zigbee2MQTT version 2.14.1 (commit #3c3d8c1a71cabb31f1b97ad268681dd3f747ce19
+2026-09-07T23:39:02.970586723Z )
+2026-09-07T23:39:02.974510818Z [2026-09-08 08:39:02] info: 	z2m: Starting zigbee-herdsman (10.9.2)
+2026-09-07T23:39:03.108387456Z [2026-09-08 08:39:03] info: 	zh:adapter:discovery: Matched adapter: {"path":"/dev/ttyUSB0","manufacturer":"Silicon Labs","serialNumber":"[REDACTED]","pnpId":"usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_[REDACTED]","vendorId":"10c4","productId":"ea60"} => zstack: 2
+2026-09-07T23:39:03.201867398Z [2026-09-08 08:39:03] info: 	zh:zstack:znp: Opening SerialPort with {"path":"/dev/ttyUSB0","baudRate":115200,"rtscts":false,"autoOpen":false}
+2026-09-07T23:39:13.429893941Z [2026-09-08 08:39:13] error: 	z2m: Error while starting zigbee-herdsman
+2026-09-07T23:39:13.433741666Z [2026-09-08 08:39:13] error: 	z2m: Failed to start zigbee-herdsman
+2026-09-07T23:39:13.433834610Z [2026-09-08 08:39:13] error: 	z2m: Check https://www.zigbee2mqtt.io/guide/installation/20_zigbee2mqtt-fails-to-start_crashes-runtime.html for possible solutions
+2026-09-07T23:39:13.433847980Z [2026-09-08 08:39:13] error: 	z2m: Exiting...
+2026-09-07T23:39:13.435613937Z [2026-09-08 08:39:13] error: 	z2m: Error: Error: I/O error, cannot open /dev/ttyUSB0
+
+Pi$ date --iso-8601=seconds
+Pi$ vcgencmd get_throttled
+Pi$ vcgencmd measure_temp
+Pi$ findmnt -n -o SOURCE,FSTYPE /
+Pi$ cat /sys/module/usbcore/parameters/autosuspend
+Pi$ systemctl --user is-active aircon-controller
+Pi$ systemctl is-active aircon-kiosk
+Pi$ docker inspect --format '{{.Name}} {{.State.Status}}' aircon-mosquitto aircon-zigbee2mqtt
+Pi$ lsusb
+Pi$ uname -r
+2026-09-08T08:40:17+09:00
+throttled=0x0
+temp=38.9'C
+/dev/mmcblk0p2 ext4
+2
+active
+active
+/aircon-mosquitto running
+/aircon-zigbee2mqtt exited
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+6.18.34+rpt-rpi-v8
+
+# Result: service start command succeeded, but gateway initialization failed.
+# Kernel says xHCI host controller stopped responding and cleaned up USB devices.
+# No new temperature report verified. The before-start values are historical cache.
+# throttled=0x0 is not proof that every USB power/connection problem is excluded.
+# Root cause remains unconfirmed. Whole-Pi reboot requires a new approval.
+

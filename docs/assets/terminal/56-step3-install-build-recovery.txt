@@ -1,0 +1,130 @@
+# Step 3 build backend failure and recovery — 2026-09-08
+# Actual output; project path and ephemeral cache path redacted.
+
+Pi$ .venv/bin/python -m pip install --no-deps --no-build-isolation -e .
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Obtaining file://[PI_PROJECT]
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+ERROR: Exception:
+Traceback (most recent call last):
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/cli/base_command.py", line 105, in _run_wrapper
+    status = _inner_run()
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/cli/base_command.py", line 96, in _inner_run
+    return self.run(options, args)
+           ~~~~~~~~^^^^^^^^^^^^^^^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/cli/req_command.py", line 68, in wrapper
+    return func(self, options, args)
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/commands/install.py", line 387, in run
+    requirement_set = resolver.resolve(
+        reqs, check_supported_wheels=not options.target_dir
+    )
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/resolver.py", line 77, in resolve
+    collected = self.factory.collect_root_requirements(root_reqs)
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/factory.py", line 545, in collect_root_requirements
+    reqs = list(
+        self._make_requirements_from_install_req(
+    ...<2 lines>...
+        )
+    )
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/factory.py", line 501, in _make_requirements_from_install_req
+    cand = self._make_base_candidate_from_link(
+        ireq.link,
+    ...<2 lines>...
+        version=None,
+    )
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/factory.py", line 212, in _make_base_candidate_from_link
+    self._editable_candidate_cache[link] = EditableCandidate(
+                                           ~~~~~~~~~~~~~~~~~^
+        link,
+        ^^^^^
+    ...<3 lines>...
+        version=version,
+        ^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/candidates.py", line 331, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        link=link,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        version=version,
+        ^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/candidates.py", line 159, in __init__
+    self.dist = self._prepare()
+                ~~~~~~~~~~~~~^^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/candidates.py", line 236, in _prepare
+    dist = self._prepare_distribution()
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/resolution/resolvelib/candidates.py", line 341, in _prepare_distribution
+    return self._factory.preparer.prepare_editable_requirement(self._ireq)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/operations/prepare.py", line 703, in prepare_editable_requirement
+    dist = _get_prepared_distribution(
+        req,
+    ...<3 lines>...
+        self.check_build_deps,
+    )
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/operations/prepare.py", line 71, in _get_prepared_distribution
+    abstract_dist.prepare_distribution_metadata(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        finder, build_isolation, check_build_deps
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/distributions/sdist.py", line 69, in prepare_distribution_metadata
+    self.req.prepare_metadata()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/req/req_install.py", line 567, in prepare_metadata
+    and self.supports_pyproject_editable
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/functools.py", line 1026, in __get__
+    val = self.func(instance)
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_internal/req/req_install.py", line 258, in supports_pyproject_editable
+    return "build_editable" in self.pep517_backend._supported_features()
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_impl.py", line 180, in _supported_features
+    return self._call_hook("_supported_features", {})
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "[PI_PROJECT]/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_impl.py", line 402, in _call_hook
+    raise BackendUnavailable(
+    ...<4 lines>...
+    )
+pip._vendor.pyproject_hooks._impl.BackendUnavailable: Cannot import 'setuptools.build_meta'
+
+# Missing local build backend. Restore pip's default isolated build environment.
+# --no-deps preserves existing application dependencies.
+Pi$ .venv/bin/python -m pip install --no-deps -e .
+Pi$ .venv/bin/python -m pip check
+Pi$ systemctl --user restart aircon-controller
+Pi$ systemctl --user show aircon-controller -p ActiveState -p SubState -p NRestarts
+Pi$ .venv/bin/python -m pip show aircon-remote-controller | grep '^Version:'
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Obtaining file://[PI_PROJECT]
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: aircon-remote-controller
+  Building editable for aircon-remote-controller (pyproject.toml): started
+  Building editable for aircon-remote-controller (pyproject.toml): finished with status 'done'
+  Created wheel for aircon-remote-controller: filename=aircon_remote_controller-0.7.0-0.editable-py3-none-any.whl size=5037 sha256=4c44b61bc4f56090b5a75c029aa85decda14fc0ae813393119dc5ed954f69b28
+  Stored in directory: [EPHEMERAL_BUILD_CACHE]
+Successfully built aircon-remote-controller
+Installing collected packages: aircon-remote-controller
+  Attempting uninstall: aircon-remote-controller
+    Found existing installation: aircon-remote-controller 0.6.0
+    Uninstalling aircon-remote-controller-0.6.0:
+      Successfully uninstalled aircon-remote-controller-0.6.0
+Successfully installed aircon-remote-controller-0.7.0
+No broken requirements found.
+NRestarts=0
+ActiveState=active
+SubState=running
+Version: 0.7.0

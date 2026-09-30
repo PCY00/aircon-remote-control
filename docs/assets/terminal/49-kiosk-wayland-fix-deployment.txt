@@ -1,0 +1,35 @@
+$ sha256sum deploy/systemd/aircon-kiosk.service scripts/run_kiosk.sh scripts/setup_kiosk.sh
+[SHA-256]  deploy/systemd/aircon-kiosk.service
+[SHA-256]  scripts/run_kiosk.sh
+[SHA-256]  scripts/setup_kiosk.sh
+
+# 로컬 기준본과 Raspberry Pi의 세 파일 SHA-256이 각각 일치했다.
+$ bash -n scripts/run_kiosk.sh
+$ bash -n scripts/setup_kiosk.sh
+$ systemd-analyze verify deploy/systemd/aircon-kiosk.service
+# 출력 없음: 두 스크립트와 unit 검증 통과
+
+$ sudo install -d -o air -g air -m 0750 /home/air/aircon-controller/runtime/kiosk/cache
+$ sudo install -o root -g root -m 0644 deploy/systemd/aircon-kiosk.service /etc/systemd/system/aircon-kiosk.service
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart aircon-kiosk.service
+$ systemctl is-active aircon-kiosk.service
+active
+
+$ systemctl show aircon-kiosk.service -p NRestarts --value
+0
+
+$ pgrep -a -f 'cage|chromium'
+[PID] /usr/bin/cage -d -s -- /usr/bin/chromium --kiosk [...] http://[TAILSCALE-IP]:8001/
+[PID] /usr/lib/chromium/chromium --kiosk [...] --ozone-platform=wayland [...]
+
+$ find /run/user/1000 -maxdepth 1 -type s -name 'wayland-*' -printf '%f\n'
+wayland-0
+
+$ curl -o /dev/null -s -w '%{http_code}\n' http://[TAILSCALE-IP]:8001/health
+200
+
+$ journalctl -b --since '[RESTART-TIME]' --no-pager | grep -E 'Unable to open Wayland socket|mesa_shader_cache.*Read-only'
+# 출력 없음: 기존 두 치명 원인 재발 없음
+
+# 성공 판단: Cage뿐 아니라 Chromium 자식과 wayland-0이 생성되고 health가 200이어야 한다.

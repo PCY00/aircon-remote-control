@@ -1,0 +1,52 @@
+name: aircon-zigbee
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.1.2-alpine
+    container_name: aircon-mosquitto
+    restart: unless-stopped
+    user: "${HOST_UID}:${HOST_GID}"
+    command: ["mosquitto", "-c", "/mosquitto/config/mosquitto.conf"]
+    ports:
+      - "127.0.0.1:1883:1883"
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ${ZIGBEE_RUNTIME_DIR}/mosquitto/passwords:/mosquitto/config/passwords:ro
+      - ${ZIGBEE_RUNTIME_DIR}/mosquitto/data:/mosquitto/data
+    networks:
+      - zigbee-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  zigbee2mqtt:
+    image: ghcr.io/koenkk/zigbee2mqtt:2.14.1
+    container_name: aircon-zigbee2mqtt
+    restart: unless-stopped
+    user: "${HOST_UID}:${HOST_GID}"
+    group_add:
+      - "${DIALOUT_GID}"
+    depends_on:
+      - mosquitto
+    devices:
+      - "${ZIGBEE_ADAPTER_PATH}:/dev/ttyUSB0"
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ${ZIGBEE_RUNTIME_DIR}/zigbee2mqtt:/app/data
+      - /run/udev:/run/udev:ro
+    environment:
+      TZ: "${TZ}"
+    networks:
+      - zigbee-internal
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  zigbee-internal:
+    name: aircon-zigbee-internal

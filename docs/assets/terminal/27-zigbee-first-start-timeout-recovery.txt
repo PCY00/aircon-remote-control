@@ -1,0 +1,47 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee Step 1 - first-start timeout, diagnosis, and successful recheck
+# Private addresses, device serials, MQTT client IDs, and credentials are omitted.
+
+$ ./scripts/check_zigbee_stack.sh
+[containers]
+aircon-mosquitto     eclipse-mosquitto:2.1.2-alpine      Up      127.0.0.1:1883->1883/tcp
+aircon-zigbee2mqtt   ghcr.io/koenkk/zigbee2mqtt:2.14.1   Up      127.0.0.1:8080->8080/tcp
+
+[zigbee2mqtt milestones]
+Starting Zigbee2MQTT without watchdog.
+Starting Zigbee2MQTT version 2.14.1
+
+[mqtt bridge state]
+Timed out
+
+# Read-only diagnosis immediately after the timeout
+$ docker inspect '<containers>'
+aircon-mosquitto restart=0 status=running exit=0 error=
+aircon-zigbee2mqtt restart=0 status=running exit=0 error=
+
+$ docker compose ... logs --tail=300 zigbee2mqtt
+Opening SerialPort with {"path":"/dev/ttyUSB0","baudRate":115200,...}
+Serialport opened
+Wrote coordinator backup to '/app/data/coordinator_backup.json'
+Coordinator firmware version: '{..."revision":20240710,..."type":"ZStack3x0"}'
+Currently 0 devices are joined.
+Connected to MQTT server
+MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"online"}'
+Started frontend on port 8080
+Zigbee2MQTT started!
+
+# Root cause: the first initialization completed about 29 seconds after startup,
+# but the first check began early and waited only 15 seconds for the MQTT state.
+$ ./scripts/check_zigbee_stack.sh
+[mqtt bridge state]
+{"state":"online"}
+
+[host listeners]
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+
+[existing application]
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+
+# Local correction: increase the check timeout from 15 to 60 seconds.

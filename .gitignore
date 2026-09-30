@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# JavaScript dependencies and package-manager cache
+node_modules/
+.pnpm-store/
+
+# Virtual environments
+.venv/
+venv/
+
+# Runtime data
+.env
+.env.*
+!.env.example
+logs/
+runtime/
+runtime_preview/
+tmp/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local deployment state and secrets
+.deploy/
+*.pem
+*.key
+*.pfx
+*.p12
+secrets/
+known_hosts.local
+
+# Private attachments and generated firmware artifacts (keep originals on disk)
+.codex-remote-attachments/
+firmware/**/build/
+firmware/**/managed_components/
+firmware/**/sdkconfig
+firmware/**/sdkconfig.old
+firmware/*.zip
+
+# Generated artifact-inspection sidecars
+*.inspect.ndjson

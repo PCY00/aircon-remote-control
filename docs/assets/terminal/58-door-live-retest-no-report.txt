@@ -1,0 +1,52 @@
+# Step 3 live door retest — 2026-09-08 (KST)
+# User moved the magnet and reported completion during this observation.
+# Read-only: no reset, pairing, restart, DB edit, or IR command.
+
+# Follow the gateway logs for up to 50 seconds, including the preceding 90 seconds.
+Pi$ timeout 50 docker logs --follow --since 90s --timestamps aircon-zigbee2mqtt 2>&1 | grep --line-buffered -E "topic .*zigbee2mqtt/sensor_door_01|error|warn"
+# No matching output. grep exit=1 means no matching lines, not proof of a broken service.
+
+# Poll current door state and history every 2 seconds for 45 seconds.
+# Request paths:
+# GET /api/v1/sensors
+# GET /api/v1/sensors/[DOOR_ID]/events?limit=20
+# Print state/report time only on change, and new event IDs once (IDs omitted).
+# Select events with received_at >= 2026-09-08T07:57:00+09:00.
+# All displayed timestamps converted to Korea Standard Time.
+OBSERVATION_STARTED_KST=2026-09-08 08:15:54 +09:00
+DOOR_STATE=closed LAST_REPORTED_KST=2026-09-07 20:22:39 +09:00
+NEW_EVENTS_OBSERVED=0
+
+# Gateway did not publish a door report during the bounded test window.
+# API still shows yesterday's cached closed state.
+# Sensor LED response is awaiting user confirmation; root cause remains unresolved.
+
+# User observation after the bounded test: sensor LED blinked on magnet movement.
+# This is not proof of a successful radio transmission.
+
+PS> Invoke-RestMethod 'http://[PI_TAILSCALE_IP]:8001/api/v1/zigbee/devices'
+PS> Invoke-RestMethod 'http://[PI_TAILSCALE_IP]:8001/api/v1/sensors/status'
+PS> Invoke-RestMethod 'http://[PI_TAILSCALE_IP]:8001/api/v1/zigbee/join'
+# Selected non-secret fields:
+{"friendly_name":"sensor_door_01","model":"TS0203","model_id":"TS0203","supported":true,"interview_state":"SUCCESSFUL","interviewing":false}
+{"friendly_name":"sensor_temperature_01","model":"TH01","model_id":"TH01","supported":true,"interview_state":"SUCCESSFUL","interviewing":false}
+{"connected":true,"running":true,"last_message_at":"2026-09-08T07:42:15.992563+09:00","last_error":null}
+PERMIT_JOIN=False
+
+# Gateway startup messages, excluding recurring bridge/health payloads:
+Pi$ docker logs --timestamps aircon-zigbee2mqtt 2>&1 | grep -v 'bridge/health' | grep -Ei 'started|resumed|commission|backup|network.*(mismatch|differ)|warn|error|failed|left|leave' | tail -15
+2026-09-06T23:54:23.163029983Z [2026-09-07 08:54:23] info: 	z2m: Started frontend on port 8080
+2026-09-06T23:54:23.172698802Z [2026-09-07 08:54:23] info: 	z2m: Zigbee2MQTT started!
+2026-09-07T00:05:06.181329007Z [2026-09-07 09:05:06] error: 	z2m: MQTT error: read ECONNRESET
+2026-09-07T00:05:14.815462629Z [2026-09-07 09:05:14] info: 	zh:controller: Wrote coordinator backup to '/app/data/coordinator_backup.json'
+2026-09-07T00:06:09.589663896Z [2026-09-07 09:06:09] info: 	z2m: zigbee-herdsman started (resumed)
+2026-09-07T00:06:10.144428136Z [2026-09-07 09:06:10] info: 	z2m: Started frontend on port 8080
+2026-09-07T00:06:10.154189896Z [2026-09-07 09:06:10] info: 	z2m: Zigbee2MQTT started!
+2026-09-07T12:16:42.022543289Z [2026-09-07 21:16:42] info: 	z2m: zigbee-herdsman started (resumed)
+2026-09-07T12:16:42.566465252Z [2026-09-07 21:16:42] info: 	z2m: Started frontend on port 8080
+2026-09-07T12:16:42.576303567Z [2026-09-07 21:16:42] info: 	z2m: Zigbee2MQTT started!
+2026-09-07T12:46:03.270241238Z [2026-09-07 21:46:03] error: 	z2m: MQTT error: read ECONNRESET
+2026-09-07T12:46:11.480327255Z [2026-09-07 21:46:11] info: 	zh:controller: Wrote coordinator backup to '/app/data/coordinator_backup.json'
+2026-09-07T12:47:21.540841686Z [2026-09-07 21:47:21] info: 	z2m: zigbee-herdsman started (resumed)
+2026-09-07T12:47:22.098679797Z [2026-09-07 21:47:22] info: 	z2m: Started frontend on port 8080
+2026-09-07T12:47:22.108666205Z [2026-09-07 21:47:22] info: 	z2m: Zigbee2MQTT started!

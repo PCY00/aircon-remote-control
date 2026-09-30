@@ -1,0 +1,34 @@
+# Door test after battery reinsertion — 2026-09-08
+# User confirmed: brief RESET press, battery removed/reinserted,
+# then magnet separated and reattached after the requested pause.
+# Read-only checks only. No permit-join, restart, or device deletion.
+# API/command output below is real; IP/IEEE identifiers are omitted or redacted.
+
+# GET /api/v1/sensors/status
+# GET /api/v1/sensors
+# GET /api/v1/sensors/[DOOR_ID]/events?limit=20
+# GET /api/v1/zigbee/join
+# Selected API fields and log-filter exit status:
+CHECKED_AT_KST=2026-09-08T08:30:23.2455687+09:00
+{"enabled":true,"running":true,"connected":true,"last_connected_at":"2026-09-08T07:42:15.988701+09:00","last_disconnected_at":null,"last_message_at":"2026-09-08T07:42:15.992563+09:00","last_error":null,"stored_sensor_count":2}
+{"state":{"contact":true,"door_state":"closed","tamper":false,"battery_low":false,"battery_percent":100,"voltage_mv":3100,"linkquality":94},"last_reported_at":"2026-09-07T20:22:39.473+09:00","last_received_at":"2026-09-07T21:47:22.161361+09:00","last_changed_at":"2026-09-07T20:15:53.743+09:00"}
+[{"occurred_at":"2026-09-07T20:15:53.743+09:00","state":"closed","previous_state":"open"},{"occurred_at":"2026-09-07T20:15:46.964+09:00","state":"open","previous_state":"closed"},{"occurred_at":"2026-09-07T20:00:17.877+09:00","state":"closed","previous_state":"open"},{"occurred_at":"2026-09-07T20:00:15.474+09:00","state":"open","previous_state":"closed"},{"occurred_at":"2026-09-07T20:00:13.795+09:00","state":"closed","previous_state":"open"},{"occurred_at":"2026-09-07T20:00:01.248+09:00","state":"open","previous_state":"closed"}]
+PERMIT_JOIN=False
+LOG_FILTER_EXIT=1
+
+# The LOG_FILTER_EXIT=1 above came from this command (no matching lines):
+Pi$ docker logs --since 10m --timestamps aircon-zigbee2mqtt 2>&1 | grep -E "sensor_door_01|interview|joined|left|announce|error|warn"
+
+Pi$ date --iso-8601=seconds
+Pi$ docker inspect --format "{{.Name}} {{.State.Status}} StartedAt={{.State.StartedAt}} RestartCount={{.RestartCount}}" aircon-mosquitto aircon-zigbee2mqtt
+Pi$ docker logs --since 10m --timestamps aircon-zigbee2mqtt 2>&1 | grep -F "bridge/health" | tail -n 2
+2026-09-08T08:30:42+09:00
+/aircon-mosquitto running StartedAt=2026-09-07T12:46:38.497593021Z RestartCount=0
+/aircon-zigbee2mqtt running StartedAt=2026-09-07T12:46:38.652883614Z RestartCount=0
+2026-09-07T23:27:22.142880485Z [2026-09-08 08:27:22] info: 	z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/health', payload '{"response_time":1788823642141,"os":{"load_average":[0,0,0],"memory_used_mb":787.03,"memory_percent":42.6643},"process":{"uptime_sec":38422,"memory_used_mb":123.16,"memory_percent":6.6764},"mqtt":{"connected":true,"queued":0,"published":163,"received":12},"devices":{"[REDACTED_IEEE]":{"messages":6,"messages_per_sec":0.0002,"leave_count":0,"network_address_changes":0}}}'
+
+# Result: no new door report/event observed after the user-reported test.
+# Both containers are running and the recent bridge health says MQTT connected=true.
+# Historical door data does not confirm current RF connectivity.
+# Re-pairing is proposed next, subject to separate user approval.
+

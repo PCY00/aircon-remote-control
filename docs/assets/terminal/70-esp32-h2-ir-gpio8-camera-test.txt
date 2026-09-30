@@ -1,0 +1,31 @@
+PS> ./scripts/esp32_h2_firmware.ps1 flash -Port COM6
+Executing action: flash
+[4/10] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+[7/10] Linking CXX executable aircon_h2_ir_node.elf
+[8/10] Generating binary image from built executable
+Successfully created esp32h2 image.
+aircon_h2_ir_node.bin binary size 0x2d000 bytes.
+Smallest app partition is 0x100000 bytes. 0xd3000 bytes (82%) free.
+Hash of data verified.
+Hash of data verified.
+Hash of data verified.
+Leaving...
+Hard resetting via RTS pin...
+
+PS> ./scripts/esp32_h2_firmware.ps1 monitor -Port COM6
+I (105) h2_ir_node: booted with ESP-IDF v5.5.4
+I (105) h2_ir_node: IR output ready: GPIO8, 38 kHz, duty 33%
+
+ESP32-H2 IR test commands
+  c : camera test (does not contain an A/C command)
+  n : Carrier CS-A061GS power on / cool 17 C / high fan
+  f : Carrier CS-A061GS power off
+  h : show this help
+
+[c]
+I (105385) h2_ir_node: camera test: ten 20 ms IR bursts on GPIO8
+I (107385) h2_ir_node: camera test complete
+I (107385) h2_ir_node: camera test: ten 20 ms IR bursts on GPIO8
+I (109385) h2_ir_node: camera test complete
+
+Physical verification: the external 940 nm IR LED was visible through the phone camera.

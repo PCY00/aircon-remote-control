@@ -1,0 +1,30 @@
+# SANITIZED TERMINAL RECORD
+# Terminal capture dependency failure and fix
+
+PS> .\.venv\Scripts\python.exe scripts\render_terminal_capture.py <input.txt> <output.png>
+Traceback (most recent call last):
+  File "scripts/render_terminal_capture.py", line 9, in <module>
+    from PIL import Image, ImageDraw, ImageFont
+ModuleNotFoundError: No module named 'PIL'
+
+PS> py -3.12 -c "import PIL; print(PIL.__version__)"
+12.2.0
+
+PS> .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+Collecting pillow<13,>=11
+Successfully installed aircon-remote-controller-0.4.0 pillow-12.3.0
+
+PS> .\.venv\Scripts\python.exe scripts\render_terminal_capture.py <input.txt> <output.png>
+CAPTURE_RENDER=success
+
+PS> .\.venv\Scripts\python.exe -m pytest -q
+...............................                                          [100%]
+31 passed in 1.10s
+
+PS> .\.venv\Scripts\ruff.exe check scripts\render_terminal_capture.py
+All checks passed!
+
+PS> .\.venv\Scripts\ruff.exe check scripts\convert_ir_compact.py --diff
+Would fix 1 error.
+# Existing IR helper formatting was left unchanged because it is outside this Zigbee task.
+

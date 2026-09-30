@@ -1,0 +1,19 @@
+IR receiver API live capture verification
+Date: 2026-08-29
+
+capture_name=step2-final-temperature-up
+status=completed
+token_count=199
+frame_count=2
+bits_per_frame=48
+frames_identical=true
+payload_hex=b2 4d 3f c0 13 04
+pulse_median_us=566
+short_space_median_us=514
+long_space_median_us=1613
+interframe_gap_us=5139
+profile=carrier-16214-15597
+profile_validation=matched
+files=metadata-json, compact-raw, irctl-send
+
+The UUID, private addresses, account data, credentials, and Tailnet identifiers were omitted.

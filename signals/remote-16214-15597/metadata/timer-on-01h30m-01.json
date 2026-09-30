@@ -1,0 +1,49 @@
+{
+  "capture_id": "timer-on-01h30m-01",
+  "captured_at": "2026-08-29T22:04:01+09:00",
+  "remote_id": "remote-16214-15597",
+  "button": "timer_on_select",
+  "display_state_before": {
+    "timer_on_hours": 1
+  },
+  "display_state_after": {
+    "timer_on_hours": 1.5,
+    "timer_on_indicator_visible": true,
+    "confirmed_by_user": true
+  },
+  "interaction": {
+    "button_presses_during_capture": 1,
+    "commit_behavior": "IR transmitted after approximately one second without further input"
+  },
+  "receiver": {
+    "module": "HW-477 V0.2",
+    "gpio_bcm": 17,
+    "physical_pin": 11,
+    "device": "/dev/lirc0"
+  },
+  "observations": {
+    "timing_token_count": 199,
+    "pulse_count": 100,
+    "space_count": 99,
+    "total_duration_us": 170335,
+    "median_data_pulse_us": 589,
+    "median_short_space_us": 505,
+    "median_long_space_us": 1561,
+    "frame_count": 2,
+    "bits_per_frame": 48,
+    "frames_identical": true,
+    "msb_first_bytes_observed": [
+      "b2",
+      "4d",
+      "3f",
+      "c0",
+      "03",
+      "05"
+    ],
+    "timer_half_hour_step_index": 3,
+    "last_byte_pair_is_bitwise_complement": false,
+    "hypothesis": "Byte 5 value 0x03 equals three half-hour steps for 1.5h; byte 6 likely contains timer mode or validation data."
+  },
+  "raw_compact_file": "../raw/timer-on-01h30m-01.compact",
+  "send_format_file": "../raw/timer-on-01h30m-01.ir"
+}

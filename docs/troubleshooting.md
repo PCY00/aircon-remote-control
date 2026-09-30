@@ -1,0 +1,491 @@
+# 문제 해결 기록
+
+문제가 발생할 때 다음 형식으로 누적한다.
+
+## 기록 형식
+
+- 증상:
+- 환경:
+- 재현 방법:
+- 관찰된 오류:
+- 가설:
+- 시도한 방법:
+- 원인:
+- 최종 해결:
+- 검증:
+- 재발 방지:
+
+## 스마트홈 아이콘이 글자 기호처럼 보임
+
+- 증상: `집에서`, `외출`, 스탠드 조명과 TV 아이콘이 서로 어울리지 않는 문자 기호로
+  표시됐고, 하단 메뉴 아이콘도 실제 아이콘 대신 단순 기호에 가까웠다.
+- 환경: FastAPI가 제공하는 단일 HTML UI, 외부 CDN 아이콘 스크립트 없음.
+- 원인: HTML에는 `data-lucide` 이름이 있었지만 Lucide 렌더러를 불러오지 않았고,
+  CSS `::before`의 유니코드 문자가 임시 대체물로 표시되고 있었다.
+- 최종 해결: Lucide 1.37.0 UMD 번들과 ISC 라이선스를 `app/static/vendor/`에 고정하고
+  FastAPI `/static` 경로로 제공했다. 임시 문자 CSS를 제거하고 SVG 렌더링으로 교체했다.
+- 검증: 홈 화면에서 임시 `i[data-lucide]` 0개, `svg[data-lucide]` 52개를 확인했다.
+  장면·기기·하단 메뉴의 지정 아이콘 이름이 모두 일치했고 브라우저 warning/error는 0건이었다.
+- 재발 방지: 아이콘 라이브러리는 CDN의 `latest`를 사용하지 않고 버전·라이선스와 함께
+  프로젝트 안에 보존한다. 새로운 아이콘 이름은 로컬 번들에 실제 존재하는지 검사한다.
+
+## 접근성 알림 문장이 화면 아래에 노출됨
+
+- 증상: 테마를 전환하면 `다크 테마 적용` 같은 접근성 알림 문장이 앱 바깥에 보였다.
+- 원인: 알림 영역에 `sr-only` 클래스는 있었지만 시각적으로 숨기는 CSS가 없었다.
+- 최종 해결: 화면 판독기는 읽을 수 있고 시각 화면에서는 1px 영역으로 숨기는 표준
+  `sr-only` 스타일을 추가했다.
+- 검증: 계산된 `position`이 `absolute`이며 최종 라이트·다크 화면에서 문장이 노출되지 않았다.
+
+## 사용자 journalctl에는 파일이 없지만 systemctl에는 서비스 로그가 보임
+
+- 증상: `journalctl --user -u aircon-controller.service`는 `No journal files were found`를
+  반환했지만 서비스는 active였고 Tailscale health 요청도 성공했다.
+- 추가 확인: `systemctl --user status aircon-controller.service`에는 Uvicorn 시작 완료와
+  `/health`, UI, 정적 아이콘, 기기 프로필 API의 HTTP 200 기록이 표시됐다.
+- 영향: 이번 배포와 서비스 동작 검증에는 영향이 없지만 장기간 로그 조회 가능 여부는 아직
+  확인하지 못했다.
+- 현재 판단: 서비스 장애가 아니라 Raspberry Pi OS Lite의 사용자 저널 저장·조회 구성 차이로
+  추정한다. 원인은 아직 확정하지 않았다.
+- 후속 작업: 실제 송신 서비스 운영 전에 저널 저장 정책과 로그 크기 제한을 함께 확인한다.
+
+## 첨부 사진 원본을 찾을 수 없음
+
+- 증상: 대화에 첨부된 이미지는 보이지만 지정된 로컬 경로를 이미지 검사 도구가 열지 못했다.
+- 원인: 해당 시점에 원본 파일이 지정 경로에 없었다.
+- 해결: 사용자가 원본 파일을 복구한 후 파일 목록과 크기를 확인하고 원본 해상도로 다시 검사했다.
+- 검증: 다섯 장 모두 열렸으며 MCU와 PCB 표기를 이전보다 정확히 판독했다.
+- 재발 방지: 블로그에 사용할 원본 사진은 프로젝트의 `docs/assets/`에도 보존한다.
+
+## FastAPI 테스트에서 httpx 사용 중단 예정 경고
+
+- 증상: 테스트 2개는 통과했지만 `Using httpx with starlette.testclient is deprecated; install httpx2 instead` 경고가 출력됐다.
+- 환경: FastAPI 0.141.1, Starlette 1.6.0, httpx 0.28.1.
+- 원인: Starlette 1.x의 `TestClient`가 `httpx2`를 우선 사용하도록 전환됐고 기존 `httpx` 경로는 호환용으로만 남아 있다.
+- 해결: 개발 의존성을 `httpx2>=2.12,<3.0`으로 변경했다.
+- 검증: 의존성 재설치 후 경고를 오류로 취급한 테스트와 정적 검사를 다시 수행한다.
+
+## Windows에서 ssh-keyscan 결과가 나오지 않음
+
+- 증상: Raspberry Pi 주소로 `ssh-keyscan`을 실행했지만 제한 시간 내에 호스트 키가 반환되지 않았다.
+- 확인: ICMP Ping은 성공했고 TCP 22 포트도 열려 있었다.
+- 판단: Raspberry Pi의 SSH 서비스 장애가 아니라 Windows 측 `ssh-keyscan` 동작 문제로 보인다. 정확한 원인은 아직 확정하지 않았다.
+- 해결: 대화형 OpenSSH 연결을 사용해 표시된 ED25519 지문을 확인하고 호스트 키를 로컬 `known_hosts`에 등록했다.
+- 검증: 비밀번호 인증으로 호스트명 `AC`에 정상 접속해 읽기 전용 명령을 수행했다.
+
+## 프로젝트 SSH 공개키가 등록되지 않음
+
+- 증상: `BatchMode=yes` SSH 연결이 `Permission denied (publickey,password)`로 실패했다.
+- 원인: Raspberry Pi의 `authorized_keys` 파일 크기가 0바이트였다. Windows에도 기존 공개키가 없었다.
+- 처리: Windows 사용자 SSH 저장소에 프로젝트 전용 ED25519 키를 생성하고 사용자가 공개키를 Pi의 `authorized_keys`에 추가했다.
+- 검증: 비밀번호로 Pi에 읽기 전용 접속해 `.ssh`가 `700`, `authorized_keys`가 `600`, 소유자가 `air:air`임을 확인했다. 등록된 키는 한 줄의 `ssh-ed25519`이며 지문이 PC 공개키와 일치했다.
+
+## 프로젝트 개인키가 예상과 달리 passphrase를 요구함
+
+- 증상: `ssh -i <프로젝트 개인키> -o IdentitiesOnly=yes air@<Pi>` 실행 시 Pi 계정 비밀번호 대신 개인키 passphrase 입력창이 나타났다.
+- 혼동 지점: 이 입력창은 Pi 로그인 비밀번호 입력창이 아니다. 개인키를 복호화하는 별도의 암호를 요구한다.
+- Pi 측 확인: `~/.ssh` 권한 `700`, `authorized_keys` 권한 `600`, 소유자 `air:air`, 키 형식과 공개키 지문이 모두 정상이었다.
+- PC 측 확인: 빈 passphrase로 개인키의 공개키를 추출하는 검사가 실패해 개인키 자체가 암호화된 것으로 판정했다.
+- 원인: 프로젝트 개인키 생성 과정에서 예상하지 못한 passphrase가 설정됐다.
+- 최종 해결: 기존 키를 덮어쓰거나 삭제하지 않고 `airconpi`라는 Pi 전용 ED25519 키를 새로 만들었다. 자동 배포를 위해 새 키의 passphrase는 비워 두고, 공개키만 기존 `authorized_keys`에 중복 검사 후 추가했다.
+- 검증: Pi에는 기존 키와 새 키가 각각 한 줄씩 남아 있으며 디렉터리·파일 권한과 소유자가 유지됐다. 암호나 대화형 입력을 허용하지 않는 SSH `BatchMode`로 사설 IP와 호스트명 `AC`에 각각 접속했고, 두 경우 모두 호스트명 `AC`와 사용자 `air`를 반환했다.
+- 보안 주의: 개인키 passphrase 입력창에 Pi 계정 비밀번호를 입력하지 않는다. 암호 없는 배포용 개인키는 PC의 사용자 SSH 디렉터리에만 보관하며 저장소나 Pi로 복사하지 않는다. 비밀번호 인증 비활성화는 이번 작업 범위에 포함하지 않았다.
+- 재발 방지: 키 생성 직후 공개키 지문을 기록하고, Pi 등록 후에는 반드시 `BatchMode`로 별도 접속 검증을 수행한다.
+
+## GNU stat 확인 출력에 경로가 반복됨
+
+- 증상: 프로젝트 디렉터리 생성 후 `PATH`, `TYPE`, `MODE`, `OWNER` 사이에 경로가 반복돼 한 줄로 붙은 것처럼 보였다.
+- 원인: `stat -c` 형식 문자열에서 `%n`을 줄바꿈으로 사용했지만 GNU `stat`에서 `%n`은 파일명을 출력한다.
+- 재발: 2026-09-07 Zigbee 백업 파일 검증에서도 여러 필드를 한 형식 문자열에 넣으며
+  같은 실수가 재발했다. 백업 파일 자체에는 영향이 없고 표시만 잘못됐다.
+- 재발 방지: 여러 메타데이터를 출력할 때 줄바꿈 escape를 추측하지 않는다. 파일명은
+  `printf`와 `basename`, 크기·권한·소유자는 별도 `stat -c` 호출로 한 줄씩 출력한다.
+- 영향: 확인 출력만 잘못됐고 디렉터리 생성이나 권한에는 영향이 없었다.
+- 해결: `readlink -f`로 절대 경로를 별도로 확인하고 `stat -c 'TYPE=%F MODE=%a OWNER=%U:%G'`로 메타데이터를 재검증했다.
+- 검증: `/home/air/aircon-controller`, 형식 `directory`, 권한 `755`, 소유자 `air:air`를 확인했다.
+
+## PowerShell에서 SSH로 전달한 Python 한 줄 명령의 따옴표가 깨짐
+
+- 증상: 원격 가상환경에서 FastAPI와 Uvicorn 버전을 출력하려던 `python -c` 명령이 `SyntaxError: unexpected character after line continuation character`로 실패했다.
+- 원인: PowerShell 문자열, SSH 원격 명령, Python 문자열까지 세 단계의 인용을 한 줄에 중첩하면서 Python에 전달될 따옴표가 손실됐다.
+- 영향: 버전 확인 명령만 실패했다. 직전에 실행한 가상환경 Python과 `pip check`는 정상이며 설치 파일은 변경되지 않았다.
+- 해결: 불필요한 중첩 Python 코드를 제거하고 `.venv/bin/python -m pip show fastapi uvicorn`의 결과를 `grep`으로 필터링했다.
+- 검증: FastAPI `0.141.1`, Uvicorn `0.52.4`를 확인했다.
+- 재발 방지: Windows→SSH 원격 검사에서는 가능한 한 단순한 프로그램 옵션을 사용하고, 여러 언어의 문자열 인용을 한 줄에 중첩하지 않는다.
+
+Tailscale 서비스의 `/health`를 자동 검증할 때도 PowerShell이 원격 셸용 `$()`를 먼저 해석하는 같은 유형의 문제가 재발했다. 해결 시에는 `tailscale ip -4`를 별도의 SSH 명령으로 받아 형식을 검사하고, 검증된 주소를 두 번째 curl 명령에 값으로 전달했다. 실제 주소는 출력과 문서에서 제외했다.
+
+## UI 명령은 HTTP 200인데 IR LED가 동작하지 않음
+
+- 증상: UI에서 에어컨 명령을 누르면 API는 성공하지만 송신 LED와 에어컨 반응이 없다.
+- 읽기 전용 확인: `/api/v1/ir/transmitter`가 `transport=mock-ir`,
+  `hardware_output=false`와 실제 송신 없음 설명을 반환했다. `/dev/lirc0`는 수신 전용이고
+  부팅 설정에는 `gpio-ir-tx`가 없었다.
+- 원인: UI와 의미 기반 명령 API만 Pi에 배포됐고 Step 4 물리 송신 경로는 의도적으로 Mock에
+  머물러 있었다. HTTP 성공은 명령 기록 성공이지 IR 방출 성공이 아니었다.
+- 소프트웨어 처리: 실제 `IrCtlTransport`는 송신 가능한 장치를 기능 조회로 확인하고,
+  명령을 raw pulse/space 파일로 직렬화해 `ir-ctl --send`를 실행한다. 장치 없음은 503,
+  실행 오류는 502로 반환하며 실패한 명령을 성공 상태로 기록하지 않는다.
+- 1차 배포 결과: GPIO18 송신 오버레이와 재부팅 후 `/dev/lirc0`가 raw IR 송신 가능,
+  `/dev/lirc1`이 수신 가능으로 열렸다. 오버레이 적용 전 후보였던 `/dev/lirc1`을 송신기로
+  지정하자 API가 `hardware_output=false`와 HTTP 503 보호 동작을 유지했다.
+- 해결: 장치 번호를 추측하지 않고 각 `/dev/lirc*`의 `ir-ctl --features` 결과로 구분해
+  운영 송신 장치를 `/dev/lirc0`로 정정한다.
+- 소프트웨어 검증: 정정 후 상태 API가 `available=true`, `hardware_output=true`를 반환했고,
+  `POWER_OFF` 1회가 38kHz·2프레임·179,670µs로 오류 없이 처리됐다.
+- 후속 검증 순서로 카메라 광출력, HW-477 루프백과 실제 에어컨 반응을 제안했다. 실제로는
+  거리·방향을 먼저 조정해 에어컨 반응을 확인했고, 정확한 성공 거리 측정은 남아 있다.
+
+### 모듈 표시 LED는 점멸하지만 에어컨이 반응하지 않음
+
+- 관찰: 최초 `POWER_OFF` 송신 시 모듈의 LED는 점멸했지만 에어컨은 반응하지 않았다.
+- 해석: 기판의 가시광 표시 LED는 GPIO18과 트랜지스터의 저속 포락선 동작을 보여줄 뿐,
+  투명 IR LED가 충분한 광량과 38kHz 반송파로 출력됐다는 증거는 아니다.
+- 분리 진단: 투명 IR LED의 카메라 확인 → HW-477 5~10cm 루프백 캡처 → 원본 패킷과
+  pulse/space 비교 → 근거리 에어컨 재시험 순서로 진행한다.
+- 결과: 송신기와 에어컨 사이의 거리·방향을 조정한 뒤 실제 에어컨이 정상 동작했다. 회로와
+  패킷은 유효하며 최초 실패는 제한된 광출력·송신 각도·조준 조건에 의한 도달 거리 문제로
+  판단한다.
+- 남은 개선: 설치 예정 거리에서 여러 번 반복하고, 필요하면 IR LED 구동 전류·트랜지스터
+  핀 배열·광학 방향 또는 복수 LED 송신부를 검토한다. 정확한 성공 거리는 아직 측정하지 않았다.
+
+## systemctl은 inactive인데 웹 서비스가 실제로 실행 중임
+
+- 증상: `systemctl is-active aircon-controller`는 inactive를 반환했다.
+- 원인: 서비스가 시스템 단위가 아닌 `air` 사용자의 systemd 사용자 단위로 설치돼 있다.
+- 확인: `systemctl --user is-active aircon-controller`와
+  `systemctl --user status aircon-controller`를 사용한다.
+- 추가 혼동: 서비스는 보안을 위해 Tailscale IPv4에만 바인딩하므로 Pi 내부
+  `http://127.0.0.1:8001` 요청은 실패하는 것이 정상이다.
+
+## Bash 프롬프트가 갑자기 `>`로 바뀜
+
+- 증상: `systemctl is-enabled tailscaled` 앞에 작은따옴표가 붙은 뒤 명령이 실행되지 않고 다음 줄 프롬프트가 `>`로 표시됐다.
+- 원인: Bash는 닫히지 않은 작은따옴표 문자열의 나머지를 다음 줄에서 계속 입력받는다. `>`는 이때 표시되는 보조 프롬프트다.
+- 해결: `Ctrl+C`로 미완성 입력을 취소하고 따옴표 없이 명령을 다시 실행했다.
+- 검증: `tailscaled`의 enabled와 active 상태가 정상 출력됐다.
+- 재발 방지: 프롬프트 문자와 명령을 함께 복사하지 않고 코드 블록 안의 명령 본문만 복사한다.
+
+## PowerShell에서 긴 SSH 점검 명령의 인용과 CRLF가 깨짐
+
+- 증상 1: 원격용 `$()` 안의 `dpkg`가 Windows PowerShell에서 먼저 실행되어
+  `dpkg is not recognized`가 발생하고 원격 Bash에는 닫히지 않은 따옴표가 전달됐다.
+- 증상 2: 원격 명령을 작은따옴표로 감싸도 네이티브 `ssh.exe` 인수 전달 과정에서 내부
+  따옴표가 제거되어 Bash가 `syntax error near unexpected token '('`로 종료됐다.
+- 증상 3: PowerShell here-string을 파이프로 보낼 때 CRLF가 유지되어 Linux 명령 옵션에
+  `\r`이 붙고 `free: invalid option`이 발생했다.
+- 영향: 모두 읽기 전용 사전 점검이었으며 Pi 파일·패키지·서비스는 변경되지 않았다.
+- 해결: 짧은 명령은 SSH에 프로그램과 인수만 단순하게 전달한다. 여러 줄 설치·변경은
+  LF로 저장한 `.sh` 파일을 로컬에서 작성·검증·배포한 뒤 Pi에서 실행한다.
+- 검증: `ssh ... air@AC free -h`처럼 분리한 단일 명령으로 누락된 메모리 정보를 정상 확인했다.
+- 재발 방지: PowerShell 문자열 안에 원격 `$()`, 작은따옴표, 파이프를 중첩한 대형 명령을
+  만들지 않고 배포 스크립트와 체크섬을 사용한다.
+
+같은 유형으로 Tailscale 주소를 얻고 `sed`로 출력을 가리려던 긴 명령도 Windows
+PowerShell 파서에서 닫는 괄호와 대괄호를 잘못 해석했다. 주소 자체를 출력하지 않는 짧은
+원격 명령으로 바꿔 해결했다. 비식별화는 복잡한 원격 정규식보다 처음부터 민감 값을
+출력하지 않는 방식이 우선이다.
+
+## 시스템 Python으로 테스트해 FastAPI를 찾지 못함
+
+- 증상: `python -m pytest -q`가 네 테스트 파일을 수집하면서
+  `ModuleNotFoundError: No module named 'fastapi'`로 중단됐다.
+- 원인: 프로젝트 의존성이 설치된 `.venv`가 아닌 Windows 시스템 Python을 사용했다.
+- 해결: `.venv\Scripts\python.exe -m pytest -q`로 다시 실행했다.
+- 검증: 31개 테스트가 모두 통과했다.
+- 재발 방지: 저장소 테스트는 항상 프로젝트 가상환경의 Python으로 실행한다.
+
+## Windows bash.exe에 WSL 배포판이 없어 셸 문법 검사가 실패함
+
+- 증상: `bash -n`이 `execvpe(/bin/bash) failed: No such file or directory`를 반환했다.
+- 원인: PATH의 `bash.exe`는 WSL 실행기였지만 설치된 Linux 배포판이 없었다.
+- 해결: 설치되어 있던 Git Bash의 Bash를 명시적으로 사용했다.
+- 검증: Zigbee 설치·초기화·점검·백업 스크립트 네 개가 `bash -n`을 통과했고,
+  배포 후 Pi에서도 같은 검사를 다시 통과했다.
+
+## Zigbee2MQTT 첫 기동 점검에서 MQTT 상태가 시간 초과됨
+
+- 증상: Mosquitto와 Zigbee2MQTT 컨테이너는 `Up`이었지만 첫 점검의
+  `mosquitto_sub`가 15초 뒤 `Timed out`으로 종료됐다.
+- 가설: MQTT 인증 실패, 동글 권한 문제, 잘못된 adapter 형식 또는 초기화 지연을
+  구분해야 했다.
+- 확인: 컨테이너 재시작 횟수는 0이었고 호스트와 컨테이너 모두 직렬 장치를 인식했다.
+  로그상 Zigbee2MQTT 시작 약 29초 뒤 Coordinator 초기화와 MQTT `online` 발행이
+  정상 완료됐다.
+- 원인: 첫 점검이 기동 직후 시작됐고 대기시간 15초가 초기 Coordinator 구성 시간보다
+  짧았다.
+- 해결: 상태가 이미 올라온 뒤 재검사해 전체 점검이 통과했으며, 점검 스크립트의 MQTT
+  대기시간을 60초로 늘렸다.
+- 검증: firmware revision `20240710`, bridge `online`, 1883·8080 루프백 제한,
+  기존 8001 health를 모두 확인했다.
+
+## Zigbee 백업 직후 점검이 retained `offline`을 읽고 실패함
+
+- 증상: 일관된 백업을 위해 두 컨테이너를 정지·재시작한 직후, 점검이
+  `{"state":"offline"}`을 읽고 실패했다.
+- 원인: Zigbee2MQTT가 종료하며 retained `offline`을 발행한다. 기존 점검은 MQTT에서
+  처음 받은 메시지 한 개만 검사했기 때문에 새 프로세스가 곧 발행할 `online`을 기다리지
+  않았다.
+- 확인: 약 2초 뒤 로그에 새 `online`과 `Zigbee2MQTT started!`가 기록됐고 같은 점검이
+  통과했다. 두 컨테이너의 비정상 재시작은 없었다.
+- 해결: 최대 60초 동안 retained 상태를 반복 조회하면서 `online`인 경우에만 성공하도록
+  점검 스크립트를 변경했다.
+- 백업 검증: 백업은 39,102바이트, 권한 `600`, 소유자 `air:air`로 생성됐다. 실제
+  SHA-256은 운영 기록으로 확인했지만 공개용 캡처에서는 제외했다.
+
+## 재부팅 직후 retained `online`이 새 Coordinator 준비를 오인시킬 수 있음
+
+- 관찰: 재부팅 직후 점검은 MQTT `online`을 반환했지만, 그 시점의 출력에는 현재 부팅의
+  Coordinator firmware와 `Zigbee2MQTT started!` 로그가 아직 없었다.
+- 위험: Mosquitto의 persistence가 재부팅 전 retained `online`을 복원하면 실제 직렬
+  Coordinator 초기화가 끝나기 전에도 단순 MQTT 조회가 성공할 수 있다.
+- 확인: 컨테이너의 `StartedAt`을 구한 뒤 그 시각 이후의 로그만 조회했다. 현재 부팅에서
+  직렬 포트, Coordinator, MQTT 연결, 새 `online`, 시작 완료가 순서대로 기록됐다.
+- 해결: 점검 스크립트가 현재 컨테이너의 `StartedAt` 이후 로그에서
+  `Zigbee2MQTT started!`를 최대 60초 기다린 뒤 retained MQTT 상태를 확인하도록 변경했다.
+- 검증 결과: 실제 Pi 재부팅 후 Docker, 두 컨테이너, ZBDongle-P, MQTT와 기존 8001 앱의
+  자동 복구가 모두 확인됐다.
+
+## 터미널 캡처 렌더러가 프로젝트 가상환경에서 Pillow를 찾지 못함
+
+- 증상: `.venv\Scripts\python.exe scripts\render_terminal_capture.py ...` 실행이
+  `ModuleNotFoundError: No module named 'PIL'`로 실패했다.
+- 원인: 렌더링 스크립트는 Pillow를 사용하지만 프로젝트 개발 의존성에 명시되지 않아
+  기존 `.venv`에 설치되지 않았다.
+- 영향: TXT 원문과 Zigbee/Pi 상태에는 영향이 없으며 PNG 생성만 실패했다.
+- 임시 확인: Pillow 12.2.0이 설치된 시스템 Python으로 같은 TXT를 렌더링해 PNG 생성과
+  육안 검사를 완료했다.
+- 해결: `pyproject.toml`의 `dev` 의존성에 `pillow>=11,<13`을 추가한다.
+- 검증: 프로젝트 가상환경에 개발 의존성을 다시 설치해 Pillow 12.3.0을 받았다. 같은
+  렌더러로 PNG를 다시 생성했고 전체 테스트 31개가 통과했다.
+
+## Zigbee 도어센서 첫 인터뷰가 DatabaseEntry 오류로 실패함
+
+- 증상: 센서가 `Wing`으로 네트워크에 나타난 직후 떠났고 인터뷰가
+  `DatabaseEntry with ID '3' does not exist`로 실패했다.
+- 관찰: 오류 전에 장치 이탈 로그가 있었고 Coordinator와 기존 TH01은 계속 정상 상태였다.
+- 판단: 인터뷰가 사용하던 임시 장치 항목이 장치 이탈로 먼저 제거된 일시적 순서 문제다.
+  이 한 번의 오류만으로 영구 데이터베이스 손상이라고 판단하지 않는다.
+- 해결: 열린 가입 시간 안에 센서 RESET을 LED가 깜박일 때까지 약 5초 다시 눌렀다.
+- 검증: 두 번째 인터뷰와 구성이 성공했고 `Wing/TS0203`, supported=true로 식별됐다.
+  자석을 붙이고 떼었을 때 `contact=true/false`가 각각 들어왔다.
+- 피한 조치: 서비스 재시작, Coordinator 초기화와 데이터베이스 수동 편집은 하지 않았다.
+
+## PowerShell stdin으로 보낸 Bash 스크립트 끝에 CR 명령 오류가 남음
+
+- 증상: 장치 2대 요약은 정상 출력됐지만 마지막에 `bash: $'\r': command not found`가
+  출력됐다.
+- 원인: PowerShell `Get-Content`의 네이티브 명령 파이프가 CR 문자를 원격 Bash
+  표준입력에 포함했다.
+- 영향: 읽기 전용 MQTT 요약이었으며 장치·Zigbee 데이터와 Pi 파일은 변경되지 않았다.
+- 해결: 원격에서 `tr -d '\r' | bash -s`로 입력을 정규화했다. 실제 배포는 LF 파일을
+  전송하고 체크섬과 `bash -n`을 확인하는 기존 절차를 유지한다.
+- 검증: 동일 요약을 다시 실행해 TH01과 TS0203 두 장치가 모두 인터뷰 완료·지원됨으로
+  오류 없이 출력됐다.
+
+## 터미널 PNG의 한글이 네모로 표시됨
+
+- 증상: TXT의 한글은 정상이지만 첫 PNG의 제목과 주석은 네모 글리프로 보였다. 전체
+  본문을 한글 글꼴로 바꾼 중간 결과에서는 Bash 역슬래시가 원화 기호처럼 표시됐다.
+- 원인: 렌더러가 우선 선택한 Consolas에 한글 글리프가 없고 Pillow는 운영체제처럼
+  자동 글꼴 대체를 하지 않는다.
+- 해결: 한글을 포함한 줄과 제목은 맑은 고딕, 명령·로그처럼 한글이 없는 줄은 기존
+  고정폭 Consolas를 쓰도록 `render_terminal_capture.py`를 보완했다.
+- 검증: 동일한 UZ-8D/TS0203 캡처를 다시 렌더링해 한글 주석, 영문 명령, 숫자와
+  역슬래시가 모두 정상 표시되는 것을 육안으로 확인했다.
+
+## 블로그용 JPEG에 촬영 위치와 휴대폰 정보가 남아 있음
+
+- 증상: 사진 화면과 Windows 미리보기에는 개인정보가 보이지 않았지만 JPEG 내부에 GPS,
+  촬영시각, 카메라 모델과 MakerNote가 남아 있었다. 블로그에서 다시 받은 파일은 플랫폼이
+  EXIF를 제거해 원본과 다르게 보일 수도 있다.
+- 위험: 원본 JPEG를 그대로 공개하면 사용한 블로그 서비스에 따라 촬영 위치가 함께
+  배포될 수 있다.
+- 확인: 좌표 자체는 출력하지 않고 EXIF GPS 태그 존재 여부와 값이 0이 아닌지만 검사한다.
+- 해결: `.venv/Scripts/python.exe scripts/sanitize_blog_images.py --apply docs/assets/`로
+  공개 자산을 정리한다. EXIF orientation은 픽셀에 먼저 적용해 사진 방향을 유지한다.
+- 검증: 게시 직전에 `.venv/Scripts/python.exe scripts/sanitize_blog_images.py docs/assets/`
+  를 실행하고 `PRIVATE_METADATA_COUNT=0`을 확인한다.
+
+## Windows에서 Pi로 전송한 새 셸 스크립트가 직접 실행되지 않음
+
+- 증상: `sudo ./scripts/setup_kiosk.sh`가 `command not found`로 끝났지만 `bash -n`은
+  통과했다.
+- 원인: Windows에서 새로 전송한 파일에 Linux 실행 비트가 없었다.
+- 해결: 첫 설치는 `sudo bash scripts/setup_kiosk.sh`로 실행하고, 설치 스크립트가 자신과
+  운영 런처에 `0755`를 적용하게 했다.
+- 검증: 설치 완료 후 두 파일의 실행 권한과 키오스크 서비스 시작을 확인했다.
+
+## 키오스크와 tty1 getty 전환 순서 때문에 프로세스가 SIGHUP으로 종료됨
+
+- 증상: `aircon-kiosk.service`는 enabled였지만 시작 직후 inactive가 됐고 실행 프로세스는
+  `signal=HUP`으로 종료됐다.
+- 확인: 저널에서 키오스크 시작 이후 `getty@tty1` 정지가 실행된 순서를 확인했다.
+- 원인: 같은 tty1을 쓰는 두 unit의 충돌 관계만 있고 종료·시작 순서가 없어서 전환 경쟁이
+  발생했다.
+- 해결: 키오스크 unit의 `After=`에 `getty@tty1.service`를 추가해 getty 정지가 먼저
+  완료되도록 했다.
+- 검증: 재적용 후 `active (running)`, `NRestarts=0`이며 미연결 HDMI를 기다리는 Bash와
+  `sleep 5` 자식 프로세스를 확인했다. 기존 FastAPI 사용자 서비스와 Tailscale도 active였다.
+
+## 문 이력은 0건인데 마지막 상태 변경 시각이 표시됨
+
+- 증상: 문 센서 상세 화면에 `마지막 상태 변경 12:22`가 표시됐지만 열림·닫힘 이력은
+  0건이었다. 마지막 보고와 수신 시각은 16:22였다.
+- 시간 확인: 최신 Zigbee 원문 `last_seen`의 UTC 시각을 `Asia/Seoul`로 변환하면
+  16:22가 맞았다. 서버 시계나 Zigbee 보고가 4시간 틀어진 문제가 아니었다.
+- 원인: 첫 접점 보고는 기준 상태라 이벤트로 저장하지 않으면서도 백엔드가 그 시각을
+  `last_changed_at`에 넣었고, UI가 이를 실제 변경으로 표현했다.
+- 해결: 최초 보고에서는 변경 시각을 비워 두고 실제 접점 전환에서만 기록한다. 기존 DB는
+  이력 0건인데 변경 시각이 있는 행만 시작 시 자동으로 비운다.
+  UI에는 최초 상태 확인과 실제 변경을 분리하고 절대 시각을 한국 시간으로 고정했다.
+- 첫 배포 실패: 최초 수신 시각과 센서 원문 보고 시각이 같다는 조건을 넣어 운영값이 보정되지
+  않았다. 실제 전환은 항상 이벤트를 함께 만든다는 불변조건을 사용해 시간 동등 비교를
+  제거했다. 실패 당시에도 이벤트 0건과 현재 상태는 그대로였다.
+- 보존 범위: 현재 센서 상태, 최초·마지막 보고 시각과 실제 도어 이벤트는 삭제하지 않는다.
+- 검증: 최초/반복/열림/닫힘, 기존 잘못된 값 보정, 실제 이벤트 보존을 포함해 전체 테스트
+  62개가 통과했다. Pi 재배포 후 현재 닫힘, 최초 확인과 마지막 보고는 유지됐고
+  `last_changed_at=None`, 도어 이벤트 0건을 API에서 확인했다.
+
+## 한 번 개폐한 도어센서가 여러 번 열린 것처럼 보임
+
+- 증상: 첫 개폐 실험 뒤 화면에 열림·닫힘 행이 여러 개 생겼고 모두 같은 분으로 보였다.
+- 확인: DB에는 16초 동안 `open → closed → open → closed` 네 전환이 서로 다른 원문 보고
+  시각으로 저장됐다. UI 렌더링 중복은 아니다.
+- 표시상 혼동: 이력 화면이 초를 생략해 네 이벤트가 모두 같은 `20:00`으로 표시됐다.
+- 현재 가설: 마지막 세 전환의 간격이 1.7초와 2.4초이므로 밀리초 단위 접점 바운스보다는
+  자석을 놓는 동안 감지 거리 경계를 반복해서 넘은 가능성이 높다.
+- 다음 검증: 본체와 자석 중앙선을 맞추고 닫힘 간격을 3~5mm로 고정한다. 자석을 3cm 이상
+  확실히 떼고 10초, 다시 닫힘 위치에서 손을 떼고 10초 유지해 이벤트가 2건만 생기는지 본다.
+- 해결 확인: 자석을 확실히 분리하고 정렬해 닫은 재실험에서는 7초 간격의 열림 1건과
+  닫힘 1건만 기록됐고 현재 닫힘 상태가 유지됐다. 첫 현상은 자석이 감지 경계를 여러 번
+  지난 것으로 결론 내렸으며 소프트웨어 디바운스는 추가하지 않았다.
+
+## HDMI 화면이 cloud-init 완료 문구에서 바뀌지 않음
+
+- 증상: Pi는 SSH 접속이 되지만 HDMI 화면에는 부팅 콘솔의 마지막 cloud-init 문구가 남고
+  스마트홈 웹앱이 나타나지 않았다.
+- 하드웨어 확인: HDMI-A-1은 연결됨, 1920×1200 모드와 USB 터치 입력이 인식됐다.
+- 프로세스 확인: 키오스크 서비스는 `active`였지만 Cage 아래 Chromium 자식이 없고
+  `/run/user/1000`에도 Wayland 소켓이 없었다.
+- 숨은 오류 찾기: PAM이 Cage를 로그인 세션 scope로 이동하므로 `journalctl -u`에 핵심
+  오류가 보이지 않았다. 현재 부팅 전체 로그에서 `run_kiosk.sh`와 Cage PID를 확인해
+  `Unable to open Wayland socket: Invalid argument`를 찾았다.
+- 원인: `ProtectSystem=strict`가 적용된 서비스에서 Wayland 런타임 디렉터리를 쓰기 예외로
+  열지 않아 Cage가 디스플레이 소켓을 만들지 못했다. 홈의 Mesa 캐시도 같은 이유로
+  읽기 전용이었다.
+- 해결: `/run/user/1000`만 `ReadWritePaths`에 추가하고 `XDG_RUNTIME_DIR`을 명시했다. Mesa와
+  Chromium 캐시는 이미 쓰기가 허용된 `runtime/kiosk/cache`로 지정했다. 전체 홈이나 시스템
+  디렉터리의 쓰기 제한은 풀지 않았다.
+- 검증: 재배포 후 `aircon-kiosk.service`는 `active`, `NRestarts=0`이었고
+  `/run/user/1000/wayland-0` 및 Cage 아래 Chromium 자식 프로세스가 생성됐다. 새 세션에서
+  Wayland 소켓 및 Mesa 캐시 읽기 전용 오류가 재발하지 않았으며 Tailscale 경유 health는
+  200이었다.
+- 상태: 로컬 수정과 테스트는 끝났으며 Pi 반영·실화면 검증 전이므로 아직 해결로 확정하지 않는다.
+
+## SSE 추가 후 온습도 값이 정지 시간에도 바뀜
+
+- 원인: 타이머 조회에만 시간 정책이 있고 실시간 메시지·재접속 강제 조회에는 없었다.
+- 해결: 도어만 SSE로 즉시 표시하고 온습도는 설정된 자동 간격 또는 수동 조회로 표시한다.
+  재접속 REST에서도 자동 갱신 활성화·한국 시간 정지 구간·마지막 갱신 이후 간격을 검사한다.
+- 수신과 표시의 구분: 화면 정지는 MQTT 수신이나 센서 배터리 보고 주기를 바꾸지 않는다.
+  Pi는 계속 저장하며 수동 버튼은 가장 최근 저장값을 읽는다.
+- 검증: `node --test tests/test_sensor_refresh_policy.cjs`의 12개 테스트와 Python 74개 테스트
+  통과. Pi 0.7.0에 배포하고 정적 파일 체크섬 11/11 일치를 확인했다.
+
+## Pi editable 설치에서 setuptools.build_meta를 찾지 못함
+
+- 증상: `pip install --no-deps --no-build-isolation -e .`가 `BackendUnavailable`로 실패했다.
+- 원인: 설치된 앱의 런타임 의존성과 패키지를 만드는 빌드 의존성은 다르다. 실행 환경에
+  setuptools가 없는데 빌드 격리까지 끄면 `pyproject.toml`의 백엔드를 불러올 수 없다.
+- 해결: `.venv/bin/python -m pip install --no-deps -e .`로 기본 빌드 격리를 복원한다.
+  이어서 `.venv/bin/python -m pip check`로 앱 의존성 무결성을 확인한다.
+- 검증: 0.7.0 설치 성공, `No broken requirements found.`, 앱·키오스크 active,
+  API 0.7.0과 SSE ready/keep-alive 확인. 전역 패키지 추가나 앱 의존성 업그레이드는 하지 않았다.
+- 기록: [실패·복구 원문](assets/terminal/56-step3-install-build-recovery.txt)과
+  [동일 내용 PNG](assets/terminal/56-step3-install-build-recovery.png).
+
+## MQTT는 연결됐지만 Zigbee 가입 명령이 SRSP 시간 초과됨
+
+- 관찰: 2026-09-08 도어 재페어링의 가입 열기와 닫기가 각각
+  `SRSP - ZDO - mgmtPermitJoinReq after 6000ms`,
+  `SRSP - AF - dataRequestExt after 6000ms`로 실패했다.
+- 해석: 게이트웨이가 보낸 동글 제어 명령에 대한 응답 부재다. 센서 배터리나 UI만을
+  원인으로 단정하지 않는다. USB UART 인식과 MQTT keepalive는 동글 명령 처리의
+  정상 동작을 증명하지 않는다.
+- 공식 근거: [Zigbee2MQTT FAQ의 어댑터 정지 안내](https://www.zigbee2mqtt.io/guide/faq/#zigbee2mqtt-crashes-after-some-time).
+- 제안된 복구(미실행): 승인 후 Zigbee2MQTT만 정지 → 동글 USB를 뽑고 잠시 기다린 뒤
+  다시 연결 → 기존 네트워크 데이터로 시작 → 가입 닫기 성공 응답 및 새 센서 보고 확인.
+  DB 삭제, 네트워크 초기화, 펌웨어 변경부터 시도하지 않는다.
+- 주의: 닫기 자체가 실패했다면 API나 retained bridge/info의 `permit_join=false`는
+  이전 소프트웨어 상태일 수 있다. 복구 후 실제 제어 응답을 다시 검증한다.
+- 상태: ISSUE-053 미해결. 원문과 PNG는 캡처 61에 보존했다.
+
+## USB 재삽입 후 게이트웨이 시작 중 xHCI 호스트가 응답하지 않음
+
+- 실제 증상: 컨테이너 시작 전에는 동글 경로가 있었으나 직렬 포트를 여는 중
+  `xHCI host controller not responding, assume dead`, `HC died; cleaning up`이 기록됐다.
+  이후 `/dev/ttyUSB0`이 없어지고 `lsusb`에는 root hub만 남았다.
+- 의미: 커널이 USB 호스트를 동작 불가 상태로 처리한 것이다. 영구적인 하드웨어 파손을
+  확정한 표현은 아니다. [Linux xHCI 처리 코드](https://github.com/torvalds/linux/blob/master/drivers/usb/host/xhci-ring.c).
+- 이번 조치: 승인된 기존 Zigbee2MQTT 컨테이너 시작 1회만 수행했다. 초기화가 실패했으므로
+  온습도 새 보고는 아직 검증하지 못했다. 실패 직전 센서 저장값을 최신 측정으로 쓰지 않는다.
+- 제안: 별도 승인 후 Pi 정상 재부팅 1회. USB 재열거, 기존 네트워크 시작, 가입 닫기 성공
+  응답, 온습도계의 새 보고를 순서대로 확인한다. 재부팅으로 회복되지 않으면 정상 종료 후
+  전원 재연결을 검토한다. 지금 단계에서 펌웨어·USB 절전 설정·DB를 임의 변경하지 않는다.
+- 전원 관측: `throttled=0x0`, 38.9°C였지만 모든 USB 전원 문제를 배제하지 않는다.
+  [Raspberry Pi 전원 경고 설명](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#power-supply-warnings).
+- 상태: ISSUE-055 복구 승인 대기. 캡처 63에 명령·오류·전원 상태를 보존했다.
+
+### 2026-09-08 정상 재부팅 후 확인 결과
+
+위 제안 이후 승인된 `sudo reboot` 1회를 실행했다. 새 boot ID와 08:43:54(KST) 부팅을
+확인했고 USB UART, 앱·키오스크, Mosquitto와 Zigbee2MQTT가 복구됐다. 이번 시작 로그의
+`zigbee-herdsman started (resumed)`와 `Zigbee2MQTT started!`를 확인한 뒤 가입 닫기를
+요청했으며 08:45:26 `status=ok`, `time=0` 응답이 돌아왔다. 등록된 센서 2대는 유지됐다.
+
+캡처 64는 운영 복구 증거다. 시작 시 온습도 값 재발행은 전날 `last_seen`을 포함하므로
+새 센서 실측으로 계산하지 않았다. 이후 08:47:26(KST) TH01의 새로운 `last_seen`을
+포함한 실제 MQTT 보고와 API 수신이 확인됐다(온도 25.08°C, 습도 표시 38.92%).
+사용자 버튼 조작 여부는 미확인이며 도어 현장 개폐 검증은 별도 대기다.
+최초 USB 정지 원인과 재발 방지는 아직 해결하지 않았고,
+USB 재삽입 시 자동 시작 실패에 대한 운영 보완도 남아 있다.
+
+## 장면이 다른 에어컨을 제어하거나 명령 후 표시 상태가 뒤집힘
+
+- 로컬 재현: 장면의 타일과 `activeDeviceId`가 다른 경우 마지막으로 연 상세 기기로
+  전송될 수 있었다. 명령 처리 중 상세 화면을 바꾸면 늦은 응답도 다른 화면에 적용됐다.
+- 수정: 요청 대상 ID와 기기별 상태를 고정한다. 같은 기기의 중복 요청은 대기/거부하고
+  서버에서도 송신과 저장을 같은 잠금 구간에서 처리한다.
+- 검사: `node --test tests/test_device_ui.cjs` 및
+  `python -m pytest tests/test_device_service.py`.
+- 현재 검증은 로컬 mock 기준이며 실제 여러 송신 노드를 연결한 결과는 아니다.
+
+## 늦은 센서 보고나 조회 응답 때문에 문 이력이 되돌아감
+
+- MQTT source timestamp가 최신 저장 보고보다 엄격히 과거이면 상태/이력 변경에서
+  제외한다. 동일 초의 보고와 timestamp 없는 보고는 별도 처리해 정상 개폐를 보존한다.
+- 브라우저는 조회 중 도착한 SSE 최신 상태를 우선하고, 이력 조회 응답의 순서를 검사한다.
+  네트워크 실패 때 기존 기록을 지우지 않는다.
+- 검사: `python -m pytest tests/test_sensor_service.py`와
+  `node --test tests/test_sensor_refresh_policy.cjs`.
+- 이 보호 로직이 센서 자체 접점 흔들림·실제 반복 개폐를 제거하는 것은 아니다.
+  원인 판단에는 원본 보고 시각과 payload가 필요하다. 게이트웨이 시계 역행도 별도 확인한다.
+
+## ESP32-H2 전송 오류 후 추가 명령이 거부됨
+
+- 2026-09-12 개선 소스는 `rmt_transmit` 오류 또는 완료 대기 timeout 후 오류 상태를
+  유지한다. 비동기 드라이버가 여전히 이전 버퍼를 읽을 수 있어 재사용을 금지한 것이다.
+- 실제 오류 로그를 저장하고 배선·USB·전원 조건을 확인한다. 반복 전송으로 덮지 말고
+  현재 드라이버 상태를 재시작으로 초기화한 뒤 한 번씩 시험한다.
+- 호스트 검사: `python -m pytest tests/test_h2_ir_firmware.py`.
+  실기기 적용 여부는 부팅 도움말과 플래시 이력으로 구분한다.
+
+## 새 PC의 펌웨어 helper가 COM 포트를 요구함
+
+- `build`는 포트 없이 가능하지만 `flash`와 `monitor`는 실제 확인한 `-Port COMx`가
+  필요하다. 이전 PC의 COM6를 자동 사용하지 않는 의도된 보호다.
+- 도구 경로는 `-IdfPath`, `-IdfToolsPath`, 빌드 루트는 ASCII `-BuildRoot`로 지정한다.
+  출력된 `BUILD_DIRECTORY`가 현재 빌드 위치다. 과거 공용 빌드 폴더/ZIP을 혼동하지 않는다.
+- 검사: Windows에서 `python -m pytest tests/test_firmware_build_script.py`.
+  이 테스트는 가짜 SDK로 helper 동작만 검사하며 실제 flash를 하지 않는다.

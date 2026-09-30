@@ -1,0 +1,19 @@
+IR receiver Raspberry Pi deployment verification
+Date: 2026-08-29
+
+Deployment:
+FILE_COUNT=21
+TOTAL_BYTES=41620
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+Editable package metadata:
+Successfully installed aircon-remote-controller-0.2.0
+
+Service and API:
+SERVICE=active
+HEALTH={"status":"ok","service":"aircon-controller"}
+RECEIVER={"backend":"ir-ctl","available":true,"command":"/usr/bin/ir-ctl","device":"/dev/lirc0","details":"ready","active_capture_id":null}
+PROFILES={"items":[{"id":"carrier-16214-15597","display_name":"Carrier 16214-15597 air-conditioner remote"},{"id":"generic","display_name":"Generic raw IR remote"}]}
+
+Private IP addresses, account data, credentials, and Tailnet identifiers were omitted.

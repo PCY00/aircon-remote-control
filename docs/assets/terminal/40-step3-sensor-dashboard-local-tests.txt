@@ -1,0 +1,20 @@
+PS [PROJECT]> node --check app/static/sensors.js
+
+PS [PROJECT]> .\.venv\Scripts\python.exe -m pytest -q
+.......................................................                  [100%]
+55 passed in 1.96s
+
+PS [PROJECT]> .\.venv\Scripts\python.exe -m ruff check tests/test_health.py
+All checks passed!
+
+PS [PROJECT]> Invoke-WebRequest http://127.0.0.1:8766/
+StatusCode: 200
+
+PS [PROJECT]> Invoke-RestMethod http://127.0.0.1:8766/api/v1/sensors
+sensor_door_01         door_contact
+sensor_temperature_01  temperature_humidity
+
+검증 메모:
+- 로컬 미리보기 전용 SQLite에 실제 API 형식의 샘플 상태를 저장했다.
+- 운영 센서 데이터나 Raspberry Pi 설정은 변경하지 않았다.
+- 전체 Ruff 실행에서 이번 작업과 무관한 기존 IR 변환 스크립트의 import 정렬 경고 1개가 남아 있다.

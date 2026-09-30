@@ -1,0 +1,46 @@
+# SANITIZED TERMINAL RECORD
+# Zigbee/MQTT Step 1 - final source synchronization and operational verification
+# Private addresses, device serials, credentials, and MQTT client IDs are omitted.
+
+PS> scp scripts/check_zigbee_stack.sh air@AC:/home/air/aircon-controller/scripts/check_zigbee_stack.sh
+
+$ bash -n scripts/check_zigbee_stack.sh
+LOCAL_SHA256=301944cb53edb2d0fdb2311023733dd54c37a00b923922adc9be24260db1faa4
+REMOTE_SHA256=301944cb53edb2d0fdb2311023733dd54c37a00b923922adc9be24260db1faa4
+CHECKSUM_MATCH=True
+
+$ ./scripts/check_zigbee_stack.sh
+[containers]
+aircon-mosquitto     eclipse-mosquitto:2.1.2-alpine      Up   127.0.0.1:1883->1883/tcp
+aircon-zigbee2mqtt   ghcr.io/koenkk/zigbee2mqtt:2.14.1   Up   127.0.0.1:8080->8080/tcp
+
+[zigbee2mqtt current-start milestones]
+Starting Zigbee2MQTT version 2.14.1
+Serialport opened
+Coordinator firmware version: '{..."revision":20240710,..."type":"ZStack3x0"}'
+Connected to MQTT server
+MQTT publish: topic 'zigbee2mqtt/bridge/state', payload '{"state":"online"}'
+Zigbee2MQTT started!
+
+[mqtt bridge state]
+{"state":"online"}
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+
+PS> '<compare all nine deployment files>'
+FILE=deploy/zigbee/.env.example MATCH=True
+FILE=deploy/zigbee/README.md MATCH=True
+FILE=deploy/zigbee/compose.yaml MATCH=True
+FILE=deploy/zigbee/mosquitto/mosquitto.conf MATCH=True
+FILE=deploy/zigbee/zigbee2mqtt/configuration.example.yaml MATCH=True
+FILE=scripts/install_zigbee_host.sh MATCH=True
+FILE=scripts/setup_zigbee_stack.sh MATCH=True
+FILE=scripts/check_zigbee_stack.sh MATCH=True
+FILE=scripts/backup_zigbee_stack.sh MATCH=True
+ALL_DEPLOYED_FILES_MATCH=True
+
+PS> .\.venv\Scripts\python.exe -m pytest -q
+...............................                                          [100%]
+31 passed in 1.15s

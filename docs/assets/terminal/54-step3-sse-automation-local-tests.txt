@@ -1,0 +1,36 @@
+# Step 3 SSE·첫 자동화 로컬 검증 — 2026-09-07
+# 공개용으로 경로·식별정보를 제거한 실제 실행 결과 요약
+
+PS> .\.venv\Scripts\python.exe -m ruff check app tests
+All checks passed!
+
+PS> .\.venv\Scripts\python.exe -m pytest -q
+........................................................................ [ 97%]
+..                                                                       [100%]
+74 passed in 3.69s
+
+PS> node --check app/static/sensors.js
+PS> node --check app/static/automations.js
+# 출력 없음 = JavaScript 구문 오류 없음
+
+PS> python -m uvicorn app.main:app --host 127.0.0.1 --port 8768
+INFO:     Started server process [REDACTED]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8768)
+INFO:     Application shutdown complete.
+
+# 기존 프로세스를 종료하지 않고 충돌하지 않는 임시 미리보기 포트로 변경
+PS> python -m uvicorn app.main:app --host 127.0.0.1 --port 8771
+INFO:     Started server process [REDACTED]
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8771
+
+PS> curl http://127.0.0.1:8771/api/v1/automations
+{"items":[{"id":"door-open-aircon-warning","kind":"door_open_aircon_warning","name":"문 열림 냉방 경고","enabled":true,"delay_seconds":300,"state":{"condition_started_at":null,"warning_active":false,"triggered_at":null},"condition":{"active":false,"open_doors":[],"active_air_conditioners":[]}}]}
+
+PS> curl http://127.0.0.1:8771/api/v1/automations/events?limit=20
+{"items":[]}
+
+PS> curl -N --max-time 2 http://127.0.0.1:8771/api/v1/events
+data: {"type":"stream.ready","data":{"message":"live dashboard stream connected"}}

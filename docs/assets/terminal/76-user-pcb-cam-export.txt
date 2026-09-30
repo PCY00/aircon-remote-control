@@ -1,0 +1,51 @@
+$ kicad-cli pcb drc --format json --schematic-parity --exit-code-violations -o <PROJECT>\checks\final-drc.json <PROJECT>\IR_ESP32H2.kicad_pcb
+0 개의 위반 발견
+0개의 미연결 항목 발견
+0 회로도 패리티 문제 발견
+DRC 보고서를 <PROJECT>\checks\final-drc.json에 저장함
+EXIT_CODE=0
+
+$ kicad-cli sch erc --format json --exit-code-violations -o <PROJECT>\checks\final-erc.json <PROJECT>\IR_ESP32H2.kicad_sch
+0 개의 위반 발견
+ERC 보고서를 <PROJECT>\checks\final-erc.json에 저장함.
+EXIT_CODE=0
+
+$ kicad-cli pcb export gerbers --layers F.Cu,B.Cu,F.Mask,B.Mask,F.SilkS,B.SilkS,F.Paste,B.Paste,Edge.Cuts --use-drill-file-origin --subtract-soldermask --exclude-value --precision 6 -o <PROJECT>\manufacturing\gerber/ <PROJECT>\IR_ESP32H2.kicad_pcb
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-F_Cu.gtl'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-B_Cu.gbl'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-F_Paste.gtp'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-B_Paste.gbp'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-F_Silkscreen.gto'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-B_Silkscreen.gbo'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-F_Mask.gts'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-B_Mask.gbs'에 플롯됨.
+'<PROJECT>\manufacturing\gerber\IR_ESP32H2-Edge_Cuts.gm1'에 플롯됨.
+EXIT_CODE=0
+
+$ kicad-cli pcb export drill --format excellon --drill-origin plot --excellon-units mm --excellon-zeros-format decimal --excellon-oval-format route --excellon-separate-th --generate-report --report-path <PROJECT>\checks\drill-report.txt -o <PROJECT>\manufacturing\gerber/ <PROJECT>\IR_ESP32H2.kicad_pcb
+생성된 파일 '<PROJECT>\manufacturing\gerber\IR_ESP32H2-PTH.drl'
+생성된 파일 '<PROJECT>\manufacturing\gerber\IR_ESP32H2-NPTH.drl'
+완료.
+EXIT_CODE=0
+
+$ kicad-cli pcb export svg --layers F.Cu,F.SilkS,Edge.Cuts --mode-single --fit-page-to-board --exclude-drawing-sheet -o <PROJECT>\checks\final-top-copper.svg <PROJECT>\IR_ESP32H2.kicad_pcb
+'<PROJECT>\checks\final-top-copper.svg'에 플롯됨.
+완료.
+EXIT_CODE=0
+
+$ kicad-cli pcb export svg --layers B.Cu,B.SilkS,Edge.Cuts --mode-single --fit-page-to-board --exclude-drawing-sheet -o <PROJECT>\checks\final-bottom-copper.svg <PROJECT>\IR_ESP32H2.kicad_pcb
+'<PROJECT>\checks\final-bottom-copper.svg'에 플롯됨.
+완료.
+EXIT_CODE=0
+
+$ kicad-cli sch export netlist --format kicadxml -o <PROJECT>\checks\netlist-final.xml <PROJECT>\IR_ESP32H2.kicad_sch
+
+EXIT_CODE=0
+
+$ kicad-cli sch export svg --output <PROJECT>\checks\schematic-svg/ <PROJECT>\IR_ESP32H2.kicad_sch
+'<PROJECT>\checks\schematic-svg\IR_ESP32H2.svg'에 플롯됨.
+완료.
+EXIT_CODE=0
+
+CAD_UNCHANGED_DURING_EXPORT=True
+CAM_FILE_COUNT=12
