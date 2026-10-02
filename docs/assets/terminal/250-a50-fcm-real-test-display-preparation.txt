@@ -1,0 +1,4 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] wake display for own app UI test
+EXIT_CODE=0

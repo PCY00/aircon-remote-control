@@ -1,0 +1,11 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] read-only sender mode, queue outcomes and preserved household counts
+FCM_KEY_PRIVATE_MODE=0o600
+DATABASE_INTEGRITY=ok
+PUSH_JOB_STATES={}
+PUSH_JOB_ERROR_COUNTS={}
+PRODUCTION_COUNTS={"users": 1, "homes": 2, "hubs": 0, "events": 0, "installations": 1}
+SENDER_STATUS=FCM_SENDER_CONFIGURED
+
+EXIT_CODE=0

@@ -1,0 +1,14 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] return phone to home after own tests
+EXIT_CODE=0
+$ adb [verified A50] switch display off after successful FCM tests
+EXIT_CODE=0
+Display Power: state=OFF
+FINAL_DISPLAY_OFF=PASS
+$ SSH [verified host key] read-only server readiness and private configuration after display off
+SCREEN_OFF_SSH_AND_API_READY=PASS FCM_CONFIGURATION_PERSISTED=TRUE
+
+EXIT_CODE=0
+PYTHON_MANAGEMENT_SCRIPT_COMPILE_EXIT=0
+DESKTOP_APK_EQUALS_TESTED_PRODUCTION_RELEASE=PASS

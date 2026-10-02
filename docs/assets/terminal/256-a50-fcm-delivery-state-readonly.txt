@@ -1,0 +1,10 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] read-only queue outcomes; no token, private key or Google response export
+PUSH_JOB_STATES={"accepted": 1}
+PUSH_JOB_ERROR_COUNTS={"none": 1}
+SENSOR_EVENTS=0
+HUBS=0
+SENDER_STATUS=PUSH_DISPATCH outcome=accepted
+
+EXIT_CODE=0

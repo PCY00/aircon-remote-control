@@ -55,6 +55,12 @@ public class OwnFamilySmokeTest {
     }
     protected void click(String text) throws Exception {
         AccessibilityNodeInfo node = await(text);
+        long deadline = System.currentTimeMillis() + 20000;
+        while (!node.isEnabled() && System.currentTimeMillis() < deadline) {
+            Thread.sleep(200);
+            node = await(text);
+        }
+        assertTrue("Own-family button must be enabled before click", node.isEnabled());
         if (!node.isVisibleToUser()) {
             AccessibilityNodeInfo parent = node.getParent();
             while (parent != null && !parent.isScrollable()) parent = parent.getParent();

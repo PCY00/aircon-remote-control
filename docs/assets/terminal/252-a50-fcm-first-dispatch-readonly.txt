@@ -1,0 +1,9 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] read-only sender mode, queue outcomes and preserved household counts
+  File "<stdin>", line 9
+    print('PUSH_JOB_ERROR_COUNTS='+json.dumps(dict(c.execute('SELECT COALESCE(last_error,'none'),COUNT(*) FROM push_jobs GROUP BY last_error'))))
+                                                                                          ^^^^
+SyntaxError: invalid syntax
+
+EXIT_CODE=1

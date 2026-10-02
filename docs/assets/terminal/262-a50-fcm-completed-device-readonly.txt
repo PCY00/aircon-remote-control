@@ -1,0 +1,14 @@
+# Actual phone SSH operations; private details removed
+
+AC powered: false
+USB powered: true
+Wireless powered: false
+level: 100
+temperature: 300
+$ SSH [verified host key] read-only final FCM queue, private credential mode and original household counts
+FCM_SERVER_CREDENTIAL_PRIVATE_MODE=PASS
+DATABASE_INTEGRITY=ok
+PUSH_JOB_STATES={"accepted": 3}
+PRODUCTION_COUNTS={"users": 1, "homes": 2, "hubs": 0, "events": 0, "installations": 1}
+
+EXIT_CODE=0
