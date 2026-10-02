@@ -4,7 +4,7 @@
 기존 A50 관리 앱과 별개이며, 집·가족 API는 3편의 A50 중앙 서버를 사용한다.
 시험 APK 빌드·A50 UI/API 검사, 실제 Firebase 구성의 개발·배포 APK 빌드와 서명·분리 검사를
 완료했다. A50에 배포 APK를 설치하고 Firebase 초기화·로그인 시작 화면을 확인했다.
-실제 계정으로 Google 로그인을 완료하는 시험과 외부 API 접속·FCM은 다음 단계다.
+사용자는 다른 휴대폰에서 실제 Google 로그인 성공을 확인했다. 외부 API 접속·FCM은 다음 단계다.
 
 ## 이번 단계의 경계
 
@@ -24,8 +24,8 @@ FCM 푸시, 실제 Pi 연결과 외부 HTTPS 접속 경로는 이후 단계다.
 - 실제 Google 로그인 시험에는 Google 계정과 Google Play 서비스가 있는 휴대폰.
 
 실기기 A50은 Android 11이며 Google 계정 수는 **0개**로 측정됐다.
-가족 화면·권한은 별도의 가상 계정으로 검증하고, 실제 Google 로그인을 성공했다고
-표현하지 않는다. 계정 추가·비밀번호 입력은 자동화하지 않는다.
+가족 화면·권한 자동 검사는 별도의 가상 계정으로 수행했다. 이후 실제 계정 로그인 성공은
+사용자가 다른 휴대폰에서 확인했다. 계정 추가·비밀번호 입력은 자동화하지 않는다.
 
 ## 1. 공식 도구 준비
 
@@ -216,7 +216,9 @@ UI 시험은 집 만들기·가족 관리·로그아웃 후 집 정보 제거를
 ## 검증 상태와 다음 단계
 
 현재 상태는 날짜별 [작업 기록](../../journal/2026-10-02-family-android-app.md)에 남긴다.
-실제 Google 계정 로그인·외부 HTTPS 연결·FCM 푸시 수신은 별도 검증이 필요하다.
+실제 Google 계정 로그인은 사용자가 다른 휴대폰에서 성공했다고 보고했다.
+성공 화면은 직접 캡처하지 않았다. A50의 운영 사용자·허브는 0개이고, 외부 HTTPS 연결·
+서버의 실제 로그인 토큰 검증·집 등록·FCM 푸시 수신은 후속 검증이 필요하다.
 
 공식 자료: [Firebase Google 로그인](https://firebase.google.com/docs/auth/android/google-signin),
 [Android Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg),
