@@ -33,7 +33,9 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
             assertNotNull(find("자동화 경고 발생·해제"));
             screenshot("15-a50-notification-choices");
             click("집 목록으로");await("새 집 만들기");openHome(home);
-            click("이 집 삭제");await("이 집을 삭제할까요?");
+            click("설정");click("가족 관리");await("소유자");
+            screenshot("22-a50-redesigned-members-redacted");click("집으로 돌아가기");
+            await("우리 집 한눈에");click("설정");click("이 집 삭제");await("이 집을 삭제할까요?");
             AccessibilityNodeInfo input=null;
             for(AccessibilityNodeInfo n:nodes(automation.getRootInActiveWindow()))
                 if("android.widget.EditText".contentEquals(n.getClassName())) input=n;
@@ -48,14 +50,12 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
             prefs.edit().putBoolean("enabled",enabled).commit();
         }
     }
-    private void openHome(String name) throws Exception {
-        AccessibilityNodeInfo card=await(name).getParent();AccessibilityNodeInfo open=null;
-        for(AccessibilityNodeInfo n:nodes(card)) if("집 열기".contentEquals(n.getText()==null?"":n.getText())) open=n;
-        assertNotNull(open);assertTrue(open.performAction(AccessibilityNodeInfo.ACTION_CLICK));
-        await(name);await("소유자 · 우리 가족의 스마트홈");
-    }
+    private void openHome(String name) throws Exception { openApprovedHome(name); }
     @Test public void registerRealInstallation() throws Exception {
-        await("새 집 만들기");click("알림 설정");await("알림 설정");click("이 휴대폰 알림 켜기");
+        await("새 집 만들기");openPhoneNotifications();
+        Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
+        if(!PushManager.prefs(c).getBoolean("enabled",false))click("이 휴대폰에서 받기");
+        else click("알림 연결 확인");
         long deadline=System.currentTimeMillis()+60000;
         while(find("알림 연결됨")==null && System.currentTimeMillis()<deadline) {
             Thread.sleep(700);click("알림 연결 확인");
@@ -115,7 +115,7 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         Bundle result=new Bundle();result.putString("fcm_receipt","real_data_message_callback_and_own_notification_posted_in_background");
         InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
         c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP));
-        await("새 집 만들기");click("알림 설정");await("최근 알림 수신 완료");
+        await("새 집 만들기");openPhoneNotifications();await("최근 알림 수신 완료");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Thread.sleep(350);
         await("최근 알림 수신 완료");
@@ -175,7 +175,7 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
         ownShell("input keyevent 224");
         c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP));
-        await("새 집 만들기");click("알림 설정");await("최근 알림 수신 완료");
+        await("새 집 만들기");openPhoneNotifications();await("최근 알림 수신 완료");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();Thread.sleep(350);
         await("최근 알림 수신 완료");screenshot("12-a50-fcm-screen-off-receipt");
     }

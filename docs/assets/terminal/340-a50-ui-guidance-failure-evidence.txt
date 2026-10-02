@@ -1,0 +1,4 @@
+# Actual recorded operations; private details removed
+
+FAILED_TEST_PRECEDING_NATIVE_GUIDANCE_CAPTURE_SAVED=14-a50-notification-off-guidance-v040-test-failure.png
+FAILURE=automation_could_only_scroll_forward_after_a_lower_home_action; app_scroll_was_preserved; no_user_home_deletion

@@ -1,0 +1,11 @@
+# Actual recorded operations; private details removed
+
+FINAL_UI_RELEASE_SHA256=354a309ca39cf8b7ec82b1feba5ac00c7216f424a5e9bbcc72f9676528b85e87
+$ adb [verified A50] install -r final signed family UI; retain auth and preferences
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+CENTRAL_SERVER_AND_PUBLIC_TUNNEL=NOT_RESTARTED

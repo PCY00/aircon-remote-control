@@ -1,0 +1,30 @@
+# Actual recorded operations; private details removed
+
+TEXT_CONTRAST body-white=15.69:1 PASS
+TEXT_CONTRAST secondary-white=5.73:1 PASS
+TEXT_CONTRAST secondary-pale=4.99:1 PASS
+TEXT_CONTRAST primary-button=7.00:1 PASS
+# Executed read-only probe:
+import json, sqlite3, urllib.request
+from pathlib import Path
+from contextlib import closing
+with closing(sqlite3.connect((Path.home()/'.local/share/aircon-central/central.sqlite3').as_uri()+'?mode=ro',uri=True)) as c:
+ assert c.execute('PRAGMA integrity_check').fetchone()==('ok',)
+ counts={t:c.execute('SELECT COUNT(*) FROM '+t).fetchone()[0] for t in ('users','homes','hubs','events','installations')}
+ print('CENTRAL_COUNTS='+json.dumps(counts))
+ print('EVENT_KINDS='+json.dumps(c.execute('SELECT kind,COUNT(*) FROM events GROUP BY kind').fetchall()))
+ row=c.execute("SELECT payload FROM events WHERE kind='sensor.climate_report' ORDER BY received_at DESC LIMIT 1").fetchone()
+ if row:
+  p=json.loads(row[0]);print('LATEST_ACTUAL_CLIMATE='+json.dumps({k:p[k] for k in ('temperature_c','humidity_percent') if k in p}))
+ print('PHONE_NOTIFICATION_CHOICES='+json.dumps(c.execute('SELECT door,climate,warning,climate_interval_minutes FROM notification_preferences').fetchall()))
+with urllib.request.urlopen('http://[REDACTED_ADDRESS]/health/ready',timeout=4) as response: assert response.status==200
+print('CENTRAL_READINESS_AND_DATABASE_INTEGRITY=PASS NO_RUNTIME_MUTATION')
+
+$ SSH [verified host key] read-only central integrity, counts, real climate fields and readiness
+CENTRAL_COUNTS={"users": 1, "homes": 2, "hubs": 1, "events": 3, "installations": 2}
+EVENT_KINDS=[["hub.connection_test", 1], ["sensor.climate_report", 2]]
+LATEST_ACTUAL_CLIMATE={"temperature_c": 26.21, "humidity_percent": 26.99}
+PHONE_NOTIFICATION_CHOICES=[[1, 0, 1, 5], [1, 1, 1, 15]]
+CENTRAL_READINESS_AND_DATABASE_INTEGRITY=PASS NO_RUNTIME_MUTATION
+
+EXIT_CODE=0

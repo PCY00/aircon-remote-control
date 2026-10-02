@@ -40,9 +40,13 @@ public class OwnFamilySmokeTest {
     }
     protected AccessibilityNodeInfo find(String text) {
         for (AccessibilityNodeInfo node : nodes(automation.getRootInActiveWindow())) {
-            if (text.contentEquals(node.getText() == null ? "" : node.getText())) return node;
+            if (matches(node,text)) return node;
         }
         return null;
+    }
+    private boolean matches(AccessibilityNodeInfo node,String text) {
+        String value=node.getText()==null?"":node.getText().toString();
+        return value.equals(text) || value.startsWith(text+"\n") || text.contentEquals(node.getContentDescription()==null?"":node.getContentDescription());
     }
     protected AccessibilityNodeInfo await(String text) throws Exception {
         long deadline = System.currentTimeMillis() + 20000;
@@ -54,22 +58,38 @@ public class OwnFamilySmokeTest {
         throw new AssertionError("Expected own-family UI state did not appear");
     }
     protected void click(String text) throws Exception {
-        AccessibilityNodeInfo node = await(text);
         long deadline = System.currentTimeMillis() + 20000;
-        while (!node.isEnabled() && System.currentTimeMillis() < deadline) {
+        while(System.currentTimeMillis()<deadline){
+            for(AccessibilityNodeInfo label:nodes(automation.getRootInActiveWindow())) {
+                if(!matches(label,text))continue;
+                AccessibilityNodeInfo node=label;
+                while(node!=null && !node.isClickable())node=node.getParent();
+                if(node==null || !node.isEnabled())continue;
+                if(!node.isVisibleToUser()){
+                    AccessibilityNodeInfo parent=node.getParent();while(parent!=null&&!parent.isScrollable())parent=parent.getParent();
+                    if(parent!=null){
+                        Rect target=new Rect(),viewport=new Rect();node.getBoundsInScreen(target);parent.getBoundsInScreen(viewport);
+                        int direction=target.bottom<=viewport.top?AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:AccessibilityNodeInfo.ACTION_SCROLL_FORWARD;
+                        parent.performAction(direction);
+                    }
+                    break;
+                }
+                if(node.performAction(AccessibilityNodeInfo.ACTION_CLICK))return;
+            }
             Thread.sleep(200);
-            node = await(text);
         }
-        assertTrue("Own-family button must be enabled before click", node.isEnabled());
-        if (!node.isVisibleToUser()) {
-            AccessibilityNodeInfo parent = node.getParent();
-            while (parent != null && !parent.isScrollable()) parent = parent.getParent();
-            if (parent != null) parent.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD);
-            Thread.sleep(300);
-            node = await(text);
-        }
-        assertTrue("Own-family button did not accept click", node.performAction(AccessibilityNodeInfo.ACTION_CLICK));
+        throw new AssertionError("Own-family enabled action did not accept click: "+text);
     }
+    protected void openApprovedHome(String name) throws Exception {
+        AccessibilityNodeInfo card=await(name).getParent();AccessibilityNodeInfo open=null;
+        for(AccessibilityNodeInfo node:nodes(card))if("집 열기".contentEquals(node.getText()==null?"":node.getText()))open=node;
+        assertNotNull("Approved house must have an open action",open);
+        long deadline=System.currentTimeMillis()+20000;
+        while(!open.isEnabled()&&System.currentTimeMillis()<deadline){Thread.sleep(200);card=await(name).getParent();for(AccessibilityNodeInfo n:nodes(card))if("집 열기".contentEquals(n.getText()==null?"":n.getText()))open=n;}
+        assertTrue(open.isEnabled());assertTrue(open.performAction(AccessibilityNodeInfo.ACTION_CLICK));
+        await(name);await("소유자 · 우리 가족의 스마트홈");await("우리 집 한눈에");
+    }
+    protected void openPhoneNotifications() throws Exception {click("설정");await("연결 및 계정");click("알림 설정");await("받고 싶은 알림");}
     protected void screenshot(String name) throws Exception {
         Bitmap original = automation.takeScreenshot();
         assertNotNull("Native capture unavailable", original);
@@ -131,6 +151,7 @@ public class OwnFamilySmokeTest {
         await("소유자 · 우리 가족의 스마트홈");
         await("아직 도착한 기록이 없어요");
         screenshot("08-a50-real-test-home");
+        click("설정");
         click("가족 관리");
         await("가족 관리");
         await("소유자");

@@ -1,0 +1,92 @@
+# Actual recorded operations; private details removed
+
+INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS
+$ adb [verified A50] install -r signed production instrumentation test APK
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] wake own A50 client for native test
+
+EXIT_CODE=0
+$ adb [verified A50] native UI smoke [user-approved home; existing real Google session; no token extraction]
+
+
+com.aircon.family.OwnUiSmokeTest:INSTRUMENTATION_STATUS: capture_root=/storage/emulated/0/Android/data/com.aircon.family/files/test-captures
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+INSTRUMENTATION_STATUS: capture_root=/storage/emulated/0/Android/data/com.aircon.family/files/test-captures
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+INSTRUMENTATION_STATUS: capture_root=/storage/emulated/0/Android/data/com.aircon.family/files/test-captures
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+INSTRUMENTATION_STATUS: capture_root=/storage/emulated/0/Android/data/com.aircon.family/files/test-captures
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+INSTRUMENTATION_STATUS: capture_root=/storage/emulated/0/Android/data/com.aircon.family/files/test-captures
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+INSTRUMENTATION_STATUS: scroll_after_px=315
+
+INSTRUMENTATION_STATUS: scroll_before_px=315
+
+INSTRUMENTATION_STATUS: ui_regression=save_check_resume_and_back_keep_scroll_unsaved_draft_preserved_filters_passed
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+.
+
+
+
+Time: 13.775
+
+
+
+OK (1 test)
+
+
+
+
+
+
+EXIT_CODE=0
+ACTUAL_REAL_ACCOUNT_UI_CAPTURE=17-a50-redesigned-home-v040.png EMAIL_REDACTED_BEFORE_EXPORT=TRUE
+ACTUAL_REAL_ACCOUNT_UI_CAPTURE=18-a50-redesigned-history-v040.png EMAIL_REDACTED_BEFORE_EXPORT=TRUE
+ACTUAL_REAL_ACCOUNT_UI_CAPTURE=19-a50-redesigned-settings-v040.png EMAIL_REDACTED_BEFORE_EXPORT=TRUE
+ACTUAL_REAL_ACCOUNT_UI_CAPTURE=20-a50-redesigned-notifications-v040.png EMAIL_REDACTED_BEFORE_EXPORT=TRUE
+ACTUAL_REAL_ACCOUNT_UI_CAPTURE=21-a50-scroll-kept-after-save-v040.png EMAIL_REDACTED_BEFORE_EXPORT=TRUE
+$ adb [verified A50] restart own family client only [server continues]
+
+EXIT_CODE=0
+$ adb [verified A50] reopen original release APK [verify saved Google session and HTTPS origin]
+Starting: Intent { cmp=com.aircon.family/.MainActivity }
+
+Status: ok
+
+LaunchState: COLD
+
+Activity: com.aircon.family/.MainActivity
+
+TotalTime: 418
+
+WaitTime: 425
+
+Complete
+
+
+EXIT_CODE=0
+$ adb [verified A50] read own client UI after restart
+UI hierchary dumped to: /data/local/tmp/family-post-restart.xml
+
+
+EXIT_CODE=0
+SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST=redesignedNavigationKeepsScrollAndDraft
+GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED

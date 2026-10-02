@@ -1,0 +1,58 @@
+# Actual recorded operations; private details removed
+
+INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS
+$ adb [verified A50] install -r signed production instrumentation test APK
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] wake own A50 client for native test
+
+EXIT_CODE=0
+$ adb [verified A50] native UI smoke [user-approved home; existing real Google session; no token extraction]
+
+
+com.aircon.family.OwnPushSmokeTest:INSTRUMENTATION_STATUS: capture_root=/storage/emulated/0/Android/data/com.aircon.family/files/test-captures
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+
+
+Error in verifyNotificationGuidanceAndChoices(com.aircon.family.OwnPushSmokeTest):
+
+java.lang.AssertionError: Own-family enabled action did not accept click: 받을 알림 선택
+
+	at com.aircon.family.OwnFamilySmokeTest.click(OwnFamilySmokeTest.java:77)
+
+	at com.aircon.family.OwnPushSmokeTest.verifyNotificationGuidanceAndChoices(OwnPushSmokeTest.java:31)
+
+
+
+
+
+Time: 24.018
+
+There was 1 failure:
+
+1) verifyNotificationGuidanceAndChoices(com.aircon.family.OwnPushSmokeTest)
+
+java.lang.AssertionError: Own-family enabled action did not accept click: 받을 알림 선택
+
+	at com.aircon.family.OwnFamilySmokeTest.click(OwnFamilySmokeTest.java:77)
+
+	at com.aircon.family.OwnPushSmokeTest.verifyNotificationGuidanceAndChoices(OwnPushSmokeTest.java:31)
+
+
+
+FAILURES!!!
+
+Tests run: 1,  Failures: 1
+
+
+
+
+
+
+EXIT_CODE=0

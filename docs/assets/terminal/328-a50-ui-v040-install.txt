@@ -1,0 +1,31 @@
+# Actual recorded operations; private details removed
+
+LOCAL_SIGNED_RELEASE_SHA256=f41b6e988fc6cafc4342599074cdc1e61cbeed23fe0458f4e7084b3ccdc291ef
+$ adb [verified A50] replace own signed family client; preserve private app data
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] wake A50 for app-only UI validation
+
+EXIT_CODE=0
+$ adb [verified A50] open redesigned own family client
+Starting: Intent { cmp=com.aircon.family/.MainActivity }
+
+Status: ok
+
+LaunchState: COLD
+
+Activity: com.aircon.family/.MainActivity
+
+TotalTime: 803
+
+WaitTime: 833
+
+Complete
+
+
+EXIT_CODE=0
+SERVER_AND_TUNNEL=NOT_RESTARTED APP_DATA=NOT_CLEARED

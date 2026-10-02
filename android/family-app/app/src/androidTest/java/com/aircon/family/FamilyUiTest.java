@@ -37,10 +37,12 @@ public class FamilyUiTest {
         await("아직 도착한 기록이 없어요");
         capture("02-fixture-new-home");
         onView(withText("아직 도착한 기록이 없어요")).check(matches(isDisplayed()));
+        onView(allOf(withText("설정"),isClickable())).perform(click());
         onView(withText("가족 관리")).perform(scrollTo(),click());
         await("owner@example.test");
         capture("03-fixture-members");
         onView(withText("집으로 돌아가기")).perform(click()); await("New Home");
+        onView(allOf(withText("설정"),isClickable())).perform(click());
         onView(withText("로그아웃")).perform(scrollTo(),click()); await("우리 집을 함께");
         onView(withText("Google로 계속하기")).check(matches(isDisplayed()));
         capture("04-fixture-logout");

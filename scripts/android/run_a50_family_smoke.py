@@ -37,6 +37,10 @@ def main():
         ),
     )
     parser.add_argument(
+        "--ui-test",
+        choices=("redesignedNavigationKeepsScrollAndDraft",),
+    )
+    parser.add_argument(
         "--hub-test",
         choices=("verifyOwnerBeforeProvisioning", "claimApprovedHub", "observeActualHubFCM"),
     )
@@ -47,7 +51,7 @@ def main():
     args = parser.parse_args()
     if args.capture_suffix and not re.fullmatch(r"[a-z0-9-]{1,20}", args.capture_suffix):
         parser.error("Invalid capture suffix")
-    if args.push_test and args.hub_test:
+    if sum(bool(value) for value in (args.push_test, args.hub_test, args.ui_test)) > 1:
         parser.error("Choose one native test")
     if bool(args.claim_file) != (args.hub_test == "claimApprovedHub"):
         parser.error("--claim-file is required only for claimApprovedHub")
@@ -176,6 +180,8 @@ def main():
             (
                 "com.aircon.family.OwnPushSmokeTest#" + args.push_test
                 if args.push_test
+                else "com.aircon.family.OwnUiSmokeTest#" + args.ui_test
+                if args.ui_test
                 else "com.aircon.family.OwnHubSmokeTest#" + args.hub_test
                 if args.hub_test
                 else "com.aircon.family.OwnFamilySmokeTest"
@@ -205,9 +211,19 @@ def main():
         )
     captures = (
         (
+            "17-a50-redesigned-home",
+            "18-a50-redesigned-history",
+            "19-a50-redesigned-settings",
+            "20-a50-redesigned-notifications",
+            "21-a50-scroll-kept-after-save",
+        )
+        if args.ui_test
+        else
+        (
             "14-a50-notification-off-guidance",
             "15-a50-notification-choices",
             "16-a50-home-delete-confirmation",
+            "22-a50-redesigned-members-redacted",
         )
         if args.push_test == "verifyNotificationGuidanceAndChoices"
         else ("10-a50-fcm-installation-registered",)
@@ -261,7 +277,7 @@ def main():
     assert args.home_name in texts and "새 집 만들기" in texts
     record.log(
         "SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST="
-        + str(args.push_test or args.hub_test or "household_ui")
+        + str(args.push_test or args.hub_test or args.ui_test or "household_ui")
     )
     record.log("GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED")
 
