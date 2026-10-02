@@ -100,6 +100,25 @@ def test_installation_proof_prevents_takeover_and_token_cannot_bind_twice(setup)
     assert before == after
 
 
+def test_same_account_devices_receive_home_events_and_test_targets_only_selected_device(setup):
+    db, now, _, push, owner, member, _, home, _, ids, _ = setup
+    second = str(uuid.uuid4())
+    push.register(owner, second, "b" * 64, "second_device_" + "x" * 40)
+    test = push.test(home, owner, second)
+    assert test["queued"] == 1
+    with sqlite3.connect(db) as conn:
+        assert conn.execute(
+            "SELECT installation_id FROM push_jobs WHERE message_id=?", (test["message_id"],)
+        ).fetchall() == [(second,)]
+    event(setup)
+    with sqlite3.connect(db) as conn:
+        recipients = conn.execute(
+            "SELECT j.installation_id FROM push_jobs j JOIN push_messages m "
+            "ON m.id=j.message_id WHERE m.kind='event'"
+        ).fetchall()
+    assert {row[0] for row in recipients} == {ids[owner], second, ids[member]}
+
+
 def test_stale_unregister_and_provider_response_do_not_disable_rotated_binding(setup):
     db, _, _, push, owner, *_ = setup
     ids = setup[9]

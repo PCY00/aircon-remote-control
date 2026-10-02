@@ -1,0 +1,6 @@
+# Actual local test command and output
+
+$ python -m pytest tests/test_central_push.py tests/test_central_push_api.py -q
+...............                                                          [100%]
+15 passed in 2.75s
+EXIT_CODE=0

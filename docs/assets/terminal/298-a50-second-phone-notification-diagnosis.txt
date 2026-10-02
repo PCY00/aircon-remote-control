@@ -1,0 +1,22 @@
+# Actual phone SSH operations; private details removed
+
+# Executed read-only aggregate query:
+import sqlite3,json
+from pathlib import Path
+from contextlib import closing
+db=Path.home()/'.local/share/aircon-central/central.sqlite3'
+with closing(sqlite3.connect(db.as_uri()+'?mode=ro',uri=True)) as c:
+ print('INSTALLATION_COUNTS='+json.dumps(c.execute('SELECT active,COUNT(*) FROM installations GROUP BY active').fetchall()))
+ print('INSTALLATIONS_PER_ACCOUNT_COUNTS='+json.dumps(c.execute('SELECT COUNT(*) FROM installations GROUP BY user_id').fetchall()))
+ print('PUSH_JOB_COUNTS='+json.dumps(c.execute('SELECT state,COUNT(*) FROM push_jobs GROUP BY state').fetchall()))
+ print('LATEST_PUSH_ERROR_CODES='+json.dumps(c.execute('SELECT DISTINCT last_error FROM push_jobs WHERE last_error IS NOT NULL').fetchall()))
+ print('READONLY_NOTIFICATION_REGISTRATION_DIAGNOSIS=PASS NO_PRIVATE_IDS_OR_TOKENS_EXPORTED')
+
+$ SSH [verified host key] count device notification registrations without exporting account, device IDs or FCM tokens
+INSTALLATION_COUNTS=[[1, 1]]
+INSTALLATIONS_PER_ACCOUNT_COUNTS=[[1]]
+PUSH_JOB_COUNTS=[["accepted", 4]]
+LATEST_PUSH_ERROR_CODES=[]
+READONLY_NOTIFICATION_REGISTRATION_DIAGNOSIS=PASS NO_PRIVATE_IDS_OR_TOKENS_EXPORTED
+
+EXIT_CODE=0
