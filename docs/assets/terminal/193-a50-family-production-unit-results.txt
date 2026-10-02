@@ -1,0 +1,5 @@
+# Actual phone SSH operations; private details removed
+
+ACTUAL_PRODUCTION_ANDROID_UNIT_TESTS=2
+FAILURES=0 ERRORS=0
+RESULT_SOURCE=Gradle JUnit XML; actual Firebase production variant

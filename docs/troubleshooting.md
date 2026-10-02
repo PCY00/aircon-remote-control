@@ -576,3 +576,8 @@ USB 재삽입 시 자동 시작 실패에 대한 운영 보완도 남아 있다.
   개발자가 중단한 실행이며 메모리 부족의 증거가 아니다. Platform Tools 경고는 공식 SDK 패키지 추가로 해결했다.
 - A50에 Google 계정이 0개인 경우 실제 로그인 성공을 주장하지 않는다. fixture UI/API 통과와
   사용자의 실제 Google 로그인 결과는 별도로 기록한다. HTTP localhost는 같은 휴대폰 내부를 뜻한다.
+- release APK의 네트워크 XML을 소스 경로로 찾지 못하면 리소스 최적화에 따른 파일명 변경을
+  확인한다. 실제 `aapt2 dump resources`의 xml/network_security_config 경로와 manifest 참조를
+  비교한다. 정책을 끄거나 HTTP를 켜서 검사 오류를 우회하지 않는다. 190 오류와 191 수정 후 검사 참조.
+- SDK의 다국어 리소스 표를 Windows 기본 CP949로 읽으면 디코딩 오류가 날 수 있다.
+  검증 도구는 subprocess 출력에 encoding=UTF-8을 지정한다.

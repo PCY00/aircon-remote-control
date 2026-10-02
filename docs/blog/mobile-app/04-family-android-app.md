@@ -2,8 +2,9 @@
 
 2026-10-02 작업 기록. `android/family-app`에 가족용 Android 앱을 만들었다.
 기존 A50 관리 앱과 별개이며, 집·가족 API는 3편의 A50 중앙 서버를 사용한다.
-시험 APK 빌드·서명 검사와 A50 UI/API 시험을 완료했다. 실제 Firebase 구성 파일 저장이
-남아 production APK와 실제 Google 로그인은 아직 완료되지 않았다.
+시험 APK 빌드·A50 UI/API 검사, 실제 Firebase 구성의 개발·배포 APK 빌드와 서명·분리 검사를
+완료했다. A50에 배포 APK를 설치하고 Firebase 초기화·로그인 시작 화면을 확인했다.
+실제 계정으로 Google 로그인을 완료하는 시험과 외부 API 접속·FCM은 다음 단계다.
 
 ## 이번 단계의 경계
 
@@ -70,7 +71,13 @@ Credential Manager의 서버 클라이언트 ID에 넣으면 로그인 설정이
 서비스 계정 개인 키를 앱에 포함하지 않는다. 실제 설정 파일은 저장소에서 제외한다.
 
 이번 브라우저 자동 다운로드에서는 다운로드 이벤트가 시간 초과됐다.
-설정 파일 저장이 확인되기 전에는 실제 구성의 production APK 빌드를 완료했다고 기록하지 않는다.
+사용자가 바탕화면에 저장한 파일 두 개의 내용이 같음을 확인했고, 프로젝트·앱 ID·패키지·
+전용 SHA-1·웹 클라이언트를 검사한 뒤 비공개 빌드 설정으로 복사했다.
+원본 다운로드 파일은 보존했다. 독자는 다음 도구로 값이 출력되지 않는 검증과 복사를 재현할 수 있다.
+
+```powershell
+python scripts/android/import_family_firebase.py --source "<google-services.json 경로>" --project-id <내 Firebase 프로젝트 ID>
+```
 
 ## 3. 실제 배포 APK 빌드
 
@@ -88,6 +95,38 @@ python scripts/android/verify_family_apk.py
 배포 APK는 HTTPS만 허용하고, 인증서 검증과 서버 리디렉션 자동 추적을 해제하지 않는다.
 사용자는 Google 로그인 후 소유자가 안내한 서버 주소를 설정한다.
 아직 외부 접속 경로가 없으므로 다른 휴대폰의 `localhost`에 A50 서버가 있다고 생각하면 안 된다.
+
+실제 구성 빌드는 1분 46초에 성공했고 production 단위 검사 2개도 통과했다.
+배포 APK 0.1.0은 3,888,953바이트이고 SHA-256은 아래와 같다.
+
+```text
+30842377eaaba3626b9dd80c7888a092e99227927f265e23d4c4a6e8406ca12b
+```
+
+APK는 Git에 넣지 않는다. 로컬 빌드 결과와 사용자 바탕화면에 전달한 사본의 해시가 일치함을 확인했다.
+검사 도구는 실제 APK에서 Firebase 앱·프로젝트·API 키·웹 클라이언트 포함을 확인하고 값은 출력하지 않는다.
+manifest가 참조하는 컴파일된 네트워크 정책도 확인한다. 개발 빌드만 루프백 예외,
+배포 빌드는 HTTP 예외 없이 시스템 인증서를 사용한다.
+
+```powershell
+python scripts/android/install_test_family_app.py --production-only --release
+python scripts/android/install_test_family_app.py --production-only --release --apply
+```
+
+첫 명령은 설치할 파일의 미리보기다. 두 번째는 기존 관리 연결로 검증한 A50에 배포 APK를 설치하고
+로그인 시작 화면을 검사·캡처한다. fixture 검사를 다시 실행하거나 운영 계정을 생성하지 않는다.
+A50 설치 결과 `Success`, 실행 결과 `Status: ok`, 로그인 화면의 실제 버튼 존재를 확인했다.
+
+![실제 배포 APK의 Google 로그인 시작 화면](../../assets/hardware/family-app/05-production-login.png)
+
+이 화면은 실제 Firebase 설정을 담은 배포 APK다. 계정 선택이나 로그인 성공 화면은 아니다.
+Google 계정이 있는 휴대폰에서 APK 설치 → ‘Google로 계속하기’ → 계정 선택 후 결과를 확인한다.
+현재 배포 APK는 로그인 뒤 중앙 서버 주소 입력 화면으로 이어진다. 아직 외부 API 주소가 없으므로
+집 등록까지 완료됐다고 판단하지 않는다.
+
+자료: [실제 구성 빌드](../../assets/terminal/189-a50-family-apk-build.txt),
+[최종 APK 검사](../../assets/terminal/191-a50-family-apk-verification.txt),
+[A50 배포 APK 설치·시작](../../assets/terminal/192-a50-family-native-apk-tests.txt).
 
 ## 4. 가족 화면과 독립된 실기기 시험
 
@@ -156,6 +195,11 @@ UI 시험은 집 만들기·가족 관리·로그아웃 후 집 정보 제거를
   `tools:replace="android:label"`을 명시해 시험 이름을 적용했고 다음 빌드에서 해결됐다(172→175).
 - UI 검사 코드의 `closeSoftKeyboard`는 Espresso와 ViewActions에 모두 있어 모호했다.
   ViewActions의 메서드를 명시하고 `doesNotExist`의 정적 import를 추가해 수정했다(173→175).
+- 배포 APK의 XML을 소스 경로로 읽는 검사에서 실패했다(190). release 최적화가 내부 파일명을
+  줄인 것이 원인이다. 컴파일된 리소스 표에서 실제 경로를 찾고 manifest 참조까지 비교하도록
+  수정해 검사를 통과했다(191). APK의 HTTPS 설정을 바꾸지는 않았다.
+- Windows 리소스 표 출력을 기본 CP949로 읽을 때 디코딩 오류가 발생했다.
+  검증 도구가 SDK 출력 인코딩을 UTF-8로 지정하도록 수정했다.
 - Windows Java 출력의 한글이 깨진 초기 로그는 그대로 실패 자료로 남겼다.
   후속 빌드에서 Java 표준 출력·오류 인코딩을 UTF-8로 지정해 정상 글자를 확인했다.
 
