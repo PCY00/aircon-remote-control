@@ -1,0 +1,18 @@
+# Actual recorded operations; private details removed
+
+$ adb [verified A50] home
+EXIT_CODE=0
+$ adb [verified A50] display off
+EXIT_CODE=0
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=49;last_approval=APPROVED_KNOWN_WIFI;interactive=false;last=무선 디버깅 유지 중"
+
+
+$ SSH [verified host key] read-only final central counts, original private FCM key mode and readiness [display off]
+ACTUAL_CENTRAL_COUNTS={"users": 1, "homes": 2, "hubs": 0, "events": 0, "installations": 1}
+PUSH_STATES=[["accepted", 3]]
+EXISTING_FCM_PRIVATE_KEY_MODE=0600
+FINAL_DISPLAY_OFF_SSH_AND_CENTRAL_READY=PASS NEW_PI_HUB_NOT_PROVISIONED=TRUE
+
+EXIT_CODE=0

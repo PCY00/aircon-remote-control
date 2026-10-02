@@ -1,0 +1,12 @@
+# Actual tool output preserved after execution; local path removed.
+
+$ .venv/Scripts/python.exe scripts/pi/link_central_agent.py --home-name "A50 테스트 집"
+Traceback (most recent call last):
+  File "[REDACTED_LOCAL_PATH]/scripts/pi/link_central_agent.py", line 14, in <module>
+    from a50_record import PhoneSession
+ModuleNotFoundError: No module named 'a50_record'
+EXIT_CODE=1
+
+# Cause: import sorting moved a dependency before Pi's path setup.
+# Fix: import the shared recorder explicitly through pi_session.
+# Actual successful preview is preserved in records 273-275.

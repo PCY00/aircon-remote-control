@@ -1,0 +1,3 @@
+# Actual recorded operations; private details removed
+
+PI_ORIGINAL_CONTROLLER_ACTIVE=PASS LINGER=True

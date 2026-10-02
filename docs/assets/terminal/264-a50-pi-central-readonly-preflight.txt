@@ -1,0 +1,18 @@
+# Actual recorded operations; private details removed
+
+$ SSH [previously verified Pi; host key checked] read-only source comparison and service/history metadata
+EXISTING_PI_APP_DIFF_FILES=["app/automations/store.py", "app/devices/service.py", "app/sensors/service.py", "app/sensors/store.py", "app/static/index.html", "app/static/sensors.js"]
+EXISTING_PI_APP_MISSING_FILES=[]
+PYTHON_RUNTIME=Python 3.13.5
+SERVICE=aircon-controller STATE=active
+SERVICE=aircon-central-agent STATE=inactive
+SOURCE=runtime/sensors/sensors.sqlite3 EXISTS=True
+SOURCE_INTEGRITY=ok
+SOURCE_TABLE=door_events ROWS=552
+REGISTERED_SENSOR_KINDS={"door_contact": 1, "temperature_humidity": 1}
+SOURCE=runtime/automations/automations.sqlite3 EXISTS=True
+SOURCE_INTEGRITY=ok
+SOURCE_TABLE=automation_events ROWS=150
+PI_PRIVATE_CONFIG_EXISTS=False
+
+EXIT_CODE=0

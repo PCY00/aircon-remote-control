@@ -1,0 +1,87 @@
+# Actual recorded operations; private details removed
+
+$ pytest Pi installer first-apply test [local temporary fixture]
+F                                                                        [100%]
+
+================================== FAILURES ===================================
+
+______ test_first_apply_does_not_start_service_or_modify_source_history _______
+
+
+
+target = (WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-30/test_first_apply_does_not_star0'), {'files...s\\aircon-central-agent\\releases\\a708bac1e869c120\\agent.py']], <function target.<locals>.run at 0x0000026098F660C0>)
+
+
+
+    def test_first_apply_does_not_start_service_or_modify_source_history(target):
+
+        home, payload, calls, run = target
+
+        before = {p: p.read_bytes() for p in (home / "aircon-controller").rglob("*.sqlite3")}
+
+>       installer.install(payload, home=home, runner=run, apply=True)
+
+
+
+tests\test_pi_agent_deploy.py:61:
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+scripts\pi\apply_central_agent.py:104: in install
+
+    staged.symlink_to(release, target_is_directory=True)
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+
+
+self = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-30/test_first_apply_does_not_star0/services/aircon-central-agent/current.new')
+
+target = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-30/test_first_apply_does_not_star0/services/aircon-central-agent/releases/a708bac1e869c120')
+
+target_is_directory = True
+
+
+
+    def symlink_to(self, target, target_is_directory=False):
+
+        """
+
+        Make this path a symlink pointing to the target path.
+
+        Note the order of arguments (link, target) is the reverse of os.symlink.
+
+        """
+
+        if not hasattr(os, "symlink"):
+
+            raise NotImplementedError("os.symlink() not available on this system")
+
+>       os.symlink(target, self, target_is_directory)
+
+E       OSError: [WinError 1314] Ŭ���̾�Ʈ�� �ʿ��� ������ ������ ���� �ʽ��ϴ�: 'C:\\Users\\kksp1\\AppData\\Local\\Temp\\pytest-of-scp-ssh\\pytest-30\\test_first_apply_does_not_star0\\services\\aircon-central-agent\\releases\\a708bac1e869c120' -> 'C:\\Users\\kksp1\\AppData\\Local\\Temp\\pytest-of-scp-ssh\\pytest-30\\test_first_apply_does_not_star0\\services\\aircon-central-agent\\current.new'
+
+
+
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\pathlib.py:1386: OSError
+
+---------------------------- Captured stdout call -----------------------------
+
+READONLY_SOURCE=door_events ROWS=1
+
+READONLY_SOURCE=automation_events ROWS=1
+
+MANIFEST_FILES=2 RELEASE=a708bac1e869c120
+
+EXISTING_PI_APP_FILES_AND_DATABASES=NO_WRITE NO_APP_RESTART=TRUE
+
+AGENT_SERVICE=inactive
+
+=========================== short test summary info ===========================
+
+FAILED tests/test_pi_agent_deploy.py::test_first_apply_does_not_start_service_or_modify_source_history
+
+1 failed, 4 deselected in 0.27s
+
+
+EXIT_CODE=1

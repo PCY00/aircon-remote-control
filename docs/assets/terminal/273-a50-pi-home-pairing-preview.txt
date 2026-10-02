@@ -1,0 +1,5 @@
+# Actual recorded operations; private details removed
+
+A50_PRIVATE_READONLY_PREFLIGHT=PASS SERVER_VERSION=0.3.1
+PAIRING_PREVIEW_ONLY=NO_NEW_CREDENTIAL_NO_HOME_BINDING_NO_SERVICE_START
+APPLY_PLAN=dedicated_Pi_key; normal_Google_owner_one_time_claim; skip_existing_history; real_connection_notification_once; enable_new_relay

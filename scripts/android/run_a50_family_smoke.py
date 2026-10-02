@@ -22,9 +22,29 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--home-name", required=True, help="User-approved real test home name")
     parser.add_argument("--apply", action="store_true")
-    parser.add_argument('--push-test', choices=('registerRealInstallation','receiveRealFCMWhileBackgrounded',
-                                               'receiveRealFCMWhileScreenOff'))
+    parser.add_argument(
+        "--push-test",
+        choices=(
+            "registerRealInstallation",
+            "receiveRealFCMWhileBackgrounded",
+            "receiveRealFCMWhileScreenOff",
+        ),
+    )
+    parser.add_argument(
+        "--hub-test",
+        choices=("verifyOwnerBeforeProvisioning", "claimApprovedHub", "observeActualHubFCM"),
+    )
+    parser.add_argument(
+        "--claim-file", type=Path, help="Private one-use claim, never a hub credential"
+    )
+    parser.add_argument("--trigger-pi-connection", action="store_true")
     args = parser.parse_args()
+    if args.push_test and args.hub_test:
+        parser.error("Choose one native test")
+    if bool(args.claim_file) != (args.hub_test == "claimApprovedHub"):
+        parser.error("--claim-file is required only for claimApprovedHub")
+    if args.trigger_pi_connection and args.hub_test != "observeActualHubFCM":
+        parser.error("--trigger-pi-connection requires observeActualHubFCM")
     if not 1 <= len(args.home_name) <= 80 or any(ord(c) < 32 for c in args.home_name):
         parser.error("Home name must contain 1–80 printable characters")
     root = Path("tmp/family-app-smoke-tests")
@@ -89,7 +109,13 @@ def main():
     endpoint = adb.connect(timeout=40)
 
     def run(arguments, label, timeout=30):
-        result = adb.run("-s", endpoint, *arguments, timeout=timeout)
+        if args.trigger_pi_connection and arguments[:3] == ["shell", "am", "instrument"]:
+            sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "pi"))
+            from trigger_hub_receipt import instrument_and_trigger
+
+            result = instrument_and_trigger([adb.adb, "-s", endpoint, *arguments])
+        else:
+            result = adb.run("-s", endpoint, *arguments, timeout=timeout)
         record.log(
             "$ adb [verified A50] "
             + label
@@ -118,6 +144,18 @@ def main():
         "install -r signed production instrumentation test APK",
         120,
     )
+    run(["shell", "input", "keyevent", "224"], "wake own A50 client for native test")
+    if args.claim_file:
+        claim = json.loads(args.claim_file.read_text(encoding="utf-8"))
+        assert set(claim) == {"claim_code", "hub_id"}
+        assert re.fullmatch(r"claim_[A-Za-z0-9_-]{43}", claim["claim_code"])
+        assert re.fullmatch(r"[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}", claim["hub_id"])
+        target = "/sdcard/Android/data/com.aircon.family/files/pairing"
+        run(["shell", "mkdir", "-p", target], "prepare own test pairing directory")
+        run(
+            ["push", str(args.claim_file.resolve()), target + "/approved-hub-claim.json"],
+            "copy one-use private claim to signed own test; no credential in arguments",
+        )
     encoded = base64.b64encode(args.home_name.encode()).decode()
     output = run(
         [
@@ -127,7 +165,13 @@ def main():
             "-w",
             "-e",
             "class",
-            ('com.aircon.family.OwnPushSmokeTest#'+args.push_test if args.push_test else 'com.aircon.family.OwnFamilySmokeTest'),
+            (
+                "com.aircon.family.OwnPushSmokeTest#" + args.push_test
+                if args.push_test
+                else "com.aircon.family.OwnHubSmokeTest#" + args.hub_test
+                if args.hub_test
+                else "com.aircon.family.OwnFamilySmokeTest"
+            ),
             "-e",
             "home_name_b64",
             encoded,
@@ -142,15 +186,28 @@ def main():
         )
     images = Path("docs/assets/hardware/family-app")
     roots = re.findall(rb"INSTRUMENTATION_STATUS: capture_root=([^\r\n]+)", output)
-    assert roots and len(set(roots)) == 1
-    capture_root = roots[0].decode("utf-8")
-    assert re.fullmatch(
-        r"/storage/emulated/\d+/Android/data/com\.aircon\.family/files/test-captures", capture_root
+    captures_required = not args.hub_test or args.hub_test == "observeActualHubFCM"
+    capture_root = ""
+    if captures_required:
+        assert roots and len(set(roots)) == 1
+        capture_root = roots[0].decode("utf-8")
+        assert re.fullmatch(
+            r"/storage/emulated/\d+/Android/data/com\.aircon\.family/files/test-captures",
+            capture_root,
+        )
+    captures = (
+        ("10-a50-fcm-installation-registered",)
+        if args.push_test == "registerRealInstallation"
+        else ("12-a50-fcm-screen-off-receipt",)
+        if args.push_test == "receiveRealFCMWhileScreenOff"
+        else ("11-a50-fcm-background-receipt",)
+        if args.push_test
+        else ("13-a50-pi-connection-fcm-receipt",)
+        if args.hub_test == "observeActualHubFCM"
+        else ()
+        if args.hub_test
+        else ("08-a50-real-test-home", "09-a50-real-owner-members-redacted")
     )
-    captures = (("10-a50-fcm-installation-registered",) if args.push_test=='registerRealInstallation' else
-                ("12-a50-fcm-screen-off-receipt",) if args.push_test=='receiveRealFCMWhileScreenOff' else
-                ("11-a50-fcm-background-receipt",) if args.push_test else
-                ("08-a50-real-test-home", "09-a50-real-owner-members-redacted"))
     for name in captures:
         result = adb.run(
             "-s",
@@ -187,10 +244,11 @@ def main():
         node.get("text") for node in tree.iter("node") if node.get("package") == "com.aircon.family"
     }
     assert args.home_name in texts and "새 집 만들기" in texts
-    record.log('SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST='+str(args.push_test or 'household_ui'))
     record.log(
-        "GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED"
+        "SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST="
+        + str(args.push_test or args.hub_test or "household_ui")
     )
+    record.log("GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED")
 
 
 if __name__ == "__main__":

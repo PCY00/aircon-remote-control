@@ -14,7 +14,8 @@
 4. [가족 Android APK·Google 로그인 연결](04-family-android-app.md): 앱·지문 등록, 실제 구성의 production APK 빌드·서명·시험 토큰 제외·A50 설치와 시작 화면 확인 완료. 사용자가 다른 휴대폰에서 실제 계정 로그인 성공을 확인했다. 외부 서버 연결은 검증 전.
 5. [다른 휴대폰에서 A50 연결](05-external-https-connection.md): 시험용 HTTPS 터널·외부 TLS·인증 차단 확인. [보충](05a-a50-user-google-login.md)에서 A50의 실제 Google 계정·배포 APK로 집 등록·소유자 화면·앱 재실행 검사를 통과했다. 고정 주소는 후속 준비.
 6. [가족에게만 보내는 FCM 알림](06-family-fcm-notifications.md): 서버 0.3.0·앱 0.2.0 배포, 전용 서버 키·실제 계정 설치 등록, 백그라운드·화면 꺼짐 조건의 실제 FCM 콜백·알림 게시 확인 완료. 다른 가족 단말·장시간·실제 Pi는 후속 검증.
-7. 이후: 실제 Pi 연결·다른 가족 단말·장시간 시험.
+7. [Raspberry Pi 기록을 가족 알림으로 연결](07-raspberry-pi-event-relay.md): 독립 연결 서비스·만료시간 유지 구현, 로컬 88개·Pi Linux 2개 검사, 실제 배포 미리보기·A50 0.3.1 반영·실제 Google 소유자 확인 완료. Pi 키 발급·집 연결·자동 전송 승인 대기.
+8. 이후: 다른 가족 단말·장시간 시험·고정 주소 준비.
 
 1편 보충 자료: [SSH 세부 기록](02-termux-private-ssh.md),
 [백그라운드·부팅 세부 기록](03-background-recovery.md).

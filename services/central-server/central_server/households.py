@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import secrets
 import sqlite3
 import time
@@ -225,6 +226,10 @@ class Households:
                                (token_digest('hub', token),)).fetchone()
             if not hub or hub['home_id'] is None:
                 raise APIError('invalid_hub_credentials', 401)
+            expires = payload.get('notification_expires_at', self.clock()+300)
+            if (isinstance(expires, bool) or not isinstance(expires, (int, float))
+                    or not math.isfinite(expires) or expires > self.clock()+300):
+                raise APIError('invalid_notification_expiry', 400)
             encoded = json.dumps(payload, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
             content = token_digest('event', kind+'\0'+encoded)
             existing = conn.execute('SELECT id,content_digest FROM events WHERE hub_id=? '
@@ -238,7 +243,7 @@ class Households:
                                   (hub['home_id'], hub['id'], sender_id, kind, encoded,
                                    content, self.clock()))
             from central_server.push import enqueue
-            enqueue(conn, hub['home_id'], self.clock(), event=cursor.lastrowid)
+            enqueue(conn, hub['home_id'], self.clock(), event=cursor.lastrowid, expires_at=expires)
             return {'id': cursor.lastrowid, 'duplicate': False}
 
     def events(self, home, user, event=None):

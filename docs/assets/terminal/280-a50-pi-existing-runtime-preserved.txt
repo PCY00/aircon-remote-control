@@ -1,0 +1,7 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] read-only original Pi code checksums and service/config checks
+active
+OBSERVED_PI_APP_6_FILES_PRESERVED=PASS NO_NEW_AGENT_PRIVATE_CONFIG_OR_STATE=TRUE
+
+EXIT_CODE=0

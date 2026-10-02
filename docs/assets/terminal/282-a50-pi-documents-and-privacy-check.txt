@@ -1,0 +1,14 @@
+# Actual recorded operations; private details removed
+
+$ python scripts/sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=341
+
+PRIVATE_METADATA_COUNT=0
+
+
+EXIT_CODE=0
+PUBLIC_SOURCE_PRIVATE_KEY_AND_REAL_HUB_CLAIM_PATTERN_SCAN=0
+NEW_DOCUMENT_AND_IMAGE_LINK_TARGETS=PASS
+
+# Audit interrupted: pair check included this still-open audit TXT before rendering it.
+# Subsequent check excludes its own active record and verifies every completed pair.

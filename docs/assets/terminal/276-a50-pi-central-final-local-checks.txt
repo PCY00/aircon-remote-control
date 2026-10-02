@@ -1,0 +1,15 @@
+# Actual recorded operations; private details removed
+
+$ .venv/Scripts/ruff.exe check scripts/pi services/pi-central-agent/agent.py tests/test_pi_central_agent.py tests/test_pi_agent_deploy.py tests/test_pi_receipt_trigger.py tests/test_central_event_expiry.py services/central-server/central_server/push.py scripts/android/run_a50_family_smoke.py
+All checks passed!
+
+EXIT_CODE=0
+$ python -m pytest -q tests/test_pi_central_agent.py tests/test_pi_agent_deploy.py tests/test_pi_receipt_trigger.py tests/test_central_event_expiry.py tests/test_central_households.py tests/test_central_push.py tests/test_central_push_api.py tests/test_central_fcm.py tests/test_central_server_foundation.py tests/test_a50_central_deploy.py tests/test_a50_public_tunnel.py
+.................ss..................................................... [ 80%]
+
+..................                                                       [100%]
+
+88 passed, 2 skipped in 7.71s
+
+
+EXIT_CODE=0

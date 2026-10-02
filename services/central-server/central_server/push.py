@@ -11,12 +11,15 @@ import time
 from central_server.households import APIError, Households, identifier, token_digest
 
 
-def enqueue(conn, home, now, *, event=None, installation=None, user=None):
+def enqueue(conn, home, now, *, event=None, installation=None, user=None, expires_at=None):
     message = identifier()
+    expires = min(now + 300, expires_at if expires_at is not None else now + 300)
     conn.execute(
         "INSERT INTO push_messages VALUES (?,?,?,?,?,?)",
-        (message, home, event, "event" if event is not None else "test", now, now + 300),
+        (message, home, event, "event" if event is not None else "test", now, expires),
     )
+    if expires <= now:
+        return message, 0
     query = (
         "SELECT i.id,i.binding,i.user_id FROM installations i "
         "JOIN users u ON u.id=i.user_id "

@@ -1,0 +1,15 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] python - < verified runtime probe [database integrity, checksum, health, loopback, persistence, worker]
+DATABASE_INTEGRITY=ok
+MANAGED_SOURCE_AND_HOOK_CHECKSUMS=PASS
+LIVE=[200, {"scope": "households", "service": "aircon-central", "status": "ok", "uptime_seconds": 394.2, "version": "0.3.1"}]
+READY=[200, {"database": "ok", "status": "ready"}]
+CONCURRENT_READINESS_8_REQUESTS_4_CLIENTS=PASS
+LAN_INTERFACE_8001_NOT_LISTENING=PASS
+SERVER_RSS=52500 kB
+PYTHON_VERSION=3.14.6
+EXISTING_SSH_SERVICE_DOWN_MARKERS_PRESERVED=TRUE
+CENTRAL_RUNTIME_PROBE=PASS
+
+EXIT_CODE=0
