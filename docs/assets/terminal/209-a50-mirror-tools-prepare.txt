@@ -1,0 +1,5 @@
+# Actual phone SSH operations; private details removed
+
+$ download official Genymobile/scrcpy v4.1 win64 archive; verify published SHA-256
+OFFICIAL_ARCHIVE_SHA256=PASS BYTES=11305298
+PORTABLE_MIRROR_TOOLS=PREPARED WINDOWS_INSTALL=none DEVICE_CHANGES=none

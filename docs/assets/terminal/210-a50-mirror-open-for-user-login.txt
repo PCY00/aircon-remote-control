@@ -1,0 +1,25 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] screen on [user login handoff]
+
+$ adb [verified A50] launch installed family release APK [user login handoff]
+Starting: Intent { cmp=com.aircon.family/.MainActivity }
+
+Warning: Activity not started, its current task has been brought to the front
+
+Status: ok
+
+LaunchState: HOT
+
+Activity: com.aircon.family/.MainActivity
+
+TotalTime: 93
+
+WaitTime: 96
+
+Complete
+
+
+MIRROR_PROCESS_RUNNING=TRUE USER_WINDOW=A50 - Family Smart Home
+AUDIO=disabled VIDEO_RECORDING=none CLIPBOARD_AUTOSYNC=disabled
+GOOGLE_ACCOUNT_PASSWORD_AND_CODES=USER_INPUT_ONLY NO_CREDENTIAL_CAPTURE

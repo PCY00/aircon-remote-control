@@ -1,0 +1,43 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] install -r family-release.apk
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] screen on [own app capture]
+
+EXIT_CODE=0
+$ adb [verified A50] am start [production Google-login APK]
+Starting: Intent { cmp=com.aircon.family/.MainActivity }
+
+Status: ok
+
+LaunchState: COLD
+
+Activity: com.aircon.family/.MainActivity
+
+TotalTime: 527
+
+WaitTime: 556
+
+Complete
+
+
+EXIT_CODE=0
+$ adb [verified A50] uiautomator dump [own production app startup verification]
+UI hierchary dumped to: /data/local/tmp/family-production-ui.xml
+
+
+EXIT_CODE=0
+PRODUCTION_FIREBASE_SESSION_STARTUP_AND_LOGIN_UI=PASS
+ACTUAL_PRODUCTION_LOGIN_SCREEN=CAPTURED REAL_GOOGLE_ACCOUNT_LOGIN=NOT_TESTED
+$ adb [verified A50] home [restore server phone home screen]
+
+EXIT_CODE=0
+$ adb [verified A50] screen off [restore server phone screen state]
+
+EXIT_CODE=0
+FAMILY_PRODUCTION_APK_INSTALL_AND_STARTUP=PASS REAL_GOOGLE_LOGIN=NOT_TESTED
