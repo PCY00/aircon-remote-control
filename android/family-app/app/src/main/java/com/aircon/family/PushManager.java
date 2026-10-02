@@ -14,7 +14,7 @@ import java.util.UUID;
 
 /** Installation proof stays in private, non-backed-up app storage; never printed. */
 final class PushManager {
-    static final String CHANNEL="family_events", WORK="family-push-registration";
+    static final String CHANNEL="family_events", CLIMATE_CHANNEL="family_climate", WORK="family-push-registration";
     static SharedPreferences prefs(Context c) { return c.getSharedPreferences("push",0); }
     static synchronized String installation(Context c) {
         SharedPreferences p=prefs(c);
@@ -28,14 +28,31 @@ final class PushManager {
     static void channel(Context c) {
         c.getSystemService(NotificationManager.class).createNotificationChannel(
             new NotificationChannel(CHANNEL,"우리 집 알림",NotificationManager.IMPORTANCE_DEFAULT));
+        c.getSystemService(NotificationManager.class).createNotificationChannel(
+            new NotificationChannel(CLIMATE_CHANNEL,"온습도 알림",NotificationManager.IMPORTANCE_LOW));
     }
     static synchronized void enable(Context c,String origin,String account) {
         installation(c); channel(c);
         SharedPreferences p=prefs(c);
         if (!account.equals(p.getString("account","")) || !origin.equals(p.getString("origin","")))
             p.edit().remove("binding").putString("epoch",UUID.randomUUID().toString()).commit();
-        p.edit().putBoolean("enabled",true).putString("account",account).putString("origin",origin).commit();
+        p.edit().putBoolean("enabled",true).putString("account",account).putString("origin",origin)
+            .putBoolean("registration_error",false).remove("registration_error_message").commit();
         FirebaseMessaging.getInstance().setAutoInitEnabled(true); sync(c);
+    }
+    static synchronized void preferences(Context c,boolean door,boolean climate,boolean warning,int interval) {
+        if(interval!=1 && interval!=5 && interval!=15 && interval!=60) throw new IllegalArgumentException();
+        prefs(c).edit().putBoolean("door",door).putBoolean("climate",climate).putBoolean("warning",warning)
+            .putInt("climate_interval_minutes",interval).putBoolean("preferences_pending",true)
+            .putBoolean("registration_error",false).remove("registration_error_message")
+            .putString("epoch",UUID.randomUUID().toString()).commit();
+        sync(c);
+    }
+    static boolean categoryAllowed(SharedPreferences p,String category) {
+        if(category==null || category.equals("other")) return true;
+        if(category.equals("door") || category.equals("climate") || category.equals("warning"))
+            return p.getBoolean(category,!category.equals("climate"));
+        return false;
     }
     static void sync(Context c) {
         if (!BuildConfig.FLAVOR.equals("production") || !prefs(c).getBoolean("enabled",false)) return;

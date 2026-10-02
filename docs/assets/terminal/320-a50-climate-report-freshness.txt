@@ -1,0 +1,19 @@
+# Actual recorded operations; private details removed
+
+# Executed read-only age query:
+import sqlite3,datetime,json
+from pathlib import Path
+from contextlib import closing
+path=Path.home()/'aircon-controller/runtime/sensors/sensors.sqlite3'
+with closing(sqlite3.connect(path.as_uri()+'?mode=ro',uri=True)) as c:
+ ages=[]
+ for row in c.execute("SELECT last_reported_at FROM sensor_states WHERE kind='temperature_humidity'"):
+  ages.append(round((datetime.datetime.now(datetime.UTC)-datetime.datetime.fromisoformat(row[0])).total_seconds()))
+ print('ACTUAL_CLIMATE_REPORT_AGES_SECONDS='+json.dumps(ages))
+print('MEASUREMENT_FRESHNESS_READONLY=PASS NO_MEASUREMENTS_OR_DEVICE_IDS_EXPORTED')
+
+$ SSH [verified host key] read-only climate report age without values or private device identity
+ACTUAL_CLIMATE_REPORT_AGES_SECONDS=[2014]
+MEASUREMENT_FRESHNESS_READONLY=PASS NO_MEASUREMENTS_OR_DEVICE_IDS_EXPORTED
+
+EXIT_CODE=0

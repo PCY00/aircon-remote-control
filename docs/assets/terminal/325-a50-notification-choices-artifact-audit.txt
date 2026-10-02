@@ -1,0 +1,14 @@
+# Actual phone SSH operations; private details removed
+
+$ aapt2 dump badging family-release.apk [package and version only]
+PACKAGE=com.aircon.family VERSION_CODE=4 VERSION_NAME=0.3.0
+ACTUAL_ANDROID_JUNIT_XML_COUNTS={"tests": 4, "failures": 0, "errors": 0}
+CHANGED_TEXT_SECRET_PATTERNS_AND_LOCAL_DOCUMENT_LINKS=PASS
+NEW_TERMINAL_PAIRS=PASS ACTIVE_AUDIT_CAPTURE_RENDERED_AFTER_COMPLETION
+$ python scripts/sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=390
+
+PRIVATE_METADATA_COUNT=0
+
+
+EXIT_CODE=0

@@ -1,0 +1,12 @@
+# Actual recorded operations; private details removed
+
+$ python -m pytest tests\test_central_event_expiry.py tests\test_central_fcm.py tests\test_central_households.py tests\test_central_notification_choices.py tests\test_central_push.py tests\test_central_push_api.py tests\test_central_server_foundation.py tests/test_pi_central_agent.py tests/test_a50_central_deploy.py -q
+........................................................................ [ 86%]
+
+...........                                                              [100%]
+
+83 passed in 9.28s
+
+
+EXIT_CODE=0
+LOCAL_AUTHORITY_PREFERENCES_SCHEMA_UPGRADE_SOURCE_PRESERVATION_AND_PROVIDER_CHECKS=PASS

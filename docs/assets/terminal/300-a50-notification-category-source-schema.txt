@@ -1,0 +1,22 @@
+# Actual recorded operations; private details removed
+
+# Executed read-only source schema query:
+import sqlite3,json
+from pathlib import Path
+from contextlib import closing
+path=Path.home()/'aircon-controller/runtime/sensors/sensors.sqlite3'
+with closing(sqlite3.connect(path.as_uri()+'?mode=ro',uri=True)) as c:
+ print('SENSOR_TABLES='+json.dumps(c.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()))
+ print('SENSOR_STATE_COLUMNS='+json.dumps([(r[1],r[2]) for r in c.execute('PRAGMA table_info(sensor_states)')]))
+ print('SENSOR_KIND_COUNTS='+json.dumps(c.execute('SELECT kind,COUNT(*) FROM sensor_states GROUP BY kind').fetchall()))
+ print('CLIMATE_STATE_VALUE_KEYS_ONLY='+json.dumps([sorted(json.loads(r[0])) for r in c.execute("SELECT state_json FROM sensor_states WHERE kind='temperature_humidity'")]))
+ print('READONLY_ACTUAL_PI_SENSOR_SCHEMA=PASS PRIVATE_IDS_AND_VALUES_NOT_EXPORTED')
+
+$ SSH [verified host key] inspect sensor schema and climate value keys only
+SENSOR_TABLES=[["sensor_states"], ["door_events"], ["sqlite_sequence"], ["sensor_metadata"]]
+SENSOR_STATE_COLUMNS=[["device_id", "TEXT"], ["kind", "TEXT"], ["state_json", "TEXT"], ["raw_json", "TEXT"], ["first_seen_at", "TEXT"], ["last_reported_at", "TEXT"], ["last_received_at", "TEXT"], ["source_timestamp", "TEXT"], ["last_changed_at", "TEXT"]]
+SENSOR_KIND_COUNTS=[["door_contact", 1], ["temperature_humidity", 1]]
+CLIMATE_STATE_VALUE_KEYS_ONLY=[["battery_percent", "humidity_percent", "linkquality", "temperature_c", "voltage_mv"]]
+READONLY_ACTUAL_PI_SENSOR_SCHEMA=PASS PRIVATE_IDS_AND_VALUES_NOT_EXPORTED
+
+EXIT_CODE=0

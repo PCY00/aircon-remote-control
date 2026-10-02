@@ -1,0 +1,29 @@
+# Actual recorded operations; private details removed
+
+# Executed read-only verification:
+import hashlib,json,sqlite3,subprocess
+from pathlib import Path
+from contextlib import closing
+root=Path.home()/'services/aircon-central-agent'
+ledger=json.loads((root/'deployment.json').read_text())
+assert all(hashlib.sha256(Path(name).read_bytes()).hexdigest()==sha for name,sha in ledger['managed'].items())
+state=Path.home()/'.local/state/aircon-central-agent/outbox.sqlite3'
+with closing(sqlite3.connect(state.as_uri()+'?mode=ro',uri=True)) as c:
+ print('SOURCE_CURSORS='+json.dumps(c.execute('SELECT source,last_id FROM cursors ORDER BY source').fetchall()))
+ print('CLIMATE_BASELINE_COUNT='+str(c.execute('SELECT COUNT(*) FROM climate_cursors').fetchone()[0]))
+ print('OUTBOX_KINDS_AND_STATES='+json.dumps(c.execute('SELECT kind,state,COUNT(*) FROM outbox GROUP BY kind,state').fetchall()))
+ assert c.execute('PRAGMA integrity_check').fetchone()==('ok',)
+for unit in ('aircon-central-agent','aircon-controller'):
+ p=subprocess.run(['systemctl','--user','is-active',unit],capture_output=True,check=True)
+ print('SERVICE_'+unit+'='+p.stdout.decode().strip())
+print('MANAGED_RELAY_SOURCE_CHECKSUMS_AND_STATE=PASS')
+
+$ SSH [verified host key] read-only new climate cursors, queue and original controller status
+SOURCE_CURSORS=[["automation", 150], ["door", 552]]
+CLIMATE_BASELINE_COUNT=1
+OUTBOX_KINDS_AND_STATES=[["hub.connection_test", "accepted", 1]]
+SERVICE_aircon-central-agent=active
+SERVICE_aircon-controller=active
+MANAGED_RELAY_SOURCE_CHECKSUMS_AND_STATE=PASS
+
+EXIT_CODE=0

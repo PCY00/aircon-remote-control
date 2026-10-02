@@ -25,6 +25,8 @@ with closing(sqlite3.connect(state.as_uri()+'?mode=ro',uri=True)) as c:
  assert c.execute('PRAGMA integrity_check').fetchone()==('ok',)
  cursors=c.execute('SELECT source,last_id FROM cursors ORDER BY source').fetchall()
  print('SOURCE_CURSORS='+json.dumps(cursors))
+ count=c.execute('SELECT COUNT(*) FROM climate_cursors').fetchone()[0]
+ print('CLIMATE_TRACKED_SENSOR_COUNT='+str(count))
  states=c.execute('SELECT kind,state,COUNT(*) FROM outbox GROUP BY kind,state').fetchall()
  print('OUTBOX_STATES='+json.dumps(states))
 sources=[('sensors/sensors.sqlite3','door_events'),
@@ -69,6 +71,9 @@ with closing(sqlite3.connect(db.as_uri()+'?mode=ro',uri=True)) as c:
  print('BOUND_HOME_EVENT_KINDS='+json.dumps(kinds))
  states=c.execute('SELECT state,COUNT(*) FROM push_jobs GROUP BY state').fetchall()
  print('PUSH_STATES='+json.dumps(states))
+ choices=c.execute('SELECT door,climate,warning,climate_interval_minutes '
+                   'FROM notification_preferences').fetchall()
+ print('PHONE_NOTIFICATION_CHOICES_ONLY='+json.dumps(choices))
 with urllib.request.urlopen('http://127.0.0.1:8001/health/ready',timeout=3) as response:
  assert response.status==200
 print('PAIRED_A50_DATABASE_AND_READINESS=PASS PRIVATE_PROVISIONING_MODE=0600')

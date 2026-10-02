@@ -88,6 +88,9 @@ class Store:
                     event_id TEXT PRIMARY KEY, kind TEXT NOT NULL, payload TEXT NOT NULL,
                     expires_at REAL NOT NULL, state TEXT NOT NULL, attempts INTEGER NOT NULL,
                     due_at REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS climate_source(file_identity TEXT PRIMARY KEY);
+                CREATE TABLE IF NOT EXISTS climate_cursors(
+                    sensor_ref TEXT PRIMARY KEY, reported_at REAL NOT NULL);
             """)
             if not conn.execute("SELECT id FROM identity").fetchone():
                 conn.execute("INSERT INTO identity VALUES(?)", (str(uuid.uuid4()),))
@@ -205,6 +208,98 @@ class Store:
                         )
             finally:
                 src.close()
+        counts.update(self.collect_climate(directory))
+        return counts
+
+    def collect_climate(self, directory):
+        counts = {
+            "climate_baseline": 0,
+            "climate_queued": 0,
+            "climate_expired": 0,
+            "climate_invalid": 0,
+        }
+        path = Path(directory) / "sensors/sensors.sqlite3"
+        info = path.stat()
+        identity = str(info.st_dev) + ":" + str(info.st_ino)
+        src = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, timeout=2)
+        src.row_factory = sqlite3.Row
+        try:
+            # Older fixture/source layouts can contain door history only.
+            if not src.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='sensor_states'"
+            ).fetchone():
+                return counts
+            rows = src.execute(
+                "SELECT device_id,state_json,last_reported_at FROM sensor_states "
+                "WHERE kind='temperature_humidity'"
+            ).fetchall()
+            with self.connect() as conn:
+                previous = conn.execute("SELECT file_identity FROM climate_source").fetchone()
+                if previous and previous["file_identity"] != identity:
+                    raise SourceChangedError("Climate source replacement requires inspection")
+                baseline = previous is None
+                if baseline:
+                    conn.execute("INSERT INTO climate_source VALUES(?)", (identity,))
+                namespace = conn.execute("SELECT id FROM identity").fetchone()[0]
+                for row in rows:
+                    sensor = hashlib.sha256(
+                        (namespace + ":climate:" + row["device_id"]).encode()
+                    ).hexdigest()
+                    old = conn.execute(
+                        "SELECT reported_at FROM climate_cursors WHERE sensor_ref=?", (sensor,)
+                    ).fetchone()
+                    try:
+                        occurred = timestamp(row["last_reported_at"])
+                        if not math.isfinite(occurred) or occurred > self.clock() + 30:
+                            raise ValueError("Invalid climate report time")
+                        if old and occurred <= old["reported_at"]:
+                            continue
+                        values = json.loads(row["state_json"])
+                        payload = {}
+                        for key, minimum, maximum in (
+                            ("temperature_c", -100, 150),
+                            ("humidity_percent", 0, 100),
+                        ):
+                            value = values.get(key)
+                            if value is not None:
+                                if (
+                                    isinstance(value, bool)
+                                    or not isinstance(value, (float, int))
+                                    or not math.isfinite(value)
+                                    or not minimum <= value <= maximum
+                                ):
+                                    raise ValueError("Invalid climate measurement")
+                                payload[key] = value
+                        if not payload:
+                            raise ValueError("No climate measurement")
+                        expires = occurred + 240
+                        if baseline:
+                            counts["climate_baseline"] += 1
+                        elif expires <= self.clock():
+                            counts["climate_expired"] += 1
+                        else:
+                            payload.update(
+                                source="climate",
+                                sensor_ref=sensor,
+                                occurred_at=row["last_reported_at"],
+                                notification_expires_at=expires,
+                            )
+                            stable = hashlib.sha256(
+                                (sensor + ":" + str(occurred)).encode()
+                            ).hexdigest()
+                            self._enqueue(conn, stable, "sensor.climate_report", payload, expires)
+                            counts["climate_queued"] += 1
+                        conn.execute(
+                            "INSERT INTO climate_cursors VALUES(?,?) ON CONFLICT(sensor_ref) "
+                            "DO UPDATE SET reported_at=excluded.reported_at",
+                            (sensor, occurred),
+                        )
+                    except (ValueError, TypeError, OverflowError, AttributeError):
+                        # Invalid measurements are not sent; an unchanged invalid report is retried
+                        # only at the normal polling interval and never grows the outbox.
+                        counts["climate_invalid"] += 1
+        finally:
+            src.close()
         return counts
 
     def next(self):

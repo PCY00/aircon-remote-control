@@ -1,0 +1,19 @@
+# Actual recorded operations; private details removed
+
+$ adb [verified A50] return to Home
+
+EXIT_CODE=0
+$ adb [verified A50] turn display off
+
+EXIT_CODE=0
+$ adb [verified A50] read own management status
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=42;last_approval=APPROVED_KNOWN_WIFI;interactive=false;last=무선 디버깅 유지 중"
+
+
+EXIT_CODE=0
+$ SSH [verified host key] verify central source manifest and readiness after display off
+CENTRAL_SOURCE_MANIFEST_AND_SCREEN_OFF_SSH_READINESS=PASS
+
+EXIT_CODE=0

@@ -23,11 +23,17 @@ def main():
     parser.add_argument("--home-name", required=True, help="User-approved real test home name")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument(
+        "--capture-suffix",
+        default="",
+        help="Keep screenshots from different APK versions separately",
+    )
+    parser.add_argument(
         "--push-test",
         choices=(
             "registerRealInstallation",
             "receiveRealFCMWhileBackgrounded",
             "receiveRealFCMWhileScreenOff",
+            "verifyNotificationGuidanceAndChoices",
         ),
     )
     parser.add_argument(
@@ -39,6 +45,8 @@ def main():
     )
     parser.add_argument("--trigger-pi-connection", action="store_true")
     args = parser.parse_args()
+    if args.capture_suffix and not re.fullmatch(r"[a-z0-9-]{1,20}", args.capture_suffix):
+        parser.error("Invalid capture suffix")
     if args.push_test and args.hub_test:
         parser.error("Choose one native test")
     if bool(args.claim_file) != (args.hub_test == "claimApprovedHub"):
@@ -196,7 +204,13 @@ def main():
             capture_root,
         )
     captures = (
-        ("10-a50-fcm-installation-registered",)
+        (
+            "14-a50-notification-off-guidance",
+            "15-a50-notification-choices",
+            "16-a50-home-delete-confirmation",
+        )
+        if args.push_test == "verifyNotificationGuidanceAndChoices"
+        else ("10-a50-fcm-installation-registered",)
         if args.push_test == "registerRealInstallation"
         else ("12-a50-fcm-screen-off-receipt",)
         if args.push_test == "receiveRealFCMWhileScreenOff"
@@ -218,9 +232,10 @@ def main():
             timeout=15,
         )
         assert result.returncode == 0 and result.stdout.startswith(b"\x89PNG")
-        (images / (name + ".png")).write_bytes(result.stdout)
+        exported = name + ("-" + args.capture_suffix if args.capture_suffix else "") + ".png"
+        (images / exported).write_bytes(result.stdout)
         record.log(
-            "ACTUAL_REAL_ACCOUNT_UI_CAPTURE=" + name + ".png EMAIL_REDACTED_BEFORE_EXPORT=TRUE"
+            "ACTUAL_REAL_ACCOUNT_UI_CAPTURE=" + exported + " EMAIL_REDACTED_BEFORE_EXPORT=TRUE"
         )
     run(
         ["shell", "am", "force-stop", "com.aircon.family"],

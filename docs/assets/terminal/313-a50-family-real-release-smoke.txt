@@ -1,0 +1,58 @@
+# Actual recorded operations; private details removed
+
+INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS
+$ adb [verified A50] install -r signed production instrumentation test APK
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] wake own A50 client for native test
+
+EXIT_CODE=0
+$ adb [verified A50] native UI smoke [user-approved home; existing real Google session; no token extraction]
+
+
+com.aircon.family.OwnPushSmokeTest:
+
+Error in receiveRealFCMWhileBackgrounded(com.aircon.family.OwnPushSmokeTest):
+
+java.lang.AssertionError: Real FCM callback after backgrounding and posted test notification required
+
+	at org.junit.Assert.fail(Assert.java:89)
+
+	at org.junit.Assert.assertTrue(Assert.java:42)
+
+	at com.aircon.family.OwnPushSmokeTest.receiveRealFCMWhileBackgrounded(OwnPushSmokeTest.java:93)
+
+
+
+
+
+Time: 63.355
+
+There was 1 failure:
+
+1) receiveRealFCMWhileBackgrounded(com.aircon.family.OwnPushSmokeTest)
+
+java.lang.AssertionError: Real FCM callback after backgrounding and posted test notification required
+
+	at org.junit.Assert.fail(Assert.java:89)
+
+	at org.junit.Assert.assertTrue(Assert.java:42)
+
+	at com.aircon.family.OwnPushSmokeTest.receiveRealFCMWhileBackgrounded(OwnPushSmokeTest.java:93)
+
+
+
+FAILURES!!!
+
+Tests run: 1,  Failures: 1
+
+
+
+
+
+
+EXIT_CODE=0

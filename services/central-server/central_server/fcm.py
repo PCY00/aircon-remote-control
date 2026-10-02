@@ -43,8 +43,12 @@ class FCMSender:
                 "binding": recipient["binding"],
                 "recipient": recipient["subject"],
                 "kind": recipient["kind"],
+                "category": recipient.get("category", "other"),
             },
-            "android": {"priority": "HIGH", "ttl": str(ttl) + "s"},
+            "android": {
+                "priority": "NORMAL" if recipient.get("category") == "climate" else "HIGH",
+                "ttl": str(ttl) + "s",
+            },
         }
         try:
             if not self.credentials.valid:

@@ -9,6 +9,7 @@ import threading
 import time
 
 from central_server.households import APIError, Households, identifier, token_digest
+from central_server.preferences import category, permits, read
 
 
 def enqueue(conn, home, now, *, event=None, installation=None, user=None, expires_at=None):
@@ -20,28 +21,85 @@ def enqueue(conn, home, now, *, event=None, installation=None, user=None, expire
     )
     if expires <= now:
         return message, 0
+    event_kind = (
+        conn.execute("SELECT kind FROM events WHERE id=?", (event,)).fetchone()
+        if event is not None
+        else None
+    )
+    selected = category(event_kind["kind"]) if event_kind else "other"
     query = (
         "SELECT i.id,i.binding,i.user_id FROM installations i "
         "JOIN users u ON u.id=i.user_id "
         "JOIN memberships m ON m.user_id=i.user_id "
+        "JOIN homes h ON h.id=m.home_id "
         "WHERE m.home_id=? AND m.active=1 AND u.active=1 AND i.active=1 AND i.token IS NOT NULL "
-        "AND i.updated_at>?"
+        "AND h.active=1 AND i.updated_at>?"
     )
     params = [home, now - 90 * 86400]
     if installation is not None:
         query += " AND i.id=? AND i.user_id=?"
         params += [installation, user]
     rows = conn.execute(query, params).fetchall()
+    queued = 0
     for row in rows:
+        if not permits(conn, row["id"], row["user_id"], selected):
+            continue
+        if selected == "climate":
+            preference = conn.execute(
+                "SELECT * FROM notification_preferences WHERE installation_id=? AND user_id=?",
+                (row["id"], row["user_id"]),
+            ).fetchone()
+            if (
+                preference
+                and preference["last_climate_at"] > 0
+                and now
+                < preference["last_climate_at"] + preference["climate_interval_minutes"] * 60
+            ):
+                continue
+            conn.execute(
+                "UPDATE notification_preferences SET last_climate_at=? "
+                "WHERE installation_id=? AND user_id=?",
+                (now, row["id"], row["user_id"]),
+            )
         conn.execute(
             "INSERT INTO push_jobs(message_id,installation_id,binding,user_id,state,due_at) "
             "VALUES (?,?,?,?,'pending',?)",
             (message, *row, now),
         )
-    return message, len(rows)
+        queued += 1
+    return message, queued
 
 
 class PushStore(Households):
+    def set_preferences(self, user, installation, secret, options):
+        with self.transaction(write=True) as conn:
+            row = conn.execute(
+                "SELECT * FROM installations WHERE id=? AND user_id=? AND active=1",
+                (installation, user),
+            ).fetchone()
+            if not row or not secrets.compare_digest(
+                row["secret_digest"], token_digest("installation", secret)
+            ):
+                raise APIError("not_found", 404)
+            conn.execute(
+                "INSERT INTO notification_preferences(installation_id,user_id,door,climate,"
+                "warning,climate_interval_minutes) "
+                "VALUES (?,?,?,?,?,?) ON CONFLICT(installation_id) DO UPDATE SET "
+                "last_climate_at=CASE WHEN notification_preferences.user_id=excluded.user_id "
+                "THEN notification_preferences.last_climate_at ELSE 0 END,"
+                "user_id=excluded.user_id,door=excluded.door,climate=excluded.climate,warning=excluded.warning,"
+                "climate_interval_minutes=excluded.climate_interval_minutes",
+                (
+                    installation,
+                    user,
+                    int(options["door"]),
+                    int(options["climate"]),
+                    int(options["warning"]),
+                    options["climate_interval_minutes"],
+                ),
+            )
+            return {"status": "saved", "preferences": read(conn, installation, user)}
+
     def register(self, user, installation, secret, token):
         digest = token_digest("installation", secret)
         with self.transaction(write=True) as conn:
@@ -133,23 +191,44 @@ class PushStore(Households):
         # Re-read immediately before I/O, including membership and binding rotation.
         with self.transaction(write=True) as conn:
             row = conn.execute(
-                "SELECT i.token,i.binding,u.subject,p.id,p.kind,p.expires_at,p.home_id "
+                "SELECT i.token,i.binding,i.user_id,u.subject,p.id,p.kind,p.expires_at,"
+                "p.home_id,e.kind AS event_kind "
                 "FROM push_jobs j JOIN push_messages p ON p.id=j.message_id "
                 "JOIN installations i ON i.id=j.installation_id "
                 "JOIN users u ON u.id=i.user_id "
                 "JOIN memberships m ON m.user_id=i.user_id AND m.home_id=p.home_id "
+                "JOIN homes h ON h.id=p.home_id LEFT JOIN events e ON e.id=p.event_id "
                 "WHERE j.message_id=? AND j.installation_id=? AND j.state='sending' "
-                "AND i.active=1 AND u.active=1 AND m.active=1 "
+                "AND i.active=1 AND u.active=1 AND m.active=1 AND h.active=1 "
                 "AND j.binding=i.binding AND j.user_id=i.user_id AND p.expires_at>?",
                 (*job, self.clock()),
             ).fetchone()
-            if not row:
+            selected = category(row["event_kind"]) if row else "other"
+            allowed = row is not None and permits(conn, job[1], row["user_id"], selected)
+            if not allowed:
                 conn.execute(
                     "UPDATE push_jobs SET state='cancelled',last_error='authority_changed' "
                     "WHERE message_id=? AND installation_id=?",
                     job,
                 )
-            return dict(row) if row else None
+            # Keep operational details off the provider payload and diagnostic recipient.
+            return (
+                {
+                    key: row[key]
+                    for key in (
+                        "token",
+                        "binding",
+                        "subject",
+                        "id",
+                        "kind",
+                        "expires_at",
+                        "home_id",
+                    )
+                }
+                | {"category": selected}
+                if allowed
+                else None
+            )
 
     def finish(self, job, result, *, retry_after=0):
         now = self.clock()

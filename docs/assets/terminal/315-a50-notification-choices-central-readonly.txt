@@ -1,0 +1,27 @@
+# Actual recorded operations; private details removed
+
+# Executed read-only verification:
+import sqlite3,json,urllib.request
+from pathlib import Path
+from contextlib import closing
+root=Path.home()/'.local/share/aircon-central/central.sqlite3'
+with closing(sqlite3.connect(root.as_uri()+'?mode=ro',uri=True)) as c:
+ assert c.execute('PRAGMA user_version').fetchone()==(4,)
+ assert c.execute('PRAGMA integrity_check').fetchone()==('ok',)
+ print('HOME_ACTIVE_COUNTS='+json.dumps(c.execute('SELECT active,COUNT(*) FROM homes GROUP BY active').fetchall()))
+ print('INSTALLATION_ACTIVE_COUNTS='+json.dumps(c.execute('SELECT active,COUNT(*) FROM installations GROUP BY active').fetchall()))
+ print('PHONE_NOTIFICATION_CHOICES_ONLY='+json.dumps(c.execute('SELECT door,climate,warning,climate_interval_minutes FROM notification_preferences').fetchall()))
+ print('EVENT_KIND_COUNTS='+json.dumps(c.execute('SELECT kind,COUNT(*) FROM events GROUP BY kind').fetchall()))
+ print('PUSH_JOB_STATES='+json.dumps(c.execute('SELECT state,COUNT(*) FROM push_jobs GROUP BY state').fetchall()))
+with urllib.request.urlopen('http://[REDACTED_ADDRESS]/health/ready',timeout=3) as reply: assert reply.status==200
+print('SCHEMA_4_EXISTING_HOMES_DEVICES_AND_READY=PASS')
+
+$ SSH [verified host key] read-only schema, preserved homes and phone preference flags without IDs or tokens
+HOME_ACTIVE_COUNTS=[[1, 2]]
+INSTALLATION_ACTIVE_COUNTS=[[1, 2]]
+PHONE_NOTIFICATION_CHOICES_ONLY=[[1, 0, 1, 5]]
+EVENT_KIND_COUNTS=[["hub.connection_test", 1]]
+PUSH_JOB_STATES=[["accepted", 6]]
+SCHEMA_4_EXISTING_HOMES_DEVICES_AND_READY=PASS
+
+EXIT_CODE=0

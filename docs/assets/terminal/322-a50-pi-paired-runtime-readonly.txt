@@ -1,0 +1,19 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] verify_central_agent.py [read-only Pi source, private modes, cursors and services]
+active
+MANAGED_SOURCE_AND_PRIVATE_CONFIGURATION=PASS CONFIG_MODE=0600
+SOURCE_CURSORS=[["automation", 150], ["door", 552]]
+CLIMATE_TRACKED_SENSOR_COUNT=1
+OUTBOX_STATES=[["hub.connection_test", "accepted", 1]]
+READONLY_SOURCE_COUNT=door_events:552
+READONLY_SOURCE_COUNT=automation_events:150
+MainPID=22226
+NRestarts=0
+ActiveState=active
+SubState=running
+UnitFileState=enabled
+AGENT_RSS=26788 kB
+PAIRED_PI_RUNTIME_VERIFICATION=PASS
+
+EXIT_CODE=0

@@ -44,16 +44,17 @@ def recipient():
     )
 
 
-def test_http_v1_is_data_only_and_contains_no_home_or_sensor_details():
+@pytest.mark.parametrize("category,priority", [("other", "HIGH"), ("climate", "NORMAL")])
+def test_http_v1_is_data_only_and_contains_no_home_or_sensor_details(category, priority):
     item, calls = sender(200)
-    assert item.send(recipient()) == ("accepted", 0)
+    assert item.send(recipient() | {"category": category}) == ("accepted", 0)
     url, options = calls[0]
     message = options["json"]["message"]
     assert url == item.url and options["allow_redirects"] is False
     assert set(message) == {"token", "data", "android"}
-    assert set(message["data"]) == {"message_id", "binding", "recipient", "kind"}
+    assert set(message["data"]) == {"message_id", "binding", "recipient", "kind", "category"}
     assert "private-home" not in str(message) and "sensor" not in str(message)
-    assert message["android"]["priority"] == "HIGH"
+    assert message["android"]["priority"] == priority
 
 
 @pytest.mark.parametrize(

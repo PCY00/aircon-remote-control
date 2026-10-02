@@ -83,6 +83,43 @@ def test_fresh_door_and_warning_survive_restart_without_private_source_details(s
     assert reopened.collect(directory)["queued"] == 0
 
 
+def test_latest_climate_reports_baseline_then_emit_new_values_once_without_mac(sources):
+    directory, store, clock = sources
+    path = directory / "sensors/sensors.sqlite3"
+
+    def report(at, value):
+        with sqlite3.connect(path) as conn:
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS sensor_states(device_id TEXT PRIMARY KEY,kind TEXT,"
+                "state_json TEXT,last_reported_at TEXT)"
+            )
+            conn.execute(
+                "INSERT OR REPLACE INTO sensor_states VALUES(?,?,?,?)",
+                (
+                    "private-sensor-mac",
+                    "temperature_humidity",
+                    json.dumps(value),
+                    datetime.fromtimestamp(at, UTC).isoformat(),
+                ),
+            )
+
+    report(1000, {"temperature_c": 24, "humidity_percent": 50, "private": "raw-room"})
+    assert store.collect(directory)["climate_baseline"] == 1
+    assert store.next() is None
+    clock[0] += 1
+    report(1001, {"temperature_c": 25, "humidity_percent": 51, "private": "raw-room"})
+    assert store.collect(directory)["climate_queued"] == 1
+    item = store.next()
+    assert item["kind"] == "sensor.climate_report" and "private" not in item["payload"]
+    assert json.loads(item["payload"])["temperature_c"] == 25
+    store = agent.Store(store.path, clock=lambda: clock[0])
+    assert store.collect(directory)["climate_queued"] == 0
+    clock[0] += 1
+    report(1002, {"temperature_c": True, "humidity_percent": 150})
+    assert store.collect(directory)["climate_invalid"] == 1
+    assert store.next() == item
+
+
 def test_expired_sources_and_queue_do_not_replay_old_alerts(sources):
     directory, store, clock = sources
     store.collect(directory)

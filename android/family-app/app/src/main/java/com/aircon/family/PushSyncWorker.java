@@ -25,11 +25,18 @@ public final class PushSyncWorker extends Worker {
             if(!p.getBoolean("enabled",false) || !epoch.equals(p.getString("epoch",""))) return Result.success();
             JSONObject reply=new ApiClient(origin,BuildConfig.DEBUG).request(auth,"PUT","/v1/installations/"+id,
                 new JSONObject().put("secret",secret).put("token",fcm));
+            if(p.getBoolean("enabled",false) && epoch.equals(p.getString("epoch",""))) {
+                new ApiClient(origin,BuildConfig.DEBUG).request(auth,"PUT","/v1/installations/"+id+"/preferences",
+                    new JSONObject().put("secret",secret).put("door",p.getBoolean("door",true))
+                    .put("climate",p.getBoolean("climate",false)).put("warning",p.getBoolean("warning",true))
+                    .put("climate_interval_minutes",p.getInt("climate_interval_minutes",5)));
+            }
             synchronized(PushManager.class) {
                 FirebaseUser current=FirebaseAuth.getInstance().getCurrentUser();
                 if(p.getBoolean("enabled",false) && epoch.equals(p.getString("epoch",""))
                         && current!=null && account.equals(current.getUid())) {
-                    p.edit().putString("binding",reply.getString("binding")).putBoolean("registration_error",false).commit();
+                    p.edit().putString("binding",reply.getString("binding")).putBoolean("registration_error",false)
+                        .putBoolean("preferences_pending",false).remove("registration_error_message").commit();
                 } else {
                     // A logout during registration must not revive delivery on the server.
                     new ApiClient(origin,BuildConfig.DEBUG).request(auth,"POST","/v1/installations/"+id+"/unregister",
@@ -38,7 +45,13 @@ public final class PushSyncWorker extends Worker {
             }
             return Result.success();
         } catch(Exception failure) {
-            p.edit().putBoolean("registration_error",true).commit();
+            synchronized(PushManager.class) {
+                FirebaseUser current=FirebaseAuth.getInstance().getCurrentUser();
+                if(!p.getBoolean("enabled",false) || !epoch.equals(p.getString("epoch",""))
+                        || current==null || !account.equals(current.getUid())) return Result.success();
+                p.edit().putBoolean("registration_error",true)
+                    .putString("registration_error_message",ApiErrorMessages.describe(failure)).commit();
+            }
             if(failure instanceof ApiClient.Failure) {
                 int status=((ApiClient.Failure)failure).status;
                 if(status>=400 && status<500 && status!=429) return Result.failure();

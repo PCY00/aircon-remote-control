@@ -75,7 +75,8 @@ class Households:
     @staticmethod
     def access(conn, home: str, user: str, *, owner=False):
         row = conn.execute('SELECT m.role FROM memberships m JOIN users u ON u.id=m.user_id '
-                           'WHERE m.home_id=? AND m.user_id=? AND m.active=1 AND u.active=1',
+                           'JOIN homes h ON h.id=m.home_id '
+                           'WHERE m.home_id=? AND m.user_id=? AND m.active=1 AND u.active=1 AND h.active=1',
                            (home, user)).fetchone()
         if not row:
             raise APIError('not_found', 404)
@@ -92,7 +93,7 @@ class Households:
             if not conn.execute('SELECT 1 FROM users WHERE id=? AND active=1', (user,)).fetchone():
                 raise APIError('account_disabled', 403)
             home = identifier()
-            conn.execute('INSERT INTO homes VALUES (?,?,?)', (home, name, user))
+            conn.execute('INSERT INTO homes(id,name,owner_id) VALUES (?,?,?)', (home, name, user))
             conn.execute('INSERT INTO memberships(home_id,user_id,role) VALUES (?,?,?)',
                          (home, user, 'owner'))
             self.audit(conn, home, user, 'home_created')
@@ -102,7 +103,23 @@ class Households:
         with self.transaction() as conn:
             return [dict(row) for row in conn.execute(
                 'SELECT h.id,h.name,m.role FROM homes h JOIN memberships m ON m.home_id=h.id '
-                'JOIN users u ON u.id=m.user_id WHERE m.user_id=? AND m.active=1 AND u.active=1 ORDER BY h.id', (user,))]
+                'JOIN users u ON u.id=m.user_id WHERE m.user_id=? AND m.active=1 AND u.active=1 AND h.active=1 ORDER BY h.name,h.id', (user,))]
+
+    def delete_home(self, home, user, confirmation_name):
+        with self.transaction(write=True) as conn:
+            self.access(conn, home, user, owner=True)
+            name = conn.execute('SELECT name FROM homes WHERE id=?', (home,)).fetchone()['name']
+            if confirmation_name != name:
+                raise APIError('confirmation_required', 400)
+            sequence = self.audit(conn, home, user, 'home_deleted')
+            conn.execute('UPDATE homes SET active=0 WHERE id=?', (home,))
+            conn.execute('UPDATE memberships SET active=0,revoked_seq=? WHERE home_id=?', (sequence, home))
+            conn.execute('UPDATE hubs SET active=0 WHERE home_id=?', (home,))
+            conn.execute('UPDATE invitations SET consumed=1 WHERE home_id=?', (home,))
+            conn.execute("UPDATE push_jobs SET state='cancelled',last_error='home_deleted' "
+                         "WHERE state IN ('pending','sending') AND message_id IN "
+                         "(SELECT id FROM push_messages WHERE home_id=?)", (home,))
+            return {'status': 'deleted'}
 
     def home(self, home, user):
         with self.transaction() as conn:
@@ -142,6 +159,8 @@ class Households:
             if (not invite or invite['consumed'] or invite['expires_at'] <= self.clock()
                     or not person or invite['email'] != person['email']
                     or (invite['target_id'] and invite['target_id'] != user)):
+                raise APIError('invalid_invitation', 404)
+            if not conn.execute('SELECT 1 FROM homes WHERE id=? AND active=1', (invite['home_id'],)).fetchone():
                 raise APIError('invalid_invitation', 404)
             membership = conn.execute('SELECT * FROM memberships WHERE home_id=? AND user_id=?',
                                       (invite['home_id'], user)).fetchone()
@@ -222,7 +241,8 @@ class Households:
 
     def ingest(self, token, sender_id, kind, payload):
         with self.transaction(write=True) as conn:
-            hub = conn.execute('SELECT id,home_id FROM hubs WHERE credential_digest=? AND active=1',
+            hub = conn.execute('SELECT b.id,b.home_id FROM hubs b JOIN homes h ON h.id=b.home_id '
+                               'WHERE b.credential_digest=? AND b.active=1 AND h.active=1',
                                (token_digest('hub', token),)).fetchone()
             if not hub or hub['home_id'] is None:
                 raise APIError('invalid_hub_credentials', 401)

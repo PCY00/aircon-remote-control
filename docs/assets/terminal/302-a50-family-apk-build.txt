@@ -1,0 +1,86 @@
+# Actual recorded operations; private details removed
+
+$ Gradle 8.13 assembleProductionDebugAndroidTest [ASCII staging, private configuration]
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preProductionDebugBuild UP-TO-DATE
+> Task :app:generateProductionDebugBuildConfig
+> Task :app:javaPreCompileProductionDebug
+> Task :app:checkProductionDebugAarMetadata
+> Task :app:processProductionDebugNavigationResources
+> Task :app:generateProductionDebugResValues
+> Task :app:compileProductionDebugNavigationResources
+> Task :app:mapProductionDebugSourceSetPaths
+> Task :app:generateProductionDebugResources
+> Task :app:packageProductionDebugResources
+> Task :app:parseProductionDebugLocalResources
+> Task :app:createProductionDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksProductionDebug
+> Task :app:mergeProductionDebugResources
+> Task :app:processProductionDebugMainManifest
+> Task :app:processProductionDebugManifest
+> Task :app:preProductionDebugAndroidTestBuild SKIPPED
+> Task :app:processProductionDebugAndroidTestManifest
+> Task :app:generateProductionDebugAndroidTestBuildConfig
+> Task :app:javaPreCompileProductionDebugAndroidTest
+> Task :app:processProductionDebugManifestForPackage
+> Task :app:checkProductionDebugAndroidTestAarMetadata
+> Task :app:processProductionDebugAndroidTestNavigationResources
+> Task :app:compileProductionDebugAndroidTestNavigationResources
+> Task :app:generateProductionDebugAndroidTestResValues
+> Task :app:mapProductionDebugAndroidTestSourceSetPaths
+> Task :app:generateProductionDebugAndroidTestResources
+> Task :app:mergeProductionDebugAndroidTestResources
+> Task :app:processProductionDebugResources
+> Task :app:processProductionDebugAndroidTestResources
+
+> Task :app:compileProductionDebugJavaWithJavac
+
+> Task :app:mergeProductionDebugAndroidTestShaders
+> Task :app:compileProductionDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateProductionDebugAndroidTestAssets UP-TO-DATE
+> Task :app:bundleProductionDebugClassesToCompileJar
+> Task :app:mergeProductionDebugAndroidTestAssets
+
+> Task :app:compileProductionDebugAndroidTestJavaWithJavac
+
+> Task :app:compressProductionDebugAndroidTestAssets
+> Task :app:desugarProductionDebugAndroidTestFileDependencies
+> Task :app:checkProductionDebugAndroidTestDuplicateClasses
+> Task :app:dexBuilderProductionDebugAndroidTest
+> Task :app:mergeLibDexProductionDebugAndroidTest
+> Task :app:mergeProductionDebugAndroidTestGlobalSynthetics
+> Task :app:mergeExtDexProductionDebugAndroidTest
+> Task :app:processProductionDebugAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeProjectDexProductionDebugAndroidTest
+> Task :app:mergeProductionDebugAndroidTestJniLibFolders
+> Task :app:mergeProductionDebugJniLibFolders
+> Task :app:mergeProductionDebugNativeLibs
+> Task :app:mergeProductionDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripProductionDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningProductionDebugAndroidTest
+> Task :app:writeProductionDebugAndroidTestSigningConfigVersions
+> Task :app:mergeProductionDebugAndroidTestJavaResource
+> Task :app:packageProductionDebugAndroidTest
+> Task :app:createProductionDebugAndroidTestApkListingFileRedirect
+> Task :app:assembleProductionDebugAndroidTest
+
+[Incubating] Problems report is available at: file:///[REDACTED_BUILD_CONFIG]/.codex/family-android-build/project-vlr06xxl/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 34s
+49 actionable tasks: 49 executed
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+EXIT_CODE=0
+SIGNED_APK=family-production-test.apk BYTES=592105 SHA256=b56d8ee12e209f6685fae6670455aed4a569e1d1f66ba44e3b9a2110d488e179
+FAMILY_APK_BUILD=PASS

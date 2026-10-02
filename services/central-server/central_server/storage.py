@@ -10,8 +10,9 @@ from pathlib import Path
 
 from central_server.schema import STATEMENTS
 from central_server.push_schema import PUSH_STATEMENTS
+from central_server.preferences import STATEMENTS as PREFERENCE_STATEMENTS
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 
 def initialize(path: Path) -> None:
@@ -21,12 +22,14 @@ def initialize(path: Path) -> None:
         tables = {row[0] for row in connection.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
         )}
-        if (version not in (0, 1, 2, SCHEMA_VERSION) or (version == 0 and tables)
+        if (version not in (0, 1, 2, 3, SCHEMA_VERSION) or (version == 0 and tables)
                 or (version == 1 and tables != {'runtime_metadata'})):
             raise RuntimeError('Unrecognized existing database; preserve and inspect.')
         base = {'runtime_metadata', 'users', 'homes', 'audit', 'memberships', 'invitations', 'hubs', 'events'}
         expected = base if version == 2 else base | {'installations', 'push_messages', 'push_jobs'}
-        if version in (2, 3) and tables != expected:
+        if version == 4:
+            expected.add('notification_preferences')
+        if version in (2, 3, 4) and tables != expected:
             raise RuntimeError('Unrecognized existing database; preserve and inspect.')
         connection.execute('PRAGMA journal_mode=WAL')
         connection.execute('PRAGMA synchronous=FULL')
@@ -43,6 +46,9 @@ def initialize(path: Path) -> None:
                 connection.execute(statement)
         if version in (0, 1, 2):
             for statement in PUSH_STATEMENTS:
+                connection.execute(statement)
+        if version in (0, 1, 2, 3):
+            for statement in PREFERENCE_STATEMENTS:
                 connection.execute(statement)
             connection.execute(f'PRAGMA user_version={SCHEMA_VERSION}')
         if not connection.execute('SELECT 1 FROM runtime_metadata WHERE id=1').fetchone():

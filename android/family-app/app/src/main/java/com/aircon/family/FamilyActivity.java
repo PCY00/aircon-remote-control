@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 public class FamilyActivity extends ComponentActivity {
     protected AuthSession session;
     private String endpoint, userId, currentHome;
+    private String viewMode="login";
     private int generation=0;
     private boolean busy=false;
     private LinearLayout page;
@@ -37,6 +38,15 @@ public class FamilyActivity extends ComponentActivity {
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         session=createSession(); endpoint=initialEndpoint(); loginPage();
+        getOnBackPressedDispatcher().addCallback(this,new androidx.activity.OnBackPressedCallback(true) {
+            @Override public void handleOnBackPressed() {
+                generation++; working(false);
+                if(viewMode.equals("members") && currentHome!=null) home(currentHome);
+                else if(viewMode.equals("notifications")) { if(currentHome!=null) home(currentHome); else homes(); }
+                else if(viewMode.equals("home")) homes();
+                else moveTaskToBack(true);
+            }
+        });
     }
     @Override public void onResume() {
         super.onResume();
@@ -57,7 +67,7 @@ public class FamilyActivity extends ComponentActivity {
         scroll.setOnApplyWindowInsetsListener((view,insets)-> {
             view.setPadding(0,insets.getSystemWindowInsetTop(),0,insets.getSystemWindowInsetBottom()); return insets;
         });
-        text(page,"FAMILY SMART HOME",12,MUTED,true);
+        text(page,"우리 가족 스마트홈",12,MUTED,true);
         if(BuildConfig.FLAVOR.equals("fixture")) text(page,"동작 시험 · 가상 계정",12,Color.rgb(155,94,22),true);
         text(page,title,30,INK,true); text(page,subtitle,15,MUTED,false);
     }
@@ -87,6 +97,7 @@ public class FamilyActivity extends ComponentActivity {
         return object;
     }
     private void loginPage() {
+        viewMode="login";
         currentHome=null; userId=null;
         screen("우리 집을 함께", "가족만 연결되는 스마트홈");
         LinearLayout intro=card(); text(intro,"⌂",58,GREEN,true);
@@ -102,6 +113,7 @@ public class FamilyActivity extends ComponentActivity {
         text(page,"가족 권한은 집 소유자가 관리해요.\n다른 집의 기록은 볼 수 없어요.",13,MUTED,false);
     }
     private void connectionPage() {
+        viewMode="connection";
         screen("로그인됐어요", "우리 집 서버를 연결해 주세요.");
         LinearLayout info=card();
         text(info,"우리 집 연결 주소",22,INK,true);
@@ -141,14 +153,14 @@ public class FamilyActivity extends ComponentActivity {
                 } catch(Exception failure){ runOnUiThread(()-> {
                     if(epoch!=generation || !account.equals(session.userId()) || isDestroyed()) return;
                     working(false);
-                    String detail="서버에 연결할 수 없어요. 주소와 인터넷 연결을 확인해 주세요.";
+                    String detail=ApiErrorMessages.describe(failure);
                     if(failure instanceof ApiClient.Failure){
                         ApiClient.Failure f=(ApiClient.Failure)failure;
-                        if(f.status==401) detail="로그인이 만료됐거나 확인되지 않았어요. 다시 로그인해 주세요.";
-                        else if(f.status==403 || f.status==404) detail="접근 권한이 없거나 초대가 만료됐어요.";
-                        else if(f.status==409) detail="이미 등록됐거나 다른 등록과 충돌했어요.";
-                        else if(f.status==400) detail="입력 내용을 확인해 주세요.";
-                        else if(f.status==503) detail="서버가 아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.";
+                        if(f.status==409 && f.code.equals("installation_not_registered")) {
+                            PushManager.sync(this);
+                            notificationHelp("이 휴대폰의 알림을 연결해 주세요",detail);
+                            return;
+                        }
                         if((f.status==403 || f.status==404) && currentHome!=null){ currentHome=null; homes(); }
                     }
                     message(detail);
@@ -157,6 +169,7 @@ public class FamilyActivity extends ComponentActivity {
         });
     }
     private void homes() {
+        viewMode="homes";
         PushManager.sync(this);
         generation++; currentHome=null; working(false);
         screen("우리 집", "참여한 집을 확인하고 가족과 연결해요.");
@@ -168,6 +181,7 @@ public class FamilyActivity extends ComponentActivity {
             userId=result.optString("user_id");
             screen("우리 집","참여한 집을 확인하고 가족과 연결해요.");
             JSONArray list=result.optJSONArray("homes");
+            text(page,"참여한 집 "+(list==null ? 0 : list.length())+"개",14,MUTED,true);
             if(list==null || list.length()==0){ LinearLayout empty=card(); text(empty,"아직 연결된 집이 없어요",21,INK,true); text(empty,"내 집을 만들거나 가족에게 받은 초대를 수락해 주세요.",15,MUTED,false); }
             else for(int index=0;index<list.length();index++){
                 JSONObject home=list.optJSONObject(index); if(home==null) continue;
@@ -195,19 +209,30 @@ public class FamilyActivity extends ComponentActivity {
     private void createHome() { singleInput("새 집 만들기","예: 우리 집",80,name -> request("POST","/v1/homes",json("name",name),reply -> home(reply.optString("id")))); }
     private void acceptInvitation(){ singleInput("가족 초대 수락","가족에게 받은 초대 코드",128,token -> request("POST","/v1/invitations/accept",json("invitation_token",token),reply -> home(reply.optString("home_id")))); }
     private void home(String id){
+        viewMode="home";
         generation++; currentHome=id; working(false); screen("집 확인 중", "현재 가족 권한을 확인하고 있어요.");
         button(page,"집 목록으로",false,this::homes);
         request("GET","/v1/homes/"+id,null,house -> {
             screen(house.optString("name"),role(house.optString("role"))+" · 우리 가족의 스마트홈");
+            LinearLayout alerts=card(); text(alerts,"이 휴대폰 알림",21,INK,true);
+            android.content.SharedPreferences prefs=PushManager.prefs(this);
+            text(alerts,!prefs.getBoolean("enabled",false) ? "꺼짐 · 원하는 알림을 선택하고 켜주세요."
+                : prefs.getBoolean("registration_error",false) ? "연결 확인 필요"
+                : prefs.getBoolean("preferences_pending",false) || !prefs.contains("binding") ? "연결 준비 중"
+                : "연결됨 · 이 휴대폰의 선택에 따라 받아요.",14,MUTED,false);
+            if(BuildConfig.FLAVOR.equals("production")) button(alerts,"받을 알림 선택",true,this::notificationSettings);
+            if(house.optString("role").equals("owner") && BuildConfig.FLAVOR.equals("production"))
+                button(alerts,"이 휴대폰에 시험 알림 보내기",false,()->testNotification(id));
             LinearLayout events=card(); text(events,"알림 기록",21,INK,true);
             text(events,"최근에 도착한 집의 이벤트를 확인해요.",14,MUTED,false);
             if(house.optString("role").equals("owner")) {
-                if(BuildConfig.FLAVOR.equals("production")) button(page,"이 휴대폰에 시험 알림 보내기",false,()->
-                    request("POST","/v1/homes/"+id+"/notifications/test",json("installation_id",PushManager.installation(this)),reply ->
-                        message("알림 전송을 요청했어요. 휴대폰에 도착하는지 확인해 주세요.")));
-                button(page,"가족 초대 만들기",true,()-> invite(id));
-                button(page,"가족 관리",false,()-> members(id));
-                button(page,"우리 집 기기 등록",false,()-> singleInput("우리 집 기기 등록","10분 동안 유효한 등록 코드",128,code -> request("POST","/v1/homes/"+id+"/hubs/claim",json("claim_code",code),reply -> {message("기기를 등록했어요."); home(id);} )));
+                LinearLayout manage=card(); text(manage,"집 관리",21,INK,true);
+                text(manage,"가족 초대와 연결 기기는 소유자가 관리해요.",14,MUTED,false);
+                button(manage,"가족 초대 만들기",false,()-> invite(id));
+                button(manage,"가족 관리",false,()-> members(id));
+                button(manage,"우리 집 기기 등록",false,()-> singleInput("우리 집 기기 등록","10분 동안 유효한 등록 코드",128,code -> request("POST","/v1/homes/"+id+"/hubs/claim",json("claim_code",code),reply -> {message("기기를 등록했어요."); home(id);} )));
+                Button remove=button(manage,"이 집 삭제",false,()->deleteHome(id,house.optString("name")));
+                remove.setTextColor(Color.rgb(160,55,45));
             }
             button(page,"집 새로고침",false,()-> home(id)); button(page,"집 목록으로",false,this::homes);
             button(page,"로그아웃",false,this::logout);
@@ -215,20 +240,103 @@ public class FamilyActivity extends ComponentActivity {
                 JSONArray list=reply.optJSONArray("events");
                 if(list==null || list.length()==0) text(events,"아직 도착한 기록이 없어요",16,MUTED,false);
                 else for(int index=0;index<list.length();index++){
-                    JSONObject event=list.optJSONObject(index); if(event!=null) text(events,event.optString("kind"),16,INK,true);
+                    JSONObject event=list.optJSONObject(index); if(event!=null) {
+                        text(events,eventTitle(event),16,INK,true);
+                        double received=event.optDouble("received_at",0);
+                        if(received>0 && Double.isFinite(received)) text(events,
+                            new java.text.SimpleDateFormat("MM월 dd일 HH:mm",java.util.Locale.KOREAN).format(new java.util.Date((long)(received*1000))),12,MUTED,false);
+                    }
                 }
             });
         });
     }
+    private String eventTitle(JSONObject event) {
+        String kind=event.optString("kind"); JSONObject payload=event.optJSONObject("payload");
+        if(kind.equals("hub.connection_test")) return "기기 연결 시험";
+        if(kind.equals("sensor.door_changed")) return payload!=null && payload.optString("state").equals("open") ? "문 열림" : "문 닫힘";
+        if(kind.equals("automation.warning_triggered")) return "자동화 경고 발생";
+        if(kind.equals("automation.warning_resolved")) return "자동화 경고 해제";
+        if(kind.equals("sensor.climate_report")) {
+            StringBuilder value=new StringBuilder("온습도 측정");
+            if(payload!=null && payload.has("temperature_c")) value.append(" · ").append(String.format(java.util.Locale.KOREAN,"%.1f°C",payload.optDouble("temperature_c")));
+            if(payload!=null && payload.has("humidity_percent")) value.append(" · ").append(String.format(java.util.Locale.KOREAN,"습도 %.0f%%",payload.optDouble("humidity_percent")));
+            return value.toString();
+        }
+        return "집의 새 기록";
+    }
+    private void deleteHome(String id,String name) {
+        EditText input=new EditText(this); input.setSingleLine(); input.setHint(name);
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("이 집을 삭제할까요?")
+            .setMessage("모든 가족의 집 목록에서 사라지고 연결 기기의 접근과 알림이 중지돼요.\n다시 사용하려면 새 집을 만들고 기기를 등록해야 해요.\n\n확인을 위해 집 이름을 입력해 주세요: "+name)
+            .setView(input).setNegativeButton("취소",null).setPositiveButton("집 삭제",null).create();
+        dialog.setOnShowListener(unused->dialog.getButton(-1).setOnClickListener(view->{
+            if(!name.equals(input.getText().toString().trim())) { input.setError("집 이름을 정확히 입력해 주세요."); return; }
+            dialog.dismiss(); request("DELETE","/v1/homes/"+id,json("confirmation_name",name),reply->{message("집을 삭제했어요.");homes();});
+        }));dialog.show();
+    }
+    private void notificationHelp(String title,String detail) {
+        new AlertDialog.Builder(this).setTitle(title).setMessage(detail)
+            .setPositiveButton("알림 설정",(dialog,which)->notificationSettings()).setNegativeButton("닫기",null).show();
+    }
+    private boolean notificationsAllowed() {
+        android.app.NotificationManager manager=getSystemService(android.app.NotificationManager.class);
+        android.app.NotificationChannel channel=manager.getNotificationChannel(PushManager.CHANNEL);
+        return manager.areNotificationsEnabled() && (channel==null || channel.getImportance()!=android.app.NotificationManager.IMPORTANCE_NONE);
+    }
+    private void testNotification(String id) {
+        android.content.SharedPreferences p=PushManager.prefs(this);
+        if(!p.getBoolean("enabled",false) || !endpoint.equals(p.getString("origin",""))
+                || !session.userId().equals(p.getString("account",""))) {
+            notificationHelp("이 휴대폰 알림을 켜주세요","알림 설정에서 ‘이 휴대폰 알림 켜기’를 누르고 연결을 확인해 주세요.");
+            return;
+        }
+        if(!notificationsAllowed()) {
+            notificationHelp("휴대폰에서 알림을 허용해 주세요","휴대폰 설정에서 ‘가족 스마트홈’ 앱과 ‘우리 집 알림’의 알림을 허용해 주세요.");
+            return;
+        }
+        if(p.getBoolean("registration_error",false)) {
+            notificationHelp("알림 연결을 확인해 주세요",p.getString("registration_error_message","알림 설정에서 연결 상태를 확인한 뒤 다시 시도해 주세요."));
+            return;
+        }
+        if(p.getString("binding","").isEmpty() || p.getBoolean("preferences_pending",false)) {
+            PushManager.sync(this);
+            notificationHelp("알림 연결 준비 중이에요","잠시 후 알림 설정에서 ‘알림 연결 확인’을 눌러 주세요. ‘알림 연결됨’이 되면 시험 알림을 보낼 수 있어요.");
+            return;
+        }
+        request("POST","/v1/homes/"+id+"/notifications/test",json("installation_id",PushManager.installation(this)),reply ->
+            message("알림 전송을 요청했어요. 휴대폰에 도착하는지 확인해 주세요."));
+    }
     private void notificationSettings() {
+        viewMode="notifications";
         screen("알림 설정","이 휴대폰에서 우리 집 알림을 받아요.");
         android.content.SharedPreferences p=PushManager.prefs(this);
         boolean enabled=p.getBoolean("enabled",false);
         text(page,!enabled ? "알림 받기 꺼짐" : p.getBoolean("registration_error",false) ? "알림 연결 확인 필요"
-            : p.contains("binding") ? "알림 연결됨" : "알림 연결 준비 중",20,INK,true);
-        android.app.NotificationManager manager=getSystemService(android.app.NotificationManager.class);
-        if(!manager.areNotificationsEnabled()) text(page,"휴대폰 설정에서 이 앱의 알림을 허용해 주세요.",15,MUTED,false);
+            : p.contains("binding") && !p.getBoolean("preferences_pending",false) ? "알림 연결됨" : "알림 연결 준비 중",20,INK,true);
+        text(page,"Google 로그인과 별도로 이 휴대폰의 알림을 켜주세요. 다른 휴대폰의 설정에는 영향을 주지 않아요.",14,MUTED,false);
+        if(enabled && p.getBoolean("registration_error",false))
+            text(page,p.getString("registration_error_message","알림 연결에 실패했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요."),15,MUTED,false);
+        if(!notificationsAllowed()) {
+            text(page,"휴대폰 설정에서 이 앱과 ‘우리 집 알림’의 알림을 허용해 주세요.",15,MUTED,false);
+            button(page,"휴대폰 알림 설정 열기",false,()->startActivity(new android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE,getPackageName())));
+        }
         if(p.getLong("last_received",0)>0) text(page,"최근 알림 수신 완료",15,GREEN,true);
+        LinearLayout choice=card();text(choice,"받고 싶은 알림",21,INK,true);
+        text(choice,"이 휴대폰에서 참여한 모든 집에 적용돼요.",14,MUTED,false);
+        Switch door=new Switch(this);door.setText("문 열림·닫힘");door.setChecked(p.getBoolean("door",true));choice.addView(door);
+        Switch warning=new Switch(this);warning.setText("자동화 경고 발생·해제");warning.setChecked(p.getBoolean("warning",true));choice.addView(warning);
+        Switch climate=new Switch(this);climate.setText("온습도 측정");climate.setChecked(p.getBoolean("climate",false));choice.addView(climate);
+        text(choice,"온습도 수신 간격",14,MUTED,true);
+        Spinner interval=new Spinner(this); final int[] minutes={1,5,15,60};
+        interval.setAdapter(new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,new String[]{"1분","5분","15분","60분"}));
+        for(int index=0;index<minutes.length;index++) if(minutes[index]==p.getInt("climate_interval_minutes",5)) interval.setSelection(index);
+        interval.setEnabled(climate.isChecked());climate.setOnCheckedChangeListener((toggle,checked)->interval.setEnabled(checked));choice.addView(interval);
+        text(choice,"선택한 간격이 지난 뒤 새 측정값이 들어오면 보내요. 새 값이 없으면 반복해서 보내지 않아요. 온습도 알림은 조용히 표시되며 절전 중에는 늦게 도착할 수 있어요.",13,MUTED,false);
+        button(choice,"선택 저장",true,()->{
+            PushManager.preferences(this,door.isChecked(),climate.isChecked(),warning.isChecked(),minutes[interval.getSelectedItemPosition()]);
+            message(enabled ? "알림 선택을 적용하고 있어요. 연결 확인을 눌러 주세요." : "선택을 저장했어요. 아래에서 이 휴대폰 알림을 켜주세요.");notificationSettings();
+        });
         button(page,"이 휴대폰 알림 켜기",true,()-> {
             if(android.os.Build.VERSION.SDK_INT>=33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS")
                     !=android.content.pm.PackageManager.PERMISSION_GRANTED) requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},70);
@@ -261,6 +369,7 @@ public class FamilyActivity extends ComponentActivity {
         });
     }
     private void members(String id){
+        viewMode="members";
         generation++; working(false); screen("가족 관리","소유자가 가족의 권한을 관리해요.");
         button(page,"집으로 돌아가기",false,()->home(id));
         request("GET","/v1/homes/"+id+"/members",null,reply -> {

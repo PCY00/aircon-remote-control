@@ -108,6 +108,18 @@ def register(app, database, identity_verifier):
             raise APIError('notifications_not_configured', 503)
         return jsonify(push.test(home, g.user, installation_id(value['installation_id']))), 202
 
+    @api.put('/installations/<installation>/preferences')
+    @user_route
+    def notification_preferences(installation):
+        value = body(['secret', 'door', 'climate', 'warning', 'climate_interval_minutes'])
+        if (any(type(value[key]) is not bool for key in ('door','climate','warning'))
+                or type(value['climate_interval_minutes']) is not int
+                or value['climate_interval_minutes'] not in (1,5,15,60)):
+            raise APIError('invalid_notification_preferences', 400)
+        options = {key:value[key] for key in ('door','climate','warning','climate_interval_minutes')}
+        return jsonify(push.set_preferences(g.user, installation_id(installation),
+                       installation_secret(value['secret']), options))
+
     @api.get('/homes')
     @user_route
     def homes():
@@ -123,6 +135,12 @@ def register(app, database, identity_verifier):
     @user_route
     def home_detail(home):
         return jsonify(service.home(home, g.user))
+
+    @api.delete('/homes/<home>')
+    @user_route
+    def delete_home(home):
+        value = body(['confirmation_name'])
+        return jsonify(service.delete_home(home, g.user, text(value['confirmation_name'], maximum=80)))
 
     @api.get('/homes/<home>/members')
     @user_route

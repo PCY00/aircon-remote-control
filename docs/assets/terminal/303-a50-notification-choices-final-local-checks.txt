@@ -1,0 +1,13 @@
+# Actual recorded operations; private details removed
+
+$ python -m pytest [household, notification preference, provider and independent Pi relay suites] -q
+
+
+no tests ran in 0.00s
+
+ERROR: file or directory not found: tests/test_pi_central_agent_install.py
+
+
+
+
+EXIT_CODE=4

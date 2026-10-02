@@ -1,0 +1,57 @@
+# Actual recorded operations; private details removed
+
+LOCAL_RELEASE=v0.4.0-8ecacdf502b13c99
+SOURCE_SHA256=7f54359480e1cbe7777e5841968f5737e014117799b04d7f2c051874e5fd9c12 requirements.txt
+SOURCE_SHA256=50a1c1c5e2401c0fc48a47ab40876c379ca4dc313bcccb5a874023c3b0ad4fb2 .env.example
+SOURCE_SHA256=9a72af2a3493a78cb33c602180552607842a58905708969686d1f7ee6c909ff2 central_server/__init__.py
+SOURCE_SHA256=3d1308b52eecd6cfdfed939359ad597360beb0ef7d0e6284ed79e970778cc31c central_server/__main__.py
+SOURCE_SHA256=e21fe82dc40421852b6d9b227f4c19d49834ca6757eccb8cd9c444eac8ee6981 central_server/admin.py
+SOURCE_SHA256=e53aed890c8c3da0aa077e7cda65b99dbb0f8240c919ea741869c050330b4bc8 central_server/api.py
+SOURCE_SHA256=dd451a41fb6b7e1093f5eba7993720e3334d1c07718046e58fe033a492e79c8f central_server/auth.py
+SOURCE_SHA256=fb6d3b01db17715b49b210ec102bafed83b00a3809352b7144dbb0f9d86f24a9 central_server/fcm.py
+SOURCE_SHA256=ea350405feb799a03fec66c762551bbfcd3bd76dca965fedcdc608fa9e2f8f78 central_server/households.py
+SOURCE_SHA256=bd64bf4b045fc1b982d1de2c532a27aef01fa490a05e36f35e1de22189c40415 central_server/preferences.py
+SOURCE_SHA256=be8d14268fd8e31bdec02a80edfad0e38fa34d5bc8ddb774a29160e80fb6fa75 central_server/push.py
+SOURCE_SHA256=6feb9af4cf4511a0abce18632ffaeb0df87c7778cc4f41f303aa5406c4641606 central_server/push_schema.py
+SOURCE_SHA256=2b76e9f1400e063f42946a0c82d6be9dd68b8dfeb31e9abc6c65bc0b3bcb9a7b central_server/restart_guard.py
+SOURCE_SHA256=0676a8e7b25b772ec306c229427d96a72539367d5724a3a9b7e46551dcafc1fb central_server/schema.py
+SOURCE_SHA256=d7a894e2b782de4232ad5ab59e4c5ee11027300a7c1de0b3733b14f25a41af55 central_server/storage.py
+SOURCE_SHA256=32a92bd9ea4ef4fc541899bc95b7c474189be80cb49fb1618f252394e601d251 central_server/web.py
+SOURCE_SHA256=a102d07c9540811fc9d262da236f978984f2f3f670682764ef4a298a97606c69 termux/20-start-central
+SOURCE_SHA256=043f156e7cfdb26be46e8e79d4dfecdff2269fda0e25a160c6109d62fdc0c77b termux/finish
+SOURCE_SHA256=6cdfb1dfb78ada4e4f10d0864e0d62669b67a33aca67a4559ee8e0a96e29e569 termux/log-run
+SOURCE_SHA256=2b9d9214a979f960f6902b9f9983733069687641f4bea8f34f6d8f56009b8d37 termux/run
+$ SSH [verified host key] python - < locally versioned apply_a50_central.py [checked source manifest; apply]
+EXISTING_SSH_SERVICES_DISABLED=PASS
+PLAN_VERSION=v0.4.0-8ecacdf502b13c99
+PLAN_FILES=20
+BIND=loopback PORT=8001 DATABASE=outside_release LOG_LIMIT=1MiB_x4
+Requirement already satisfied: Flask==3.1.3 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 1)) (3.1.3)
+Requirement already satisfied: waitress==3.0.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 2)) (3.0.2)
+Requirement already satisfied: blinker==1.9.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 3)) (1.9.0)
+Requirement already satisfied: click==8.5.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 4)) (8.5.0)
+Requirement already satisfied: itsdangerous==2.2.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 5)) (2.2.0)
+Requirement already satisfied: Jinja2==3.1.6 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 6)) (3.1.6)
+Requirement already satisfied: MarkupSafe==3.0.3 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 7)) (3.0.3)
+Requirement already satisfied: Werkzeug==3.1.9 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 8)) (3.1.9)
+Requirement already satisfied: PyJWT==2.15.1 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 9)) (2.15.1)
+Requirement already satisfied: cryptography==50.0.2 in /data/data/com.termux/files/usr/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 10)) (50.0.2)
+Requirement already satisfied: cffi==2.1.1 in /data/data/com.termux/files/usr/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 11)) (2.1.1)
+Requirement already satisfied: pycparser==3.0 in /data/data/com.termux/files/usr/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 12)) (3.0)
+Requirement already satisfied: google-auth==2.59.1 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 13)) (2.59.1)
+Requirement already satisfied: requests==2.34.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 14)) (2.34.2)
+Requirement already satisfied: pyasn1-modules==0.4.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 15)) (0.4.2)
+Requirement already satisfied: pyasn1==0.6.4 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 16)) (0.6.4)
+Requirement already satisfied: charset-normalizer==3.5.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 17)) (3.5.2)
+Requirement already satisfied: idna==3.20 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 18)) (3.20)
+Requirement already satisfied: urllib3==2.8.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 19)) (2.8.0)
+Requirement already satisfied: certifi==2026.7.22 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.4.0-8ecacdf502b13c99/requirements.txt (line 20)) (2026.7.22)
+No broken requirements found.
+ok: down: /data/data/com.termux/files/usr/var/service/aircon-central: 1s, normally up
+CONSISTENT_DATABASE_BACKUP=PASS
+READINESS={"database":"ok","status":"ready"}
+run: /data/data/com.termux/files/usr/var/service/aircon-central: (pid 26230) 2s; run: log: (pid 13554) 26789s
+CODE_AND_HOOK_SHA256_MATCH=TRUE
+CENTRAL_DEPLOYMENT=PASS
+
+EXIT_CODE=0

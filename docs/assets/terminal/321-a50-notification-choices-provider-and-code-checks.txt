@@ -1,0 +1,13 @@
+# Actual recorded operations; private details removed
+
+$ .venv/Scripts/python.exe -m pytest tests/test_central_fcm.py -q [provider payload privacy and ordinary climate priority]
+.........                                                                [100%]
+
+9 passed in 0.37s
+
+
+EXIT_CODE=0
+$ .venv/Scripts/python.exe -m ruff check services/central-server/central_server/preferences.py services/central-server/central_server/push.py services/central-server/central_server/fcm.py services/pi-central-agent/agent.py tests/test_central_notification_choices.py tests/test_pi_central_agent.py tests/test_central_fcm.py scripts/android/run_a50_family_smoke.py scripts/pi/verify_central_agent.py [changed modules and verification tools]
+All checks passed!
+
+EXIT_CODE=0

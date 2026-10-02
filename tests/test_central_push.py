@@ -198,7 +198,7 @@ def test_schema_two_migration_preserves_identity_and_registered_home(tmp_path):
         c.execute("PRAGMA user_version=2")
     initialize(db)
     initialize(db)
-    assert rows(db, "PRAGMA user_version") == [(3,)]
+    assert rows(db, "PRAGMA user_version") == [(4,)]
     assert rows(db, "SELECT installation_id FROM runtime_metadata") == [("keep-runtime",)]
     assert rows(db, "SELECT name FROM homes") == [("keep-home",)]
     assert rows(db, "PRAGMA integrity_check") == [("ok",)]

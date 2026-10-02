@@ -1,0 +1,6 @@
+# Actual recorded operations; private details removed
+
+
+# Tool call outcome (sanitized):
+AssertionError at installed production APK SHA-256 precondition.
+Native tests were not started. The APK update was still completing; after completion, record 312 passed.
