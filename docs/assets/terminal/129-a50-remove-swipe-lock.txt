@@ -1,0 +1,28 @@
+# User explicitly requested removal of the remaining swipe lock after reboot
+# No PIN/pattern/password supplied, reset, or cleared
+
+$ adb [verified A50] shell locksettings get-disabled
+false
+EXIT_CODE=0
+
+$ adb [verified A50] shell locksettings verify
+Lock credential verified successfully
+EXIT_CODE=0
+
+$ adb [verified A50] shell locksettings set-disabled true
+Lock screen disabled set to true
+EXIT_CODE=0
+
+$ adb [verified A50] shell locksettings get-disabled
+true
+EXIT_CODE=0
+
+$ adb [verified A50] shell am broadcast -a com.aircon.a50manager.STATUS -n com.aircon.a50manager/.StatusReceiver
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=38;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 복구 요청 완료"
+EXIT_CODE=0
+
+SWIPE_LOCK_DISABLED=VERIFIED
+REBOOT_PERSISTENCE=NOT_YET_TESTED
+
+# Later verification: record 130 confirms persistence after reboot and hands-free initial recovery.

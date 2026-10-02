@@ -1,0 +1,16 @@
+# Actual automatic reconnection following a requested A50 reboot
+# Initial reboot command timed out; it was NOT repeated
+
+$ adb -s [REDACTED_ENDPOINT] reboot
+subprocess.TimeoutExpired: timed out after 10 seconds
+
+ADB_AUTOMATIC_DISCOVERY_AND_IDENTITY_CHECK=FAIL
+ConnectionError
+Paired A50 not discovered. Wireless debugging may be off, Wi-Fi may be unavailable, or mDNS may be blocked. Ordinary SSH remains independent.
+$ a50_ssh.py [marker, uptime and boot log]
+REBOOT_SSH_AUTORECONNECT_OK
+ 00:30:49 up 5 min,  load average: 17.66, 13.71, 6.37
+BOOT_START=2026-10-01T15:27:38Z
+SSH_START_COMMAND_COMPLETED
+EXIT_CODE=0
+SSH_AUTOMATIC_RECOVERY=PASS

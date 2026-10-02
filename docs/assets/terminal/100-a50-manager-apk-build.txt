@@ -1,0 +1,65 @@
+# Actual A50 recovery helper build and signature verification
+# Dedicated signing key and password stored outside repository
+
+$ javac [Android API 30, Java 8 bytecode, local source files]
+EXIT_CODE=0
+
+$ D8 [compile DEX]
+EXIT_CODE=0
+
+$ aapt [package manifest]
+ziparchive W 10-02 00:34:18  1780 28444] Unable to open '[REDACTED]\OneDrive\Desktop\����\������_����_����\tmp\a50-build-tools\platform\android-11\android.jar': Illegal byte sequence
+zipro W 10-02 00:34:18  1780 28444] Error opening archive [REDACTED]\OneDrive\Desktop\����\������_����_����\tmp\a50-build-tools\platform\android-11\android.jar: I/O error
+ResourceType W 10-02 00:34:18  1780 28444] No known package when getting value for resource number 0x01010000
+ResourceType W 10-02 00:34:18  1780 28444] Invalid package identifier when getting bag for resource number 0x01010000
+thread W 10-02 00:34:18  1780 28444] WARNING: bad result from unlocking mutex
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:2: error: No resource identifier found for attribute 'versionCode' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:2: error: No resource identifier found for attribute 'versionName' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:4: error: No resource identifier found for attribute 'minSdkVersion' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:4: error: No resource identifier found for attribute 'targetSdkVersion' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:5: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:6: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:7: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:8: error: No resource identifier found for attribute 'label' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:8: error: No resource identifier found for attribute 'allowBackup' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:8: error: No resource identifier found for attribute 'theme' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:8: error: No resource identifier found for attribute 'icon' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:11: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:11: error: No resource identifier found for attribute 'exported' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:13: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:14: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:17: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:17: error: No resource identifier found for attribute 'exported' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:19: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:20: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:23: error: No resource identifier found for attribute 'name' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:23: error: No resource identifier found for attribute 'exported' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:23: error: No resource identifier found for attribute 'permission' in package 'android'
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:8: error: Error: No resource found that matches the given name (at 'theme' with value '@android:style/Theme.Material.Light.NoActionBar').
+
+[REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\AndroidManifest.xml:8: error: Error: No resource found that matches the given name (at 'icon' with value '@android:drawable/ic_menu_manage').
+
+EXIT_CODE=1

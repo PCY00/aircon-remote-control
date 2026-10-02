@@ -489,3 +489,90 @@ USB 재삽입 시 자동 시작 실패에 대한 운영 보완도 남아 있다.
   출력된 `BUILD_DIRECTORY`가 현재 빌드 위치다. 과거 공용 빌드 폴더/ZIP을 혼동하지 않는다.
 - 검사: Windows에서 `python -m pytest tests/test_firmware_build_script.py`.
   이 테스트는 가짜 SDK로 helper 동작만 검사하며 실제 flash를 하지 않는다.
+
+## A50 재부팅 뒤 무선 디버깅 허용창이 계속 기다림
+
+- 암호·패턴을 제거해도 드래그 잠금화면이 남을 수 있다. 화면 켜짐만으로 잠금 해제가
+  완료되지는 않는다. 0.4.0 실제 시험에서 드래그 해제 후 자체 관리 앱이 집 Wi-Fi 허용창을
+  처리했다. 이 시험을 수동 조작 없는 복구로 기록하지 않는다.
+- 사용자가 드래그 화면 제거를 요청한 경우에만, 확인된 페어링 기기에서 locksettings
+  get-disabled와 비밀번호 인자 없는 verify 결과를 확인한다. 암호 없는 상태의 verify가
+  실패하면 중단하며 암호를 추측하거나 clear 명령을 실행하지 않는다.
+- 이 A50에서는 locksettings set-disabled true로 잠금 없음 설정을 적용했고 재조회는 true다.
+  복원하려면 같은 암호 없는 조건에서 set-disabled false로 드래그 화면을 되돌릴 수 있다.
+  이 A50의 후속 재부팅에서 잠금 없음 설정 유지와 손대지 않은 연결 복구를 확인했다.
+  5분 연결 유지·화면 꺼짐 2분 SSH/ADB도 통과했다. 기록 125·129·130·133 참조.
+- SSH RPC의 명시적 result=1은 요청 수락이다. TermuxAm은 이때 프로세스 종료 코드도 1을
+  반환할 수 있다. 복구 성공은 별도의 TLS ADB 모델·식별자 검증으로 판단한다.
+- 관리 앱은 등록 Wi-Fi 이름과 BSSID가 모두 일치하는 시스템 무선 디버깅 허용창만 처리한다.
+  새 Wi-Fi/AP, 페어링 초기화, 보안 잠금 추가, 관리 권한 제거는 재설정·재검증 대상이다.
+
+## A50 일반 앱 사용 중지와 복원
+
+- scripts/android/a50_app_cleanup.py는 기본 미리보기이며 --apply만 실제 변경한다.
+  대상 10개와 보호 대상 28개를 고정해 비슷한 이름의 시스템 앱을 처리하지 않는다.
+- 최초 상태는 Git 제외 .deploy/a50/app-cleanup-20261002.json에 보존한다.
+  --restore는 미리보기, --restore --apply는 실제 복원이다. 기본 활성(0)은 default-state,
+  명시적 활성(1)은 enable을 사용한다. 최초 파일을 현재 disabled-user 값으로 덮어쓰지 않는다.
+- 사용자 앱 삭제나 데이터 초기화 대신 disable-user를 사용했다. 대상마다 installed=true와
+  데이터 디렉터리 식별값 유지를 확인했으며 데이터 내용 전체 검사로 표현하지 않는다.
+- dumpsys package의 Hidden system packages는 업데이트 전 원본이다. 현재 Packages의
+  활성 블록을 읽어야 한다. sharedUser 메타데이터는 이름만 보고 안전하다고 판단하지 않는다.
+  실제 UID 사용 패키지 목록의 단독 사용 여부까지 확인한다. 기록 135~139 참조.
+
+## A50 load average가 높지만 CPU는 낮음
+
+- 2026-10-02 측정에서 CPU TOTAL은 2.8%·1.5%였고 D 상태 커널 작업은 각각 17개였다.
+  /proc/stat의 procs_blocked는 0이었다. D 상태를 곧바로 저장장치 병목으로 해석하지 않는다.
+- 일반 Linux load는 실행 중 작업과 중단 불가능한 대기 작업을 함께 계산한다.
+  [커널 부하 계산 근거](https://github.com/torvalds/linux/blob/master/kernel/sched/loadavg.c).
+  이 기기의 부하와 커널 대기는 관련 가능성이 있으나 정확한 대기 원인은 미확정이다.
+- 두 번째 top 표본·앱별 PSS·MemAvailable을 함께 읽는다. 첫 top 표본은 측정 프로세스의
+  초기 실행 비중이 높을 수 있다. 캐시를 지우거나 보안·전원 커널 작업을 종료하지 않는다.
+  실제 자료는 기록 138·140과 블로그 2편이다.
+
+## A50 중앙 서비스가 반복 종료되거나 준비 상태 503을 반환함
+
+- 중앙 서비스 경로는 $PREFIX/var/service/aircon-central이며 기존 SSH 서비스와 분리한다.
+  ~/.local/state/aircon-central/server.log와 service-log/current의 실제 오류를 먼저 읽는다.
+- 5분 안에 비정상 종료 5회면 CENTRAL_RESTART_BLOCKED와 down 표시를 남긴다.
+  부팅 훅은 이 중지를 해제하지 않는다. 디스크·의존성·DB·설정 문제를 수정한 뒤
+  실패 기록 만료를 확인하고 sv-enable aircon-central로 명시적으로 시작한다.
+- /health/live 성공은 프로세스 실행만 뜻한다. /health/ready=503이면 SQLite 준비를
+  확인한다. 누락 DB를 readiness가 자동 생성하지 않는다. 원본·백업을 보존해 복구하며
+  기록 없이 DB를 새로 만들거나 알려지지 않은 스키마를 덮어쓰지 않는다.
+- 기본 배포는 미리보기다. 원격 변경 검사로 중단되면 deployment.json과 실제 파일의
+  차이를 먼저 확인하고 사용자 변경을 보존한다. 부분 설치를 자동 삭제하지 않는다.
+- 운영 명령과 구체적 경로는 services/central-server/README.md, 실제 기록은 143~148이다.
+
+
+## A50 집·가족 API (2026-10-02)
+
+- `ModuleNotFoundError: jwt`가 점검 스크립트에서만 발생: 시스템 Python 대신
+  `$HOME/services/aircon-central/.venv/bin/python`으로 실행한다. 실제 서비스 상태는 health로 따로 확인한다.
+  오류 158과 수정 후 160의 실제 출력 보존.
+- `authentication_not_configured`/503: 실제 Firebase 프로젝트 ID가 비공개 config.json에 있는지 확인한다.
+  임의 사용자 헤더나 검증 우회 모드를 추가하지 않는다. 설정 오류는 로그에 값 없이 종류만 남긴다.
+- `authentication_unavailable`/503: Google 공개 인증서 HTTPS 연결과 시간·인증서 캐시 만료를 확인한다.
+  만료된 키를 무한 재사용하거나 서명 검증을 끄지 않는다.
+- 같은 초대가 수락 안 됨: 이메일·기존 계정 ID·24시간 만료·이미 사용 여부·이전 권한 회수를 확인한다.
+  제외 이전 초대는 사용할 수 없으며 소유자가 새 초대를 발급해야 한다.
+- 스키마 업데이트 실패: 중앙 서버 down/제한 로그를 확인하고 SSH는 유지한다.
+  릴리스 체크섬·가상환경 pip check·DB integrity·backups의 원본 스키마를 확인한다.
+  새 데이터 유무를 검토하기 전 백업을 덮어쓰거나 기존 데이터를 지우지 않는다.
+
+## 가족 Android APK (2026-10-02)
+
+- `google-services.json` 다운로드 대기 시간 초과는 Firebase 앱 등록 실패와 구분한다.
+  콘솔에서 패키지·SHA 유형을 확인하고 실제 구성 파일을 `.deploy/family-app/`에 저장한다.
+  실제 파일이 없으면 production 빌드를 완료했다고 기록하지 않는다. `--fixture-only`로 별도 시험만 가능하다.
+- manifest의 application label 충돌: fixture manifest의 `tools:replace="android:label"`로
+  시험 이름을 명시한다. 172의 오류와 175의 빌드 성공 기록을 보존했다.
+- `closeSoftKeyboard` 모호성: `androidx.test.espresso.action.ViewActions.closeSoftKeyboard()`로
+  지정한다. `doesNotExist()`는 ViewAssertions 정적 import가 필요하다. 173→175 참조.
+- 시험을 다시 실행할 때 8765 포트가 열려 있으면 준비 도구는 기존 키·토큰을 덮어쓰지 않는다.
+  `stop_family_fixture.py`로 기록 PID와 명령을 확인해 해당 시험 서버만 종료한 뒤 준비·빌드·설치한다.
+- Gradle `daemon disappeared`의 원인을 로그와 실행 조건으로 판단한다. 170은 대기 점검 후
+  개발자가 중단한 실행이며 메모리 부족의 증거가 아니다. Platform Tools 경고는 공식 SDK 패키지 추가로 해결했다.
+- A50에 Google 계정이 0개인 경우 실제 로그인 성공을 주장하지 않는다. fixture UI/API 통과와
+  사용자의 실제 Google 로그인 결과는 별도로 기록한다. HTTP localhost는 같은 휴대폰 내부를 뜻한다.

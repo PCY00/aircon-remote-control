@@ -1,0 +1,95 @@
+# Actual test after owner-authorized removal of the remaining swipe keyguard; same approved Wi-Fi/AP
+# No manual action after reboot; verified SSH may call the token-protected recovery receiver automatically; includes five-minute connection checks
+
+$ a50_adb.py --rediscover -- shell [marker, model, wireless state]
+A50_WIRELESS_ADB_CONNECTED
+
+SM-A505N
+
+1
+
+true
+
+EXIT_CODE=0
+$ adb [verified A50] reboot
+EXIT_CODE=0
+SSH_HELPER_AUTOMATIC_RECOVERY_REQUESTED=False
+HANDS_FREE_NO_SWIPE_ADB_REBOOT_RECOVERY=PASS
+ADB_PORT_CHANGED=True
+DISCOVERY_WAIT_SECONDS=131.7
+$ a50_adb.py --rediscover -- shell [marker, uptime, wireless state, helper log]
+AUTO_ADB_AFTER_REBOOT_OK
+
+ 08:22:19 up 2 min,  0 users,  load average: 23.31, 9.56, 3.56
+
+1
+
+true
+
+--------- beginning of main
+
+--------- beginning of system
+
+10-02 08:22:14.884  6793  6793 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 08:22:15.002  6793  6793 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 08:22:16.042  6793  6793 I A50Recovery: 등록된 집 Wi-Fi의 무선 디버깅 허용창 자동 확인 완료
+
+EXIT_CODE=0
+ADB_CONNECTION_CHECK=1/20 PASS ELAPSED_SECONDS=15
+ADB_CONNECTION_CHECK=2/20 PASS ELAPSED_SECONDS=30
+ADB_CONNECTION_CHECK=3/20 PASS ELAPSED_SECONDS=45
+ADB_CONNECTION_CHECK=4/20 PASS ELAPSED_SECONDS=60
+ADB_CONNECTION_CHECK=5/20 PASS ELAPSED_SECONDS=75
+ADB_CONNECTION_CHECK=6/20 PASS ELAPSED_SECONDS=90
+ADB_CONNECTION_CHECK=7/20 PASS ELAPSED_SECONDS=105
+ADB_CONNECTION_CHECK=8/20 PASS ELAPSED_SECONDS=120
+ADB_CONNECTION_CHECK=9/20 PASS ELAPSED_SECONDS=135
+ADB_CONNECTION_CHECK=10/20 PASS ELAPSED_SECONDS=150
+ADB_CONNECTION_CHECK=11/20 PASS ELAPSED_SECONDS=165
+ADB_CONNECTION_CHECK=12/20 PASS ELAPSED_SECONDS=180
+ADB_CONNECTION_CHECK=13/20 PASS ELAPSED_SECONDS=195
+ADB_CONNECTION_CHECK=14/20 PASS ELAPSED_SECONDS=210
+ADB_CONNECTION_CHECK=15/20 PASS ELAPSED_SECONDS=225
+ADB_CONNECTION_CHECK=16/20 PASS ELAPSED_SECONDS=240
+ADB_CONNECTION_CHECK=17/20 PASS ELAPSED_SECONDS=255
+
+$ adb [verified A50] shell input keyevent 3
+# Return to Home for background-management follow-up
+EXIT_CODE=0
+ADB_CONNECTION_CHECK=18/20 PASS ELAPSED_SECONDS=270
+ADB_CONNECTION_CHECK=19/20 PASS ELAPSED_SECONDS=285
+ADB_CONNECTION_CHECK=20/20 PASS ELAPSED_SECONDS=300
+ADB_FIVE_MINUTE_FOLLOWUP=PASS
+$ adb [verified A50] shell [Termux wakelock, wireless state, screen off]
+  PARTIAL_WAKE_LOCK              'termux:service-wakelock' ACQ=-5m6s979ms LONG (uid=[REDACTED] pid=14613 pkg=com.termux)
+
+1
+
+true
+
+EXIT_CODE=0
+SCREEN_OFF_ADB_CHECK=1/8 PASS
+SCREEN_OFF_ADB_CHECK=2/8 PASS
+SCREEN_OFF_ADB_CHECK=3/8 PASS
+SCREEN_OFF_ADB_CHECK=4/8 PASS
+SCREEN_OFF_ADB_CHECK=5/8 PASS
+SCREEN_OFF_ADB_CHECK=6/8 PASS
+SCREEN_OFF_ADB_CHECK=7/8 PASS
+SCREEN_OFF_ADB_CHECK=8/8 PASS
+SCREEN_OFF_ADB_TWO_MINUTES=PASS
+$ a50_ssh.py [marker, uptime, boot log]
+SSH_AFTER_TRUSTED_WIFI_REBOOT_OK
+ 08:29:32 up 9 min,  load average: 17.27, 15.71, 8.85
+BOOT_START=2026-10-01T23:22:19Z
+SSH_START_COMMAND_COMPLETED
+EXIT_CODE=0
+NO_SWIPE_AUTOMATIC_MANAGEMENT_TEST=PASS
+
+# Exact grouped remote commands used above; private addresses and device identity stay in ignored configuration
+# echo A50_WIRELESS_ADB_CONNECTED; getprop ro.product.model; settings get global adb_wifi_enabled; locksettings get-disabled
+# echo AUTO_ADB_AFTER_REBOOT_OK; uptime; settings get global adb_wifi_enabled; locksettings get-disabled; logcat -d -s A50Recovery:I *:S
+# dumpsys power | grep termux:service-wakelock; settings get global adb_wifi_enabled; locksettings get-disabled; input keyevent 223
+# echo SSH_AFTER_TRUSTED_WIFI_REBOOT_OK; uptime; tail -n 2 ~/.local/state/a50-server/bootstrap.log
+# DISCOVERY_WAIT_SECONDS excludes the initial 5-second delay after the successful reboot command.

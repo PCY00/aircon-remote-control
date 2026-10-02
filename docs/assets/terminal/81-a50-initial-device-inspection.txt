@@ -1,0 +1,36 @@
+# Actual read-only Galaxy A50 inspection over paired Wi-Fi ADB
+# Private connection address and device IDs removed
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell getprop ro.product.model
+SM-A505N
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell getprop ro.build.version.release
+11
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell getprop ro.build.version.security_patch
+2023-02-01
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell pm list packages com.termux
+package:com.termux
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell run-as com.termux id
+run-as: package not debuggable: com.termux
+EXIT_CODE=1
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell settings get global low_power
+0
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell cmd appops get com.termux RUN_IN_BACKGROUND
+No operations.
+Default mode: allow
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell cmd appops get com.termux RUN_ANY_IN_BACKGROUND
+No operations.
+Default mode: allow
+EXIT_CODE=0

@@ -1,0 +1,85 @@
+# Actual reviewed consumer app cleanup; no uninstall or data clear
+
+PROTECTED_ENABLED_COUNT=28/28
+$ a50_ssh.py 'echo SSH_CLEANUP_OK'
+SSH_CLEANUP_OK
+EXIT_CODE=0
+UID_MEMBERSHIP=com.google.android.youtube OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.videos OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.photos OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.docs OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.gm OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.maps OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.tachyon OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.projection.gearhead OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.ar.core OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.samsung.android.game.gamehome OWN_PACKAGE_ONLY=True
+YouTube | com.google.android.youtube | current_enabled=1 | original_enabled=1
+Google TV | com.google.android.videos | current_enabled=1 | original_enabled=1
+Google Photos | com.google.android.apps.photos | current_enabled=0 | original_enabled=0
+Google Drive | com.google.android.apps.docs | current_enabled=0 | original_enabled=0
+Gmail | com.google.android.gm | current_enabled=0 | original_enabled=0
+Google Maps | com.google.android.apps.maps | current_enabled=1 | original_enabled=1
+Google Meet/Duo | com.google.android.apps.tachyon | current_enabled=0 | original_enabled=0
+Android Auto | com.google.android.projection.gearhead | current_enabled=0 | original_enabled=0
+Google Play Services for AR | com.google.ar.core | current_enabled=0 | original_enabled=0
+Game Launcher | com.samsung.android.game.gamehome | current_enabled=0 | original_enabled=0
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.youtube
+Package com.google.android.youtube new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.youtube enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.videos
+Package com.google.android.videos new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.videos enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.apps.photos
+Package com.google.android.apps.photos new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.apps.photos enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.apps.docs
+Package com.google.android.apps.docs new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.apps.docs enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.gm
+Package com.google.android.gm new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.gm enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.apps.maps
+Package com.google.android.apps.maps new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.apps.maps enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.apps.tachyon
+Package com.google.android.apps.tachyon new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.apps.tachyon enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.android.projection.gearhead
+Package com.google.android.projection.gearhead new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.android.projection.gearhead enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.google.ar.core
+Package com.google.ar.core new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.google.ar.core enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ adb [verified A50] shell pm disable-user --user 0 com.samsung.android.game.gamehome
+Package com.samsung.android.game.gamehome new state: disabled-user
+EXIT_CODE=0
+VERIFIED=com.samsung.android.game.gamehome enabled=3 installed=true DATA_INODE_UNCHANGED
+PROTECTED_ENABLED_COUNT=28/28
+$ a50_ssh.py 'echo SSH_CLEANUP_OK'
+SSH_CLEANUP_OK
+EXIT_CODE=0
+PAIRED_ADB_FINAL_VERIFIED=True
+$ adb [verified A50] shell am broadcast -a com.aircon.a50manager.STATUS -n com.aircon.a50manager/.StatusReceiver
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=94;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 유지 중"
+EXIT_CODE=0
+CONSUMER_APP_APPLY=PASS

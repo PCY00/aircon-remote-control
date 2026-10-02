@@ -1,0 +1,54 @@
+# Actual test after user saved Always allow for the existing Wi-Fi
+# CORRECTION: the user manually dismissed the swipe keyguard after reboot; verified SSH may call the token-protected recovery receiver automatically; includes five-minute connection checks
+
+$ a50_adb.py --rediscover -- shell [marker, model, wireless state]
+A50_WIRELESS_ADB_CONNECTED
+
+SM-A505N
+
+1
+
+EXIT_CODE=0
+$ adb [verified A50] reboot
+REBOOT_COMMAND_RESPONSE=TIMEOUT_10_SECONDS
+# Request not repeated.
+SSH_HELPER_AUTOMATIC_RECOVERY_REQUESTED=True
+ADB_REBOOT_CONNECTION_AFTER_USER_SWIPE=PASS
+ADB_PORT_CHANGED=True
+DISCOVERY_WAIT_SECONDS=235.0
+$ a50_adb.py --rediscover -- shell [marker, uptime, wireless state, helper log]
+AUTO_ADB_AFTER_REBOOT_OK
+
+ 08:17:34 up 4 min,  0 users,  load average: 19.20, 12.33, 5.22
+
+1
+
+--------- beginning of main
+
+--------- beginning of system
+
+10-02 08:15:38.082  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 08:15:38.203  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 08:16:04.533  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 08:16:32.980  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 08:17:31.910  7343  7343 I A50Recovery: 등록된 집 Wi-Fi의 무선 디버깅 허용창 자동 확인 완료
+
+EXIT_CODE=0
+ADB_CONNECTION_CHECK=1/20 PASS ELAPSED_SECONDS=15
+ADB_CONNECTION_CHECK=2/20 PASS ELAPSED_SECONDS=30
+ADB_CONNECTION_CHECK=3/20 PASS ELAPSED_SECONDS=45
+ADB_CONNECTION_CHECK=4/20 PASS ELAPSED_SECONDS=60
+ADB_CONNECTION_CHECK=5/20 PASS ELAPSED_SECONDS=75
+ADB_CONNECTION_CHECK=6/20 PASS ELAPSED_SECONDS=90
+ADB_CONNECTION_CHECK=7/20 PASS ELAPSED_SECONDS=105
+ADB_CONNECTION_CHECK=8/20 PASS ELAPSED_SECONDS=120
+
+HANDS_FREE_REBOOT_RECOVERY=NOT_ACHIEVED_IN_THIS_RUN
+USER_ASSISTANCE=SWIPE_KEYGUARD_DISMISSED
+FOLLOWUP_STOPPED_AT_CHECK=8_OF_20
+FIVE_MINUTE_AND_SCREEN_OFF_PHASES=NOT_COMPLETED
+# Stop requested to apply the user-authorized permanent swipe-lock removal.

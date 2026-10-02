@@ -1,0 +1,140 @@
+# Actual phone SSH operations; private details removed
+
+$ Gradle 8.13 testFixtureDebugUnitTest assembleFixtureDebug assembleFixtureDebugAndroidTest [ASCII staging, private configuration]
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preFixtureDebugBuild UP-TO-DATE
+> Task :app:generateFixtureDebugBuildConfig
+> Task :app:javaPreCompileFixtureDebug
+> Task :app:checkFixtureDebugAarMetadata
+> Task :app:processFixtureDebugNavigationResources
+> Task :app:generateFixtureDebugResValues
+> Task :app:compileFixtureDebugNavigationResources
+> Task :app:mapFixtureDebugSourceSetPaths
+> Task :app:generateFixtureDebugResources
+> Task :app:packageFixtureDebugResources
+> Task :app:parseFixtureDebugLocalResources
+> Task :app:createFixtureDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksFixtureDebug
+> Task :app:mergeFixtureDebugResources
+> Task :app:processFixtureDebugMainManifest
+> Task :app:processFixtureDebugManifest
+> Task :app:preFixtureDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileFixtureDebugUnitTest
+> Task :app:processFixtureDebugManifestForPackage
+> Task :app:processFixtureDebugJavaRes NO-SOURCE
+> Task :app:processFixtureDebugUnitTestJavaRes NO-SOURCE
+> Task :app:mergeFixtureDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeFixtureDebugShaders
+> Task :app:compileFixtureDebugShaders NO-SOURCE
+> Task :app:generateFixtureDebugAssets UP-TO-DATE
+> Task :app:mergeFixtureDebugAssets
+> Task :app:processFixtureDebugResources
+> Task :app:compressFixtureDebugAssets
+
+> Task :app:compileFixtureDebugJavaWithJavac
+
+> Task :app:bundleFixtureDebugClassesToRuntimeJar
+> Task :app:bundleFixtureDebugClassesToCompileJar
+> Task :app:checkFixtureDebugDuplicateClasses
+> Task :app:compileFixtureDebugUnitTestJavaWithJavac
+> Task :app:testFixtureDebugUnitTest
+> Task :app:desugarFixtureDebugFileDependencies
+> Task :app:mergeExtDexFixtureDebug
+> Task :app:dexBuilderFixtureDebug
+> Task :app:mergeFixtureDebugGlobalSynthetics
+> Task :app:mergeLibDexFixtureDebug
+> Task :app:mergeProjectDexFixtureDebug
+> Task :app:mergeFixtureDebugJniLibFolders
+> Task :app:mergeFixtureDebugNativeLibs
+
+> Task :app:stripFixtureDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:validateSigningFixtureDebug
+> Task :app:writeFixtureDebugAppMetadata
+> Task :app:writeFixtureDebugSigningConfigVersions
+> Task :app:preFixtureDebugAndroidTestBuild SKIPPED
+> Task :app:mergeFixtureDebugJavaResource
+> Task :app:processFixtureDebugAndroidTestManifest
+> Task :app:generateFixtureDebugAndroidTestBuildConfig
+> Task :app:javaPreCompileFixtureDebugAndroidTest
+> Task :app:checkFixtureDebugAndroidTestAarMetadata
+> Task :app:processFixtureDebugAndroidTestNavigationResources
+> Task :app:compileFixtureDebugAndroidTestNavigationResources
+> Task :app:generateFixtureDebugAndroidTestResValues
+> Task :app:mapFixtureDebugAndroidTestSourceSetPaths
+> Task :app:generateFixtureDebugAndroidTestResources
+> Task :app:packageFixtureDebug
+> Task :app:createFixtureDebugApkListingFileRedirect
+> Task :app:assembleFixtureDebug
+> Task :app:mergeFixtureDebugAndroidTestShaders
+> Task :app:compileFixtureDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateFixtureDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeFixtureDebugAndroidTestResources
+> Task :app:mergeFixtureDebugAndroidTestAssets
+> Task :app:compressFixtureDebugAndroidTestAssets
+> Task :app:checkFixtureDebugAndroidTestDuplicateClasses
+> Task :app:desugarFixtureDebugAndroidTestFileDependencies
+> Task :app:processFixtureDebugAndroidTestResources
+> Task :app:mergeExtDexFixtureDebugAndroidTest
+
+> Task :app:compileFixtureDebugAndroidTestJavaWithJavac
+
+> Task :app:compileFixtureDebugAndroidTestJavaWithJavac FAILED
+
+[Incubating] Problems report is available at: file:///[REDACTED_BUILD_CONFIG]/.codex/family-android-build/project-2jkjwqp9/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+60 actionable tasks: 60 executed
+Note: [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\main\java\com\aircon\family\FamilyActivity.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+[REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java:33: error: 'void' type not allowed here
+        onView(withHint("예: 우리 집")).perform(typeText("New Home"),closeSoftKeyboard());
+                                                                                  ^
+[REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java:33: error: reference to closeSoftKeyboard is ambiguous
+        onView(withHint("예: 우리 집")).perform(typeText("New Home"),closeSoftKeyboard());
+                                                                 ^
+  both method closeSoftKeyboard() in Espresso and method closeSoftKeyboard() in ViewActions match
+[REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java:46: error: cannot find symbol
+        onView(withText("New Home")).check(doesNotExist());
+                                           ^
+  symbol:   method doesNotExist()
+  location: class FamilyUiTest
+Note: [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+3 errors
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFixtureDebugAndroidTestJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java:33: error: 'void' type not allowed here
+          onView(withHint("예: 우리 집")).perform(typeText("New Home"),closeSoftKeyboard());
+                                                                                    ^
+  [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java:33: error: reference to closeSoftKeyboard is ambiguous
+          onView(withHint("예: 우리 집")).perform(typeText("New Home"),closeSoftKeyboard());
+                                                                   ^
+    both method closeSoftKeyboard() in Espresso and method closeSoftKeyboard() in ViewActions match
+  [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java:46: error: cannot find symbol
+          onView(withText("New Home")).check(doesNotExist());
+                                             ^
+    symbol:   method doesNotExist()
+    location: class FamilyUiTest
+  Note: [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-2jkjwqp9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java uses or overrides a deprecated API.
+  Note: Recompile with -Xlint:deprecation for details.
+  3 errors
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 59s
+
+EXIT_CODE=1

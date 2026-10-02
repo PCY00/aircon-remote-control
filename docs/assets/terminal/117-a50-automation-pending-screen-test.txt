@@ -1,0 +1,11 @@
+# Actual final status before the requested screen-only wake test
+# Device automation incomplete; app 0.3.0 is built but not installed
+# Local on-demand Activity recovery retries paused; phone boot/periodic configuration remains
+
+$ a50_ssh.py [connection marker, uptime, own app read-only status]
+CURRENT_SSH_STATUS_OK
+ 01:18:10 up 15 min,  load average: 17.38, 16.93, 11.65
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=0;approval=true;approval_state=SERVICE_CONNECTED;last=무선 디버깅 복구 요청 완료"
+EXIT_CODE=0
+LOCAL_ON_DEMAND_RECOVERY_RETRIES=PAUSED

@@ -1,0 +1,27 @@
+# Actual reviewed consumer app cleanup; no uninstall or data clear
+
+PROTECTED_ENABLED_COUNT=28/28
+$ a50_ssh.py 'echo SSH_CLEANUP_OK'
+SSH_CLEANUP_OK
+EXIT_CODE=0
+UID_MEMBERSHIP=com.google.android.youtube OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.videos OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.photos OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.docs OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.gm OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.maps OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.apps.tachyon OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.android.projection.gearhead OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.google.ar.core OWN_PACKAGE_ONLY=True
+UID_MEMBERSHIP=com.samsung.android.game.gamehome OWN_PACKAGE_ONLY=True
+YouTube | com.google.android.youtube | current_enabled=1 | original_enabled=1
+Google TV | com.google.android.videos | current_enabled=1 | original_enabled=1
+Google Photos | com.google.android.apps.photos | current_enabled=0 | original_enabled=0
+Google Drive | com.google.android.apps.docs | current_enabled=0 | original_enabled=0
+Gmail | com.google.android.gm | current_enabled=0 | original_enabled=0
+Google Maps | com.google.android.apps.maps | current_enabled=1 | original_enabled=1
+Google Meet/Duo | com.google.android.apps.tachyon | current_enabled=0 | original_enabled=0
+Android Auto | com.google.android.projection.gearhead | current_enabled=0 | original_enabled=0
+Google Play Services for AR | com.google.ar.core | current_enabled=0 | original_enabled=0
+Game Launcher | com.samsung.android.game.gamehome | current_enabled=0 | original_enabled=0
+PREVIEW_ONLY=NO_DEVICE_MUTATION

@@ -1,0 +1,38 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] install -r family-fixture.apk
+Performing Streamed Install
+Success
+
+EXIT_CODE=0
+$ adb [verified A50] install -r family-test.apk
+Performing Streamed Install
+Success
+
+EXIT_CODE=0
+$ adb [verified A50] screen on [isolated UI test]
+
+EXIT_CODE=0
+$ adb [verified A50] am instrument [isolated fixture APK; real Android UI and API tests]
+
+com.aircon.family.ApiIntegrationTest:.
+com.aircon.family.FamilyUiTest:.
+
+Time: 8.416
+
+OK (2 tests)
+
+
+
+EXIT_CODE=0
+$ adb [verified A50] home [restore server phone home screen]
+
+EXIT_CODE=0
+$ adb [verified A50] screen off [restore server phone screen state]
+
+EXIT_CODE=0
+ACTUAL_ANDROID_UI_CAPTURE=01-fixture-homes.png IDENTITY=fictional_fixture
+ACTUAL_ANDROID_UI_CAPTURE=02-fixture-new-home.png IDENTITY=fictional_fixture
+ACTUAL_ANDROID_UI_CAPTURE=03-fixture-members.png IDENTITY=fictional_fixture
+ACTUAL_ANDROID_UI_CAPTURE=04-fixture-logout.png IDENTITY=fictional_fixture
+FAMILY_NATIVE_ANDROID_UI_AND_API_TESTS=PASS

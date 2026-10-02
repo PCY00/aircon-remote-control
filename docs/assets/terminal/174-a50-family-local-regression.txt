@@ -1,0 +1,6 @@
+# Actual phone SSH operations; private details removed
+
+$ python -m pytest -q tests/test_a50_adb.py tests/test_a50_app_cleanup.py tests/test_a50_central_deploy.py tests/test_central_households.py tests/test_central_server_foundation.py
+...............................................                          [100%]
+47 passed in 4.41s
+# Actual completed local execution; no phone deployment performed.

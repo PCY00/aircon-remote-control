@@ -1,0 +1,17 @@
+# Actual local-to-phone boot script deployment
+# Script staging does not establish Android boot callback delivery
+
+$ ssh [private connection redacted] [upload scripts/android/start-a50-ssh.sh via stdin, syntax-check, preserve existing target, install and run]
+/data/data/com.termux/files/home/.local/state/a50-server/start-ssh.staging: 24: Syntax error: end of file unexpected (expecting "then")
+EXIT_CODE=2
+LOCAL_REMOTE_BOOT_SCRIPT_HASH_MATCH=False
+
+$ ssh [private connection redacted] "sshd -T -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no" [selected effective settings]
+Port 8022
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+EXIT_CODE=0
+
+TERMUX_BOOT_PLUGIN_INSTALLATION_AND_FIRST_LAUNCH=NOT_VERIFIED
+REBOOT_TEST=NOT_PERFORMED

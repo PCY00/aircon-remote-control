@@ -1,0 +1,48 @@
+# Actual screen-off and background SSH test
+# Existing session runs a 120-second job; a new SSH session is probed during it
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'input keyevent 3'
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'input keyevent 223'
+EXIT_CODE=0
+
+# SCREEN_OFF_INITIAL
+$ adb shell dumpsys power; adb shell dumpsys display [selected lines]
+PARTIAL_WAKE_LOCK              'termux:service-wakelock' ACQ=-3m12s152ms LONG (uid=[REDACTED_APP_UID] pid=18297 pkg=com.termux)
+mScreenState=OFF
+
+$ ssh [private key and phone address redacted] "echo NEW_SSH_WHILE_SCREEN_OFF_OK; pgrep -a sshd"
+NEW_SSH_WHILE_SCREEN_OFF_OK
+5566 sshd -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no
+6408 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+6411 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+6650 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+6652 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+EXIT_CODE=0
+
+# SCREEN_OFF_AFTER_ONE_MINUTE
+$ adb shell dumpsys power; adb shell dumpsys display [selected lines]
+PARTIAL_WAKE_LOCK              'termux:service-wakelock' ACQ=-4m9s6ms LONG (uid=[REDACTED_APP_UID] pid=18297 pkg=com.termux)
+mScreenState=DOZE_SUSPEND
+
+$ ssh [private key and phone address redacted] "for i in $(seq 1 12); do echo BACKGROUND_TICK=$i; sleep 10; done; echo BACKGROUND_JOB_COMPLETED"
+BACKGROUND_TICK=1
+BACKGROUND_TICK=2
+BACKGROUND_TICK=3
+BACKGROUND_TICK=4
+BACKGROUND_TICK=5
+BACKGROUND_TICK=6
+BACKGROUND_TICK=7
+BACKGROUND_TICK=8
+BACKGROUND_TICK=9
+BACKGROUND_TICK=10
+BACKGROUND_TICK=11
+BACKGROUND_TICK=12
+BACKGROUND_JOB_COMPLETED
+EXIT_CODE=0
+
+# SCREEN_OFF_FINAL
+$ adb shell dumpsys power; adb shell dumpsys display [selected lines]
+PARTIAL_WAKE_LOCK              'termux:service-wakelock' ACQ=-5m11s153ms LONG (uid=[REDACTED_APP_UID] pid=18297 pkg=com.termux)
+mScreenState=DOZE_SUSPEND

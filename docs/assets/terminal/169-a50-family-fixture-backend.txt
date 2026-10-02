@@ -1,0 +1,6 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - < prepare_family_fixture.py [signed fictional accounts, isolated temporary DB]
+ISOLATED_APK_BACKEND=READY BIND=loopback PORT=8765 AUTO_STOP_SECONDS=2400 PRODUCTION_DATABASE=UNTOUCHED
+
+EXIT_CODE=0

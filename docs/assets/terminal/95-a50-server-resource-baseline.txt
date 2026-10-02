@@ -1,0 +1,20 @@
+# Actual SSH resource baseline before optimization
+
+$ python scripts/android/a50_ssh.py [date, uptime, free, df, Termux memory details and third-party package list]
+MEMORY_BASELINE
+Thu Oct  1 15:19:04 UTC 2026
+ 00:19:04 up 7 min,  load average: 17.10, 15.21, 8.00
+               total        used        free      shared  buff/cache   available
+Mem:            3604        1753          83          12        1767        1416
+Swap:           2047         250        1797
+Filesystem                                        Size  Used Avail Use% Mounted on
+/dev/block/platform/13520000.ufs/by-name/userdata  52G  3.0G   49G   6% /data/user/0
+package:com.termux.boot
+package:com.google.android.apps.docs
+package:com.google.android.videos
+package:com.google.android.apps.photos
+package:com.sec.android.app.sbrowser
+package:com.termux
+Can't find service: meminfo
+
+EXIT_CODE=0

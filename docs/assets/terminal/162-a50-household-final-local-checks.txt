@@ -1,0 +1,11 @@
+# Actual phone SSH operations; private details removed
+
+$ python -m pytest tests/test_central_households.py tests/test_central_server_foundation.py tests/test_a50_central_deploy.py -q
+..............................                                           [100%]
+30 passed in 2.45s
+
+EXIT_CODE=0
+$ python -m ruff check services/central-server/central_server scripts/android/apply_a50_central.py scripts/android/deploy_a50_central.py scripts/android/configure_a50_firebase.py scripts/android/test_a50_households.py scripts/android/verify_a50_households.py tests/test_central_households.py --select E9,F63,F7,F82
+All checks passed!
+
+EXIT_CODE=0

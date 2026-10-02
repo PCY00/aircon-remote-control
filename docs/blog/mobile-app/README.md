@@ -1,0 +1,43 @@
+# 가족 스마트홈 앱·공기계 중앙 서버 — 진행 중 기록
+
+상태: 2026-10-02, SM-A505N 공개키 SSH·무선 ADB 자동 관리의 초기 검증 완료. 드래그 잠금을 없앤 뒤 수동 조작 없는 재부팅 복구·5분 ADB 유지·화면 꺼짐 2분 SSH/ADB를 확인했다. 일반 앱 정리 뒤 상태 확인용 중앙 API·SQLite·서비스 감독을 설치했다. 같은 Wi-Fi·충전·암호 없는 조건이다. 집·가족 권한 API와 Firebase Google 제공자 설정은 완료했고, 실제 APK 로그인·FCM·Pi 연결은 후속 작업이다.
+
+기존 IR·Zigbee/MQTT·PCB 시리즈와 구분해 Android 앱과 가구별 중앙 서비스를 기록한다.
+사용자와 1편의 범위를 원격 관리 준비까지로 합의했다. 2편은 운영 환경 최적화와
+중앙 서버 구축이다. 이후 편수는 가구 권한·APK·FCM 검증 진행에 맞춰 정한다.
+
+## 블로그 구성
+
+1. [A50 초기화·SSH·백그라운드·재부팅 복구](01-galaxy-a50-preparation.md): SSH·ADB 자동 관리 초기 검증 완료, 장시간·다른 네트워크 조건은 후속 시험.
+2. [운영 환경 정리·중앙 서버 구축](02-a50-central-server.md): 앱 정리·중앙 API 기반·SQLite·프로세스 복구·조작 없는 재부팅·화면 꺼짐 2분 시험 완료. 가구 인증·FCM은 후속 작업.
+3. [Google 로그인·집 등록·가족 권한](03-household-permissions.md): Firebase 무료 프로젝트·Google 제공자 설정, A50 0.2.0 배포와 서명한 가상 계정으로 가구 격리 검증 완료. 실제 APK 로그인·FCM·Pi 연결은 후속 작업.
+4. [가족 Android APK·Google 로그인 연결](04-family-android-app.md): 앱·지문 등록, 시험 APK 빌드와 A50 UI/API 검사 완료. 실제 Google 구성 다운로드·production APK·실제 로그인은 대기 중.
+5. 이후: 외부 접속 경로·FCM·실제 가구 연결과 장시간 시험.
+
+1편 보충 자료: [SSH 세부 기록](02-termux-private-ssh.md),
+[백그라운드·부팅 세부 기록](03-background-recovery.md).
+보충 자료의 기존 파일명 번호는 블로그 편수를 뜻하지 않는다.
+
+## 기록 기준
+
+- 실제 기기 상태와 실행 로그를 바탕으로 작성한다.
+- 계획·성능 추정·실제 검증을 구분한다.
+- 터미널 기록은 민감정보를 제거한 TXT와 PNG를 함께 보존한다.
+- 기록 PNG는 실제 출력의 재구성 자료임을 밝힌다.
+- 사용자에게 필요한 실물 사진을 해당 단계 직전에 요청한다.
+- 일반 SSH 접근과 Android 설정 화면 접근을 구분한다.
+- 현재 노트북은 개발 도구로 사용하며 중앙 서버 운영 설정을 바꾸지 않는다.
+
+설계 제안: [가구별 권한·FCM](../../plans/mobile-app-household-notifications.md)
+
+진행 기록: [2026-10-01 준비](../../journal/2026-10-01-android-central-server-preparation.md)
+
+검증 기록: [2026-10-02 화면 꺼짐·재부팅](../../journal/2026-10-02-a50-background-ssh-verification.md)
+
+앱 정리 기록: [2026-10-02 안전한 앱 사용 중지](../../journal/2026-10-02-a50-safe-app-cleanup.md)
+
+서버 기반 기록: [2026-10-02 중앙 서버 실행 환경](../../journal/2026-10-02-a50-central-runtime.md)
+
+가족 권한 기록: [2026-10-02 Firebase·집별 접근 분리](../../journal/2026-10-02-a50-household-permissions.md)
+
+사진 목록: [A50 자료](../../assets/hardware/galaxy-a50-server/README.md)

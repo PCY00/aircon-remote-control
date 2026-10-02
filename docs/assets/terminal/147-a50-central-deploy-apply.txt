@@ -1,0 +1,64 @@
+# Actual phone SSH operations; private details removed
+
+LOCAL_RELEASE=v0.1.0-ccd62f777a96a998
+SOURCE_SHA256=88d2dc974a7ebf7ad9e44eba44a66a25179672f64c43af34ca822556bd096f47 requirements.txt
+SOURCE_SHA256=e5ce7e57a95fcc7bc11436e3a2d0786568c88550792f3580e3334d5786154cda .env.example
+SOURCE_SHA256=54dc3d1b04fe5c0e22c074bff3650bbdf731d80a03d5e8efc8e3e81a316b3184 central_server/__init__.py
+SOURCE_SHA256=79391ecffcb8fc9d7adc883f8b4c86f3b3c3a4a35f606aafed5379d9be7cce5f central_server/__main__.py
+SOURCE_SHA256=2b76e9f1400e063f42946a0c82d6be9dd68b8dfeb31e9abc6c65bc0b3bcb9a7b central_server/restart_guard.py
+SOURCE_SHA256=fa41caf4389f0e68078ae099a8e8ba742af9f02251bbbc8a596b9db581c8c018 central_server/storage.py
+SOURCE_SHA256=6b552e41b67edc8e096510891747df1c1e0d170cb7b8a4ea7048a5f7604eb7ca central_server/web.py
+SOURCE_SHA256=a102d07c9540811fc9d262da236f978984f2f3f670682764ef4a298a97606c69 termux/20-start-central
+SOURCE_SHA256=043f156e7cfdb26be46e8e79d4dfecdff2269fda0e25a160c6109d62fdc0c77b termux/finish
+SOURCE_SHA256=6cdfb1dfb78ada4e4f10d0864e0d62669b67a33aca67a4559ee8e0a96e29e569 termux/log-run
+SOURCE_SHA256=2b9d9214a979f960f6902b9f9983733069687641f4bea8f34f6d8f56009b8d37 termux/run
+$ SSH [verified host key] python - < locally versioned apply_a50_central.py [checked source manifest; apply]
+EXISTING_SSH_SERVICES_DISABLED=PASS
+PLAN_VERSION=v0.1.0-ccd62f777a96a998
+PLAN_FILES=11
+BIND=loopback PORT=8001 DATABASE=outside_release LOG_LIMIT=1MiB_x4
+Collecting Flask==3.1.3 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 1))
+  Downloading flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+Collecting waitress==3.0.2 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 2))
+  Downloading waitress-3.0.2-py3-none-any.whl.metadata (5.8 kB)
+Collecting blinker==1.9.0 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 3))
+  Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+Collecting click==8.5.0 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 4))
+  Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting itsdangerous==2.2.0 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 5))
+  Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+Collecting Jinja2==3.1.6 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 6))
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting MarkupSafe==3.0.3 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 7))
+  Downloading markupsafe-3.0.3.tar.gz (80 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Collecting Werkzeug==3.1.9 (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.1.0-ccd62f777a96a998/requirements.txt (line 8))
+  Downloading werkzeug-3.1.9-py3-none-any.whl.metadata (4.1 kB)
+Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+Downloading waitress-3.0.2-py3-none-any.whl (56 kB)
+Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Downloading click-8.5.0-py3-none-any.whl (125 kB)
+Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+Building wheels for collected packages: MarkupSafe
+  Building wheel for MarkupSafe (pyproject.toml): started
+  Building wheel for MarkupSafe (pyproject.toml): finished with status 'done'
+  Created wheel for MarkupSafe: filename=markupsafe-3.0.3-cp314-cp314-android_24_arm64_v8a.whl size=19043 sha256=39178ae3591c6797480d22f2ae15773a9869b72bcd490fc06f4be3583193984d
+  Stored in directory: /data/data/com.termux/files/home/.cache/pip/wheels/59/98/64/49aa38bd164ca08148b53713f16e0625a783374a14974c4040
+Successfully built MarkupSafe
+Installing collected packages: waitress, MarkupSafe, itsdangerous, click, blinker, Werkzeug, Jinja2, Flask
+
+Successfully installed Flask-3.1.3 Jinja2-3.1.6 MarkupSafe-3.0.3 Werkzeug-3.1.9 blinker-1.9.0 click-8.5.0 itsdangerous-2.2.0 waitress-3.0.2
+No broken requirements found.
+READINESS={"database":"ok","status":"ready"}
+run: /data/data/com.termux/files/usr/var/service/aircon-central: (pid 16918) 1s; run: log: (pid 16904) 3s
+CODE_AND_HOOK_SHA256_MATCH=TRUE
+CENTRAL_DEPLOYMENT=PASS
+
+EXIT_CODE=0

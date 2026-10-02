@@ -1,0 +1,68 @@
+# Actual screen-off resource baseline before consumer app state changes
+
+$ adb [verified A50] shell date -u; uptime; cat /proc/meminfo; cat /proc/loadavg; cat /proc/stat
+ 08:36:00 up 15 min,  0 users,  load average: 17.08, 16.74, 11.71
+MemTotal:        3690704 kB
+MemFree:          134696 kB
+MemAvailable:    1518352 kB
+SwapTotal:       2097148 kB
+SwapFree:        1804284 kB
+procs_running 1
+procs_blocked 0
+
+$ adb [verified A50] shell top -b -n 2 -d 3 -m 12
+# Second sample below; first sample includes observer startup
+ 415 total,   1 running, 414 sleeping,   0 stopped,   0 zombie
+  Mem:  3690704K total,  3565660K used,   125044K free,  23281664 buffers
+ Swap:  2097148K total,   292864K used,  1804284K free,  1496204K cached
+800%cpu   4%user   0%nice  11%sys 784%idle   0%iow   0%irq   1%sirq   0%host
+   PID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ ARGS
+ 18979 shell        20   0 2.0G 3.1M 1.9M R  6.6   0.0   0:00.28 top -b -n 2 -d 3 -m 12
+  4582 system       18  -2  12G 368M 209M S  4.3  10.2   2:52.75 system_server
+  2041 root         RT   0    0    0    0 S  1.3   0.0   0:11.97 [sugov:0]
+ 14248 shell        20   0 2.2G 5.0M 3.3M S  1.0   0.1   0:09.61 adbd --root_seclabel=u:r:su:s0
+     5 root         20   0    0    0    0 I  0.6   0.0   0:07.02 [kworker/u16:0]
+  7605 [REDACTED_APP_USER]      20   0 6.3G 146M  52M S  0.3   4.0   0:13.48 com.samsung.android.honeyboard
+  5019 root         20   0 2.0G 1.6M 1.3M S  0.3   0.0   0:00.07 ip6tables-restore --noflush -w -v
+  4341 wifi         20   0 2.0G 3.1M 2.9M S  0.3   0.0   0:02.51 wificond
+  4165 root         20   0 2.3G 4.5M 3.8M S  0.3   0.1   0:02.02 netd
+  4078 system       20   0 2.0G 1.7M 1.6M S  0.3   0.0   0:02.66 iod
+  4066 root         20   0    0    0    0 S  0.3   0.0   0:01.26 [jbd2/sda32-8]
+  3951 logd         30  10 2.1G 5.0M 1.7M S  0.3   0.1   0:09.82 logd
+
+
+$ adb [verified A50] shell ps -A -o PID,PPID,USER,STAT,NAME
+# Observed D-state rows only; not a complete process listing
+    12      2 root         D     [tz_worker_threa]
+    18      2 root         D     [tz_worker_threa]
+    25      2 root         D     [tz_worker_threa]
+    32      2 root         D     [tz_worker_threa]
+    39      2 root         D     [tz_worker_threa]
+    46      2 root         D     [tz_worker_threa]
+    53      2 root         D     [tz_worker_threa]
+    60      2 root         D     [tz_worker_threa]
+   936      2 root         D     [scsi_srpmb_work]
+  1556      2 root         D     [ree_time]
+  1563      2 root         D     [tz_iwsock]
+  2165      2 root         D     [simpleinteracti]
+  2169      2 root         D     [simpleinteracti]
+  2173      2 root         D     [simpleinteracti]
+  2177      2 root         D     [simpleinteracti]
+  2181      2 root         D     [simpleinteracti]
+  2185      2 root         D     [simpleinteracti]
+OBSERVED_D_STATE_COUNT=17
+
+$ adb [verified A50] shell dumpsys meminfo --oom
+# Report summary below; full raw output retained privately
+Total RAM: 3,690,704K (status normal)
+Free RAM: 1,463,178K (  365,462K cached pss +   963,432K cached kernel +   134,284K free)
+Used RAM: 2,138,557K (1,824,361K used pss +   314,196K kernel)
+Lost RAM:    37,013K
+ZRAM:    51,956K physical used for   292,864K in swap (2,097,148K total swap)
+
+$ adb [verified A50] shell dumpsys battery
+# Current public-safe power/temperature fields only
+AC powered: false
+USB powered: true
+level: 100
+temperature: 309

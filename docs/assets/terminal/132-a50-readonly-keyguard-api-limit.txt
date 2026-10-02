@@ -1,0 +1,19 @@
+# Actual optional diagnostic failure; not an ADB/server recovery failure
+# Actual read-only Android diagnostic under Termux UID
+# No settings modified; no extra Android privileges granted
+
+$ app_process [locally built read-only state diagnostic]
+DIAGNOSTIC_MAIN_STARTED
+OWN_SERVICE_CAPABILITIES=1
+OWN_SERVICE_EVENT_TYPES=2080
+OWN_SERVICE_FLAGS=80
+OWN_SERVICE_PACKAGES=[com.android.systemui, com.android.settings, android]
+OWN_ACCESSIBILITY_SERVICE_ENABLED_API=true
+ACTIVE_WIFI=true
+DISPLAY_INTERACTIVE=true
+java.lang.NullPointerException: Attempt to invoke interface method 'boolean android.view.IWindowManager.isKeyguardLocked()' on a null object reference
+	at android.app.KeyguardManager.isKeyguardLocked(KeyguardManager.java:491)
+	at A50ReadOnlyState.main(A50ReadOnlyState.java:44)
+	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
+	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:409)
+EXIT_CODE=1

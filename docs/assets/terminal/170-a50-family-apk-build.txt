@@ -1,0 +1,63 @@
+# Actual phone SSH operations; private details removed
+
+$ Gradle 8.13 testFixtureDebugUnitTest assembleFixtureDebug assembleFixtureDebugAndroidTest [ASCII staging, private configuration]
+
+Welcome to Gradle 8.13!
+
+Here are the highlights of this release:
+ - Daemon JVM auto-provisioning
+ - Enhancements for Scala plugin and JUnit testing
+ - Improvements for build authors and plugin developers
+
+For more details see https://docs.gradle.org/8.13/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+Checking the license for package Android SDK Platform-Tools in [REDACTED_BUILD_CONFIG]\.codex\family-android-tools\sdk\licenses
+Warning: License for package Android SDK Platform-Tools not accepted.
+WARNING: platform-tools package is not installed. Please accept the installation licence to continue
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preFixtureDebugBuild UP-TO-DATE
+> Task :app:generateFixtureDebugBuildConfig
+> Task :app:javaPreCompileFixtureDebug
+> Task :app:checkFixtureDebugAarMetadata
+The message received from the daemon indicates that the daemon has disappeared.
+Build request sent: Build{id=232e360e-9e51-44ce-87dd-6eb4dc9fde67, currentDir=[REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-e5b8l3i7}
+Attempting to read last messages from the daemon log...
+Daemon pid: 27476
+  log file: [REDACTED_BUILD_CONFIG]\.gradle\daemon\8.13\daemon-27476.out.log
+----- Last 20 lines from daemon log file - daemon-27476.out.log -----
+2026-10-02T09:57:24.702+0900 [DEBUG] [org.gradle.launcher.daemon.registry.PersistentDaemonRegistry] Marking busy by address: [e2dc3080-707f-4477-91f5-4fdaa9b3e347 port:52546, addresses:[localhost/[REDACTED_ADDRESS]]]
+2026-10-02T09:57:24.703+0900 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Waiting to acquire exclusive lock on daemon addresses registry.
+2026-10-02T09:57:24.703+0900 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Lock acquired on daemon addresses registry.
+2026-10-02T09:57:24.705+0900 [DEBUG] [org.gradle.cache.internal.DefaultFileLockManager] Releasing lock on daemon addresses registry.
+2026-10-02T09:57:24.705+0900 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] resetting idle timer
+2026-10-02T09:57:24.705+0900 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon is running. Sleeping until state changes.
+2026-10-02T09:57:24.706+0900 [INFO] [org.gradle.launcher.daemon.server.exec.StartBuildOrRespondWithBusy] Daemon is about to start building Build{id=232e360e-9e51-44ce-87dd-6eb4dc9fde67, currentDir=[REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-e5b8l3i7}. Dispatching build started information...
+2026-10-02T09:57:24.706+0900 [DEBUG] [org.gradle.launcher.daemon.server.SynchronizedDispatchConnection] thread 24: dispatching org.gradle.launcher.daemon.protocol.BuildStarted@1ee42641
+2026-10-02T09:57:24.708+0900 [DEBUG] [org.gradle.launcher.daemon.server.exec.EstablishBuildEnvironment] Configuring env variables: [PATH, USERDOMAIN_ROAMINGPROFILE, BROWSER_USE_ACCESS_VERIFYING_IDENTITY, PROCESSOR_LEVEL, SYSTEMDRIVE, GIT_PAGER, ALLUSERSPROFILE, CODEX_MCP_NODE_PATH, CODEX_SHELL, PROCESSOR_ARCHITECTURE, __COMPAT_LAYER, ANDROID_HOME, DRIVERDATA, GH_PAGER, PROGRAMFILES, CODEX_CLI_PATH, CODEX_APP_TOOLS_PIPE_PATH, COLORTERM, PSMODULEPATH, PROGRAMDATA, CHOCOLATEYLASTPATHUPDATE, USERNAME, CODEX_TASK_WORKSPACE_VERIFYING_IDENTITY, LEVEL_ZERO_V1_SDK_PATH, MOSQUITTO_DIR, CODEX_INTERNAL_ORIGINATOR_OVERRIDE, ONEDRIVE, CODEX_SAGE_BACKFILL_TRACKER_TAB_REUSE, PATHEXT, SHELL, PAGER, ONEDRIVECONSUMER, CODEX_PERMISSION_PROFILE, CODEX_WINDOWS_SANDBOX_PACKAGE_FAMILY, WINDIR, LOG_FORMAT, STM32CUBEMX_PATH, HOMEPATH, LC_ALL, PROCESSOR_IDENTIFIER, PUBLIC, ZSH_TMUX_AUTOSTARTED, LC_CTYPE, CODEX_SESSION_ID, ZES_ENABLE_SYSMAN, LOCALAPPDATA, COMMONPROGRAMFILES(X86), USERDOMAIN, LOGONSERVER, JAVA_HOME, RUST_LOG, PROGRAMFILES(X86), TERM, LANG, CHOCOLATEYTOOLSLOCATION, IDF_TOOLS_PATH, APPDATA, CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS, PROGRAMW6432, SYSTEMROOT, CHOCOLATEYINSTALL, CODEX_THREAD_ID, NO_COLOR, CODEX_CI, DISABLE_AUTO_UPDATE, OS, COMMONPROGRAMW6432, COMPUTERNAME, COMMONPROGRAMFILES, COMSPEC, CARBON_MEM_DISABLE, PROCESSOR_REVISION, ZSH_TMUX_AUTOSTART, TEMP, HOMEDRIVE, USERPROFILE, TMP, CODEX_TECTONIC_PATH, CODEX_VERSION, NUMBER_OF_PROCESSORS]
+2026-10-02T09:57:24.713+0900 [DEBUG] [org.gradle.launcher.daemon.server.exec.LogToClient] About to start relaying all logs to the client via the connection.
+2026-10-02T09:57:24.713+0900 [INFO] [org.gradle.launcher.daemon.server.exec.LogToClient] The client will now receive all logging from the daemon (pid: 27476). The daemon log file: [REDACTED_BUILD_CONFIG]\.gradle\daemon\8.13\daemon-27476.out.log
+2026-10-02T09:57:24.714+0900 [DEBUG] [org.gradle.launcher.daemon.server.exec.RequestStopIfSingleUsedDaemon] Requesting daemon stop after processing Build{id=232e360e-9e51-44ce-87dd-6eb4dc9fde67, currentDir=[REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-e5b8l3i7}
+2026-10-02T09:57:24.715+0900 [LIFECYCLE] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Daemon will be stopped at the end of the build
+2026-10-02T09:57:24.715+0900 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] Stop as soon as idle requested. The daemon is busy
+2026-10-02T09:57:24.715+0900 [DEBUG] [org.gradle.launcher.daemon.server.DaemonStateCoordinator] daemon stop has been requested. Sleeping until state changes.
+2026-10-02T09:57:24.715+0900 [DEBUG] [org.gradle.launcher.daemon.server.exec.ExecuteBuild] The daemon has started executing the build.
+2026-10-02T09:57:24.716+0900 [DEBUG] [org.gradle.launcher.daemon.server.exec.ExecuteBuild] Executing build with daemon context: DefaultDaemonContext[uid=d7a518e9-1d0a-45cc-8da8-cbc7751cc2f3,javaHome=[REDACTED_BUILD_CONFIG]\OneDrive\Desktop\����\������_����_����\tmp\a50-build-tools\jdk\jdk-[REDACTED_ADDRESS]+1,javaVersion=17,javaVendor=Microsoft,daemonRegistryDir=[REDACTED_BUILD_CONFIG]\.gradle\daemon,pid=27476,idleTimeout=120000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-Xmx2048m,-Dfile.encoding=UTF-8,-Duser.country=KR,-Duser.language=ko,-Duser.variant]
+Checking the license for package Android SDK Platform-Tools in [REDACTED_BUILD_CONFIG]\.codex\family-android-tools\sdk\licenses
+Warning: License for package Android SDK Platform-Tools not accepted.
+WARNING: platform-tools package is not installed. Please accept the installation licence to continue----- End of the daemon log -----
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Gradle build daemon disappeared unexpectedly (it may have been killed or may have crashed)
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+EXIT_CODE=1

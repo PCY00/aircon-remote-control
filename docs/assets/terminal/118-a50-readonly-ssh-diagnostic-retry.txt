@@ -1,0 +1,15 @@
+# Actual read-only Android diagnostic under Termux UID
+# No settings modified; no extra Android privileges granted
+
+$ app_process [locally built read-only state diagnostic]
+DIAGNOSTIC_MAIN_STARTED
+OWN_SERVICE_CAPABILITIES=1
+OWN_SERVICE_EVENT_TYPES=2080
+OWN_SERVICE_FLAGS=80
+OWN_SERVICE_PACKAGES=[com.android.systemui, com.android.settings, android]
+OWN_ACCESSIBILITY_SERVICE_ENABLED_API=true
+ACTIVE_WIFI=true
+DISPLAY_INTERACTIVE=true
+MANAGER_VERSION=0.4.0
+MANAGER_SETTINGS_PERMISSION_GRANTED=true
+EXIT_CODE=0

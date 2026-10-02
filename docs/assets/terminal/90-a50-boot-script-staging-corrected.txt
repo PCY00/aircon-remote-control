@@ -1,0 +1,19 @@
+# Actual local-to-phone boot script deployment
+# Script staging does not establish Android boot callback delivery
+
+$ ssh [private connection redacted] [upload scripts/android/start-a50-ssh.sh via stdin, syntax-check, preserve existing target, install and run]
+bb708d5d1ca0445a80a1564fb5f542b5c180059c49a77ce7cf0480701b3292e2  /data/data/com.termux/files/home/.termux/boot/10-start-ssh
+BOOT_START=2026-10-01T15:09:24Z
+SSH_ALREADY_RUNNING
+EXIT_CODE=0
+LOCAL_REMOTE_BOOT_SCRIPT_HASH_MATCH=True
+
+$ ssh [private connection redacted] "sshd -T -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no" [selected effective settings]
+Port 8022
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+EXIT_CODE=0
+
+TERMUX_BOOT_PLUGIN_INSTALLATION_AND_FIRST_LAUNCH=NOT_VERIFIED
+REBOOT_TEST=NOT_PERFORMED

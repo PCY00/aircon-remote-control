@@ -1,0 +1,80 @@
+# Actual System UI dialog on the paired phone; SSID/AP and private capability removed
+$ am broadcast [protected known-Wi-Fi configuration; auto_confirm=False]
+Broadcasting: Intent { act=com.aircon.a50manager.CONFIGURE_TRUSTED_WIFI flg=0x400000 cmp=com.aircon.a50manager/.ConfigurationReceiver (has extras) }
+Broadcast completed: result=1
+EXIT_CODE=0
+$ am start [actual System UI wireless debugging dialog, existing approved Wi-Fi]
+Starting: Intent { cmp=com.android.systemui/.WifiDebuggingActivityAlias (has extras) }
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+EXIT_CODE=0
+$ uiautomator dump [private UI tree]
+UI hierchary dumped to: /data/local/tmp/a50-wifi-dialog.xml
+EXIT_CODE=0
+{'text': '', 'resource-id': 'android:id/content', 'package': 'com.android.systemui', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/parentPanel', 'package': 'com.android.systemui', 'class': 'android.widget.LinearLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/topPanel', 'package': 'com.android.systemui', 'class': 'android.widget.LinearLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/title_template', 'package': 'com.android.systemui', 'class': 'android.widget.LinearLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': 'Allow wireless debugging on this network?', 'resource-id': 'android:id/alertTitle', 'package': 'com.android.systemui', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/contentPanel', 'package': 'com.android.systemui', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/scrollView', 'package': 'com.android.systemui', 'class': 'android.widget.ScrollView', 'checked': 'false', 'clickable': 'false'}
+{'text': 'Network Name (SSID)\n[REDACTED]\n\nWi‑Fi Address (BSSID)\n[REDACTED]', 'resource-id': 'android:id/message', 'package': 'com.android.systemui', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/customPanel', 'package': 'com.android.systemui', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/custom', 'package': 'com.android.systemui', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': 'Always allow on this network', 'resource-id': 'android:id/alwaysUse', 'package': 'com.android.systemui', 'class': 'android.widget.CheckBox', 'checked': 'false', 'clickable': 'true'}
+{'text': '', 'resource-id': 'android:id/buttonPanel', 'package': 'com.android.systemui', 'class': 'android.widget.ScrollView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'android:id/buttonBarLayout', 'package': 'com.android.systemui', 'class': 'android.widget.LinearLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '취소', 'resource-id': 'android:id/button2', 'package': 'com.android.systemui', 'class': 'android.widget.Button', 'checked': 'false', 'clickable': 'true'}
+{'text': '', 'resource-id': 'android:id/sem_divider1', 'package': 'com.android.systemui', 'class': 'android.view.View', 'checked': 'false', 'clickable': 'false'}
+{'text': 'Allow', 'resource-id': 'android:id/button1', 'package': 'com.android.systemui', 'class': 'android.widget.Button', 'checked': 'false', 'clickable': 'true'}
+$ am broadcast [protected known-Wi-Fi configuration; auto_confirm=True]
+Broadcasting: Intent { act=com.aircon.a50manager.CONFIGURE_TRUSTED_WIFI flg=0x400000 cmp=com.aircon.a50manager/.ConfigurationReceiver (has extras) }
+Broadcast completed: result=1
+EXIT_CODE=0
+$ am broadcast [invalid capability rejection test]
+Broadcasting: Intent { act=com.aircon.a50manager.RECOVER flg=0x400000 cmp=com.aircon.a50manager/.RecoveryReceiver (has extras) }
+Broadcast completed: result=0, data="RECOVERY_REQUEST_REJECTED"
+EXIT_CODE=0
+INVALID_TOKEN_REJECTED=True
+SSH_RECOVERY_REQUEST_ACCEPTED=False
+$ am broadcast [live management status]
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=10;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 유지 중"
+EXIT_CODE=0
+$ logcat [own helper only]
+--------- beginning of system
+--------- beginning of crash
+--------- beginning of main
+10-02 02:08:16.998  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 02:21:05.295  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 02:34:54.770  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 02:53:10.213  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 03:08:16.864  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 03:19:54.764  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 03:34:54.788  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 03:49:54.770  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 04:04:54.785  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 04:19:54.764  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 04:38:21.385  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 04:49:54.765  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 05:05:17.528  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 05:19:54.767  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 05:38:23.825  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 05:49:54.764  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 06:05:17.459  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 06:19:54.764  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 06:34:54.818  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 06:49:54.768  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 07:05:17.477  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 07:19:54.765  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 07:38:26.584  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 07:49:54.768  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:05:17.497  6865  6865 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:08:42.312 29317 29317 I A50Recovery: 무선 디버깅 유지 중
+10-02 08:08:42.343 29317 29317 I A50Recovery: 무선 디버깅 유지 중
+10-02 08:08:42.946 29317 29317 I A50Recovery: 무선 디버깅 유지 중
+10-02 08:08:43.099 29317 29317 I A50Recovery: 무선 디버깅 유지 중
+10-02 08:09:37.957 29317 29317 I A50Recovery: 등록된 집 Wi-Fi의 무선 디버깅 허용창 자동 확인 완료
+10-02 08:09:38.016 29317 29317 I A50Recovery: 무선 디버깅 유지 중
+10-02 08:09:38.375 29317 29317 I A50Recovery: 무선 디버깅 유지 중
+EXIT_CODE=0
+POST_DIALOG_PAIRED_ADB_VERIFIED=True

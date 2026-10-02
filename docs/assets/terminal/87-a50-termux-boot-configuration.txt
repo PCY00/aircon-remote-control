@@ -1,0 +1,12 @@
+# Actual Termux:Boot installation and local-to-phone boot script deployment
+# Private identifiers removed
+
+# Downloaded from https://f-droid.org/repo/com.termux.boot_1000.apk
+APK_BYTES=26000
+APK_SHA256=6f7cf9b94f539d3efd4af3544ff819947b49395275d8cfa7e5f80de14f3d9cf8
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] install --no-streaming -r '[LOCAL_PROJECT]\tmp\com.termux.boot_1000.apk'
+Performing Push Install
+[LOCAL_PROJECT]\tmp\com.termux.boot_1000.apk: 1 file pushed, 0 skipped. 57.7 MB/s (26000 bytes in 0.000s)
+adb: error: failed to copy '[LOCAL_PROJECT]\tmp\com.termux.boot_1000.apk' to '/data/local/tmp/./.': remote couldn't create file: Is a directory
+EXIT_CODE=4294967295

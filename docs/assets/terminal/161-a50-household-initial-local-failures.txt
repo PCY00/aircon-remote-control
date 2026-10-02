@@ -1,0 +1,8 @@
+# Actual phone SSH operations; private details removed
+
+# Earlier actual pytest output, excerpt; personal paths omitted. Original run: tests/test_central_households.py tests/test_central_server_foundation.py tests/test_a50_central_deploy.py -q
+FAILED tests/test_central_households.py::test_invalid_identity_rejected[changes9]
+E       Failed: DID NOT RAISE <class 'central_server.households.APIError'>
+FAILED tests/test_central_households.py::test_family_isolation_revoke_and_hub_authority
+E       AssertionError: assert 400 == 403
+2 failed, 25 passed, 1 warning in 2.28s

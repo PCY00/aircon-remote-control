@@ -1,0 +1,118 @@
+# Actual phone SSH operations; private details removed
+
+$ Gradle 8.13 testFixtureDebugUnitTest assembleFixtureDebug assembleFixtureDebugAndroidTest [ASCII staging, private configuration]
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preFixtureDebugBuild UP-TO-DATE
+> Task :app:generateFixtureDebugBuildConfig
+> Task :app:javaPreCompileFixtureDebug
+> Task :app:checkFixtureDebugAarMetadata
+> Task :app:processFixtureDebugNavigationResources
+> Task :app:generateFixtureDebugResValues
+> Task :app:compileFixtureDebugNavigationResources
+> Task :app:mapFixtureDebugSourceSetPaths
+> Task :app:generateFixtureDebugResources
+> Task :app:packageFixtureDebugResources
+> Task :app:parseFixtureDebugLocalResources
+> Task :app:createFixtureDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksFixtureDebug
+> Task :app:mergeFixtureDebugResources
+> Task :app:processFixtureDebugMainManifest
+> Task :app:processFixtureDebugManifest
+> Task :app:preFixtureDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileFixtureDebugUnitTest
+> Task :app:processFixtureDebugManifestForPackage
+> Task :app:processFixtureDebugJavaRes NO-SOURCE
+> Task :app:processFixtureDebugUnitTestJavaRes NO-SOURCE
+> Task :app:mergeFixtureDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeFixtureDebugShaders
+> Task :app:compileFixtureDebugShaders NO-SOURCE
+> Task :app:generateFixtureDebugAssets UP-TO-DATE
+> Task :app:mergeFixtureDebugAssets
+> Task :app:compressFixtureDebugAssets
+> Task :app:checkFixtureDebugDuplicateClasses
+> Task :app:desugarFixtureDebugFileDependencies
+> Task :app:processFixtureDebugResources
+
+> Task :app:compileFixtureDebugJavaWithJavac
+
+> Task :app:bundleFixtureDebugClassesToRuntimeJar
+> Task :app:mergeExtDexFixtureDebug
+> Task :app:bundleFixtureDebugClassesToCompileJar
+> Task :app:dexBuilderFixtureDebug
+> Task :app:compileFixtureDebugUnitTestJavaWithJavac
+> Task :app:testFixtureDebugUnitTest
+> Task :app:mergeFixtureDebugGlobalSynthetics
+> Task :app:mergeLibDexFixtureDebug
+> Task :app:mergeProjectDexFixtureDebug
+> Task :app:mergeFixtureDebugJniLibFolders
+> Task :app:mergeFixtureDebugNativeLibs
+
+> Task :app:stripFixtureDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:validateSigningFixtureDebug
+> Task :app:writeFixtureDebugAppMetadata
+> Task :app:writeFixtureDebugSigningConfigVersions
+> Task :app:preFixtureDebugAndroidTestBuild SKIPPED
+> Task :app:processFixtureDebugAndroidTestManifest
+> Task :app:generateFixtureDebugAndroidTestBuildConfig
+> Task :app:javaPreCompileFixtureDebugAndroidTest
+> Task :app:checkFixtureDebugAndroidTestAarMetadata
+> Task :app:processFixtureDebugAndroidTestNavigationResources
+> Task :app:compileFixtureDebugAndroidTestNavigationResources
+> Task :app:generateFixtureDebugAndroidTestResValues
+> Task :app:mapFixtureDebugAndroidTestSourceSetPaths
+> Task :app:generateFixtureDebugAndroidTestResources
+> Task :app:mergeFixtureDebugAndroidTestResources
+> Task :app:processFixtureDebugAndroidTestResources
+> Task :app:mergeFixtureDebugJavaResource
+
+> Task :app:compileFixtureDebugAndroidTestJavaWithJavac
+
+> Task :app:mergeFixtureDebugAndroidTestShaders
+> Task :app:compileFixtureDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateFixtureDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeFixtureDebugAndroidTestAssets
+> Task :app:compressFixtureDebugAndroidTestAssets
+> Task :app:checkFixtureDebugAndroidTestDuplicateClasses
+> Task :app:desugarFixtureDebugAndroidTestFileDependencies
+> Task :app:mergeExtDexFixtureDebugAndroidTest
+> Task :app:dexBuilderFixtureDebugAndroidTest
+> Task :app:mergeFixtureDebugAndroidTestGlobalSynthetics
+> Task :app:packageFixtureDebug
+> Task :app:createFixtureDebugApkListingFileRedirect
+> Task :app:assembleFixtureDebug
+> Task :app:processFixtureDebugAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeLibDexFixtureDebugAndroidTest
+> Task :app:mergeProjectDexFixtureDebugAndroidTest
+> Task :app:mergeFixtureDebugAndroidTestJniLibFolders
+> Task :app:mergeFixtureDebugAndroidTestJavaResource
+> Task :app:mergeFixtureDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripFixtureDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningFixtureDebugAndroidTest
+> Task :app:writeFixtureDebugAndroidTestSigningConfigVersions
+> Task :app:packageFixtureDebugAndroidTest
+> Task :app:createFixtureDebugAndroidTestApkListingFileRedirect
+> Task :app:assembleFixtureDebugAndroidTest
+
+[Incubating] Problems report is available at: file:///[REDACTED_BUILD_CONFIG]/.codex/family-android-build/project-4m45x3n9/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 37s
+70 actionable tasks: 70 executed
+Note: [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-4m45x3n9\app\src\main\java\com\aircon\family\FamilyActivity.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-4m45x3n9\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+EXIT_CODE=0
+SIGNED_APK=family-fixture.apk BYTES=4836535 SHA256=045ca626dad012236677bf7b7df26c86f7d0780fd63d53e70856f50083b4fa38
+SIGNED_APK=family-test.apk BYTES=583617 SHA256=f3010ab88830daf239a23dbbf6eb61505335c3619263fc19aa6129e160460aff
+FAMILY_APK_BUILD=PASS

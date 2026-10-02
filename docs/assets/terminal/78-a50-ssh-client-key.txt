@@ -1,0 +1,10 @@
+# Galaxy A50 SSH client key preparation
+# 2026-10-01; actual local execution; identifiers removed
+# This capture does not demonstrate a phone connection.
+
+$ ssh-keygen -q -t ed25519 -N "" -C aircon-a50-client -f [REDACTED_CLIENT_KEY_PATH]
+SSH_KEY_CREATE_EXIT_CODE=0
+PUBLIC_KEY_TYPE=ssh-ed25519
+PRIVATE_KEY_STORAGE=outside_repository
+PUBLIC_KEY=[REDACTED]
+PHONE_CONNECTION=not_attempted

@@ -1,0 +1,21 @@
+# Actual local checks; device automation remains incomplete
+
+$ pytest tests/test_a50_adb.py -q
+.....                                                                    [100%]
+5 passed in 0.18s
+EXIT_CODE=0
+
+$ ruff check [Android helpers and device selection tests]
+All checks passed!
+EXIT_CODE=0
+
+$ JVM [approved Wi-Fi matching safety checks]
+APPROVED_WIFI_NAME_POLICY=9_CHECKS_PASS
+EXIT_CODE=0
+
+$ sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=155
+PRIVATE_METADATA_COUNT=0
+EXIT_CODE=0
+
+PUBLIC_PRIVATE_VALUE_HITS=0

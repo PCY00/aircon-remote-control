@@ -49,3 +49,11 @@ firmware/*.zip
 
 # Generated artifact-inspection sidecars
 *.inspect.ndjson
+
+# Android local tools, cloud configuration and generated builds
+android/**/.gradle/
+android/**/build/
+android/**/local.properties
+android/**/private-build.json
+android/**/google-services.json
+android/**/test-fixture.json

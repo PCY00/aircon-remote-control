@@ -1,0 +1,14 @@
+# Actual final public artifact checks; functional tests preserved in 126, device checks in 130 and 133
+
+PUBLIC_PRIVATE_VALUE_HITS=0
+A50_TXT_PNG_MISSING_PAIRS=0
+GIT_IGNORED=.deploy/a50/adb.json True
+GIT_IGNORED=.deploy/a50/connection.json True
+GIT_IGNORED=tmp/a50-current-dialog True
+GIT_IGNORED=tmp/a50-manager-build True
+PART_ONE_MISSING_LOCAL_IMAGES=0
+$ sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=175
+PRIVATE_METADATA_COUNT=0
+EXIT_CODE=0
+PUBLIC_ARTIFACT_VERIFICATION=PASS

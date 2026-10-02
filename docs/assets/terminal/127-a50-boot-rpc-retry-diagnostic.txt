@@ -1,0 +1,6 @@
+# Actual reboot follow-up while 125 remains running
+# A first accepted request did not result in ADB availability; the controller makes one further request after Android startup
+POST_STARTUP_SSH_RECOVERY_REQUEST_ACCEPTED=True
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=0;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=105;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 복구 요청 완료"
+PROCESS_EXIT=0

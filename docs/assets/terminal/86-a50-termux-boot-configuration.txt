@@ -1,0 +1,11 @@
+# Actual Termux:Boot installation and local-to-phone boot script deployment
+# Private identifiers removed
+
+# Downloaded from https://f-droid.org/repo/com.termux.boot_1000.apk
+APK_BYTES=26000
+APK_SHA256=6f7cf9b94f539d3efd4af3544ff819947b49395275d8cfa7e5f80de14f3d9cf8
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] install -r tmp/com.termux.boot_1000.apk
+Python subprocess.TimeoutExpired: installation command timed out after 25 seconds
+TIMEOUT_SECONDS=25
+# No installation success was observed in this attempt.

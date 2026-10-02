@@ -1,0 +1,7 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - < stop_family_fixture.py [recorded fixture PID and exact command verified]
+RECORDED_ISOLATED_FIXTURE_PROCESS_STOPPED=TRUE
+PRODUCTION_SERVICE_AND_DATABASE=UNCHANGED
+
+EXIT_CODE=0

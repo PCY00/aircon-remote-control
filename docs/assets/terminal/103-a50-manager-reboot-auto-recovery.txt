@@ -1,0 +1,46 @@
+# Actual A50 reboot with management helper installed
+# No manual screen action, IP, port, code or post-reboot app launch
+
+$ adb [verified A50] reboot
+REBOOT_COMMAND_RESPONSE=TIMEOUT_10_SECONDS
+# Request not repeated; check recovery independently.
+ADB_AUTO_RECOVERY=PASS
+ADB_PORT_CHANGED=True
+DISCOVERY_WAIT_SECONDS=123.9
+$ a50_adb.py --rediscover -- shell [marker, uptime, wireless state and management helper log]
+AUTO_ADB_AFTER_REBOOT_OK
+
+ 00:40:01 up 2 min,  0 users,  load average: 26.31, 10.26, 3.78
+
+1
+
+--------- beginning of main
+
+--------- beginning of system
+
+10-02 00:39:40.512  4848  4848 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 00:39:40.741  4848  4848 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 00:39:57.223  4848  4848 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 00:39:57.321  4848  4848 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 00:39:59.994  4848  4848 I A50Recovery: 무선 디버깅 유지 중
+
+10-02 00:40:00.006  4848  4848 I A50Recovery: 무선 디버깅 유지 중
+
+10-02 00:40:02.088  4848  4848 I A50Recovery: 무선 디버깅 유지 중
+
+10-02 00:40:02.111  4848  4848 I A50Recovery: 무선 디버깅 유지 중
+
+EXIT_CODE=0
+$ adb [verified A50] shell dumpsys power [selected Termux wake-lock lines]
+  PARTIAL_WAKE_LOCK              'termux:service-wakelock' ACQ=-843ms (uid=[REDACTED] pid=14839 pkg=com.termux)
+$ a50_ssh.py [marker, uptime and boot log]
+AUTO_SSH_AFTER_REBOOT_OK
+ 00:40:04 up 2 min,  load average: 26.12, 10.49, 3.89
+BOOT_START=2026-10-01T15:40:01Z
+SSH_START_COMMAND_COMPLETED
+EXIT_CODE=0
+SSH_AUTO_RECOVERY=PASS

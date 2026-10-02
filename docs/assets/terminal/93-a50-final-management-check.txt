@@ -1,0 +1,14 @@
+# Actual SSH management helper check after reboot
+
+$ python scripts/android/a50_ssh.py [management marker, uptime, memory, storage and boot log checks]
+MANAGEMENT_HELPER_OK
+ 00:14:35 up 2 min,  load average: 23.73, 12.45, 4.92
+               total        used        free      shared  buff/cache   available
+Mem:            3604        1775         150           9        1677        1397
+Swap:           2047         249        1798
+Filesystem                                        Size  Used Avail Use% Mounted on
+/dev/block/platform/13520000.ufs/by-name/userdata  52G  3.0G   49G   6% /data/user/0
+BOOT_START=2026-10-01T15:13:54Z
+SSH_START_COMMAND_COMPLETED
+
+EXIT_CODE=0

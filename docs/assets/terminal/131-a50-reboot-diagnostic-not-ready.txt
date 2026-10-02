@@ -1,0 +1,8 @@
+# Actual read-only diagnostic attempted during the new reboot
+# Compilation completed; diagnostic jar could not be sent before SSH was ready
+
+$ ssh [verified A50] [upload own read-only diagnostic jar]
+ssh: connect to host [REDACTED_ADDRESS] port 8022: Connection refused
+SSH_EXIT_CODE=255
+DIAGNOSTIC_WRAPPER_EXIT_CODE=1
+# The remote diagnostic was not run in this attempt. No permission conclusion is drawn.

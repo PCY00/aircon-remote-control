@@ -1,0 +1,10 @@
+# Actual reviewed consumer app cleanup; no uninstall or data clear
+
+PROTECTED_ENABLED_COUNT=28/28
+$ a50_ssh.py 'echo SSH_CLEANUP_OK'
+SSH_CLEANUP_OK
+EXIT_CODE=0
+
+PREVIEW_STOPPED=Active package metadata unavailable; no app change allowed.
+NO_DEVICE_MUTATION=TRUE
+# Subsequent verified preview is record 137.

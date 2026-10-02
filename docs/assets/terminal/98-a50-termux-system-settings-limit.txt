@@ -1,0 +1,9 @@
+# Actual read-only Termux SSH system-settings access check
+# No setting was changed
+# This attempt occurred during reboot and failed before a shell command ran.
+# It does not prove Android settings permission availability or denial.
+
+$ a50_ssh.py [read ADB properties and wireless debugging state]
+banner exchange: Connection to UNKNOWN port -1: Connection refused
+
+EXIT_CODE=255

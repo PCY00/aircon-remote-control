@@ -1,0 +1,31 @@
+# Actual owner-approved Wi-Fi dialog helper update
+# Network identity and existing accessibility service configuration are private
+# Unrelated accessibility services preserved
+
+$ adb [verified A50] push [locally signed update]
+[LOCAL_PROJECT]\tmp\a50-manager-build\a50-manager.apk: 1 file pushed, 0 skipped. 2.1 MB/s (25058 bytes in 0.011s)
+
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm install -r [management update]
+Success
+
+EXIT_CODE=0
+
+$ adb [verified A50] shell am broadcast [permission-protected configuration; previously approved Wi-Fi]
+Broadcasting: Intent { act=com.aircon.a50manager.CONFIGURE_TRUSTED_WIFI flg=0x400000 cmp=com.aircon.a50manager/.ConfigurationReceiver (has extras) }
+
+Broadcast completed: result=1
+
+EXIT_CODE=0
+
+$ adb [verified A50] shell settings put secure enabled_accessibility_services [preserve existing, add own narrow helper]
+EXIT_CODE=0
+
+$ adb [verified A50] shell settings put secure accessibility_enabled 1
+EXIT_CODE=0
+
+$ adb [verified A50] shell am start [management helper update]
+Starting: Intent { flg=0x10008000 cmp=com.aircon.a50manager/.MainActivity }
+
+EXIT_CODE=0

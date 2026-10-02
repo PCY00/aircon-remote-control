@@ -1,0 +1,8 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - [fixture port preflight; refuse to replace running server or keys]
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+RuntimeError: Fixture port occupied; stop the recorded fixture first
+
+EXIT_CODE=1

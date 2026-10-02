@@ -1,0 +1,32 @@
+# Actual verified-device A50 management helper installation
+# APK signature and permissions were checked before deployment
+
+$ adb [verified A50] push [built APK] /data/local/tmp/a50-manager.apk
+[REDACTED]\tmp\a50-manager-build\a50-manager.apk: 1 file pushed, 0 skipped. 1.0 MB/s (16727 bytes in 0.016s)
+
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm install -r /data/local/tmp/a50-manager.apk
+Success
+
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm grant com.aircon.a50manager android.permission.WRITE_SECURE_SETTINGS
+EXIT_CODE=0
+
+$ adb [verified A50] shell dumpsys deviceidle whitelist +com.aircon.a50manager
+Added: com.aircon.a50manager
+
+EXIT_CODE=0
+
+$ adb [verified A50] shell am start -n com.aircon.a50manager/.MainActivity
+Starting: Intent { cmp=com.aircon.a50manager/.MainActivity }
+
+EXIT_CODE=0
+
+$ adb [verified A50] shell dumpsys package com.aircon.a50manager [selected lines]
+versionName=0.1.0
+android.permission.WRITE_SECURE_SETTINGS: granted=true
+EXIT_CODE=0
+
+ACTUAL_MANAGER_SCREENSHOT_CAPTURED=YES

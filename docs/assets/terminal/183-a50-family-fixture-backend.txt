@@ -1,0 +1,10 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - [fixture port preflight; refuse to replace running server or keys]
+ISOLATED_FIXTURE_PORT_AVAILABLE=TRUE
+
+EXIT_CODE=0
+$ SSH [verified host key] python - < prepare_family_fixture.py [signed fictional accounts, isolated temporary DB]
+ISOLATED_APK_BACKEND=READY BIND=loopback PORT=8765 AUTO_STOP_SECONDS=2400 PRODUCTION_DATABASE=UNTOUCHED
+
+EXIT_CODE=0

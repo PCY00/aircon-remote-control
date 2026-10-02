@@ -1,0 +1,63 @@
+# Actual cleanup reboot test; no phone operation by user
+
+$ a50_ssh.py [marker, uptime, boot log]
+SSH_CLEANUP_REBOOT_OK
+ 08:47:41 up 27 min,  load average: 17.23, 17.26, 14.70
+BOOT_START=2026-10-01T23:22:19Z
+SSH_START_COMMAND_COMPLETED
+EXIT_CODE=0
+$ adb [verified A50] reboot
+REBOOT_RESPONSE_TIMEOUT=10s; request not repeated
+HANDS_FREE_REBOOT_ADB_RECOVERY=PASS
+TOTAL_REBOOT_TO_ADB_SECONDS=121.2
+SSH_RECOVERY_RPC_REQUESTED=False
+$ a50_ssh.py [marker, uptime, boot log]
+SSH_CLEANUP_REBOOT_OK
+ 08:49:43 up 1 min,  load average: 23.14, 8.86, 3.23
+BOOT_START=2026-10-01T23:49:40Z
+SSH_START_COMMAND_COMPLETED
+EXIT_CODE=0
+PROTECTED_ENABLED_AFTER_REBOOT=28/28
+com.google.android.youtube: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.android.videos: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.android.apps.photos: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.android.apps.docs: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.android.gm: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.android.apps.maps: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.android.apps.tachyon: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.android.projection.gearhead: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.google.ar.core: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+com.samsung.android.game.gamehome: DISABLED_USER_PERSISTED=PASS INSTALLED=TRUE DATA_INODE_UNCHANGED=TRUE
+$ adb [verified A50] shell settings get global adb_wifi_enabled; locksettings get-disabled; am broadcast -a com.aircon.a50manager.STATUS -n com.aircon.a50manager/.StatusReceiver
+1
+true
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=53;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 복구 요청 완료"
+EXIT_CODE=0
+$ adb [verified A50] shell logcat -d -s A50Recovery:I *:S; dumpsys power | grep termux:service-wakelock; input keyevent 3; input keyevent 223
+--------- beginning of main
+--------- beginning of system
+10-02 08:49:39.677  6764  6764 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:49:39.799  6764  6764 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:49:40.873  6764  6764 I A50Recovery: 등록된 집 Wi-Fi의 무선 디버깅 허용창 자동 확인 완료
+  PARTIAL_WAKE_LOCK              'termux:service-wakelock' ACQ=-18s803ms (uid=[REDACTED] pid=13416 pkg=com.termux)
+EXIT_CODE=0
+SCREEN_OFF_ADB_CHECK=1/8 PASS
+SCREEN_OFF_ADB_CHECK=2/8 PASS
+SCREEN_OFF_ADB_CHECK=3/8 PASS
+SCREEN_OFF_ADB_CHECK=4/8 PASS
+SCREEN_OFF_ADB_CHECK=5/8 PASS
+SCREEN_OFF_ADB_CHECK=6/8 PASS
+SCREEN_OFF_ADB_CHECK=7/8 PASS
+SCREEN_OFF_ADB_CHECK=8/8 PASS
+$ a50_ssh.py [marker, uptime, boot log]
+SSH_CLEANUP_REBOOT_OK
+ 08:52:04 up 4 min,  load average: 17.37, 12.03, 5.23
+BOOT_START=2026-10-01T23:49:40Z
+SSH_START_COMMAND_COMPLETED
+EXIT_CODE=0
+$ adb [verified A50] shell am broadcast -a com.aircon.a50manager.STATUS -n com.aircon.a50manager/.StatusReceiver
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=62;last_approval=APPROVED_KNOWN_WIFI;interactive=false;last=무선 디버깅 복구 요청 완료"
+EXIT_CODE=0
+CLEANUP_REBOOT_AND_SCREEN_OFF_TWO_MINUTES=PASS

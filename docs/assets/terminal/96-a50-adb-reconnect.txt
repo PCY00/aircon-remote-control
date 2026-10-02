@@ -1,0 +1,5 @@
+# Actual ADB reconnect using user-confirmed endpoint
+
+$ adb connect [REDACTED_CONNECT_ENDPOINT]
+connected to [REDACTED_CONNECT_ENDPOINT]
+EXIT_CODE=0

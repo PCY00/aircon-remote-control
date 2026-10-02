@@ -1,0 +1,25 @@
+# Actual public artifact checks after cleanup and reboot verification
+
+$ local verification: private values in changed public docs/transcripts
+SCANNED_FILES=13
+PRIVATE_VALUE_HITS=0
+$ git check-ignore -q .deploy/a50/app-cleanup-20261002.json
+EXIT_CODE=0
+$ git check-ignore -q tmp/a50-resource-inspection
+EXIT_CODE=0
+$ git check-ignore -q tmp/verify_a50_cleanup_reboot.py
+EXIT_CODE=0
+$ local verification: actual transcript and rendered PNG pairs 135..141
+COMPLETE_PAIRS=7
+$ local verification: relative documentation links
+MISSING_LINKS=0
+$ python scripts/sanitize_blog_images.py --apply docs/assets/
+IMAGE_COUNT=185
+PRIVATE_METADATA_COUNT=0
+SANITIZED_COUNT=0
+EXIT_CODE=0
+$ python scripts/sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=185
+PRIVATE_METADATA_COUNT=0
+EXIT_CODE=0
+PUBLIC_ARTIFACT_VERIFICATION=PASS

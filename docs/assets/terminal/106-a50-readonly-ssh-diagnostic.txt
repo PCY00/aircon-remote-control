@@ -1,0 +1,5 @@
+# Actual read-only Android diagnostic under Termux UID
+# No settings modified; no extra Android privileges granted
+
+$ app_process [locally built read-only state diagnostic]
+EXIT_CODE=4294967295

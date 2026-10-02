@@ -1,0 +1,46 @@
+# Actual reboot UI and own live state; no dialog was opened manually in this inspection
+UI_DUMP_PROCESS_EXIT=0
+{'text': '', 'resource-id': 'android:id/content', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/launcher', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/scrim_view', 'package': 'com.sec.android.app.launcher', 'class': 'android.view.View', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/drag_layer', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/workspace', 'package': 'com.sec.android.app.launcher', 'class': 'com.android.launcher3.PagedView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.daemonapp:id/widget_empty_layout', 'package': 'com.sec.android.daemonapp', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'true'}
+{'text': '', 'resource-id': 'com.sec.android.daemonapp:id/widget_background', 'package': 'com.sec.android.daemonapp', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.daemonapp:id/widget_empty_icon', 'package': 'com.sec.android.daemonapp', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '날씨정보를 추가하려면 누르세요', 'resource-id': 'com.sec.android.daemonapp:id/widget_empty_text', 'package': 'com.sec.android.daemonapp', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/default_search_widget', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_plate_container', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_widget_background_protection', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_widget_background', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_plate', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.LinearLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_widget_google_logo', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'true'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_widget_super_g', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_edit_frame', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.FrameLayout', 'checked': 'false', 'clickable': 'true'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/hint_flipper', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.ViewFlipper', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/hint_text_alignment', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.LinearLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.google.android.googlequicksearchbox:id/search_widget_voice_btn', 'package': 'com.google.android.googlequicksearchbox', 'class': 'android.widget.ImageButton', 'checked': 'false', 'clickable': 'true'}
+{'text': '원스토어', 'resource-id': 'com.sec.android.app.launcher:id/home_icon', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'true'}
+{'text': 'Play 스토어', 'resource-id': 'com.sec.android.app.launcher:id/home_icon', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'true'}
+{'text': 'Google', 'resource-id': 'com.sec.android.app.launcher:id/home_icon', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'true'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/page_indicator', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.LinearLayout', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/inactive', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/active', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/inactive', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.ImageView', 'checked': 'false', 'clickable': 'false'}
+{'text': '', 'resource-id': 'com.sec.android.app.launcher:id/hotseat', 'package': 'com.sec.android.app.launcher', 'class': 'android.view.ViewGroup', 'checked': 'false', 'clickable': 'false'}
+{'text': '전화', 'resource-id': 'com.sec.android.app.launcher:id/hotseat_icon', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'true'}
+{'text': '메시지', 'resource-id': 'com.sec.android.app.launcher:id/hotseat_icon', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'true'}
+{'text': '브라우저', 'resource-id': 'com.sec.android.app.launcher:id/hotseat_icon', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'true'}
+{'text': '카메라', 'resource-id': 'com.sec.android.app.launcher:id/hotseat_icon', 'package': 'com.sec.android.app.launcher', 'class': 'android.widget.TextView', 'checked': 'false', 'clickable': 'true'}
+$ am broadcast -a com.aircon.a50manager.STATUS -n com.aircon.a50manager/.StatusReceiver
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=11;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 복구 요청 완료"
+
+$ logcat -d -s A50Recovery:I *:S
+--------- beginning of main
+--------- beginning of system
+10-02 08:15:38.082  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:15:38.203  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:16:04.533  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:16:32.980  7343  7343 I A50Recovery: 무선 디버깅 복구 요청 완료
+10-02 08:17:31.910  7343  7343 I A50Recovery: 등록된 집 Wi-Fi의 무선 디버깅 허용창 자동 확인 완료

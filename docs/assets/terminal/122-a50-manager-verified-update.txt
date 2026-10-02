@@ -1,0 +1,50 @@
+# Actual paired-device management update; private values removed
+
+$ adb [verified A50] push [locally signed APK]
+[REDACTED]\tmp\a50-manager-build\a50-manager.apk: 1 file pushed, 0 skipped. 76.9 MB/s (29154 bytes in 0.000s)
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm install -r /data/local/tmp/a50-manager.apk
+Success
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm grant [own package] WRITE_SECURE_SETTINGS
+EXIT_CODE=0
+
+$ adb [verified A50] shell dumpsys deviceidle whitelist +com.aircon.a50manager
+Added: com.aircon.a50manager
+EXIT_CODE=0
+
+$ adb [verified A50] shell am broadcast [protected configuration; owner-approved Wi-Fi/AP and private capability]
+Broadcasting: Intent { act=com.aircon.a50manager.CONFIGURE_TRUSTED_WIFI flg=0x400000 cmp=com.aircon.a50manager/.ConfigurationReceiver (has extras) }
+Broadcast completed: result=1
+EXIT_CODE=0
+
+$ adb [verified A50] shell settings get secure enabled_accessibility_services
+com.aircon.a50manager/com.aircon.a50manager.TrustedWifiApproval
+EXIT_CODE=0
+
+$ adb [verified A50] shell settings put secure enabled_accessibility_services [preserve existing, add own helper]
+EXIT_CODE=0
+
+$ adb [verified A50] shell settings put secure accessibility_enabled 1
+EXIT_CODE=0
+
+$ adb [verified A50] shell am start [own management UI]
+Starting: Intent { cmp=com.aircon.a50manager/.MainActivity }
+EXIT_CODE=0
+
+$ adb [verified A50] shell am broadcast [own read-only live status]
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=1;last_approval=NONE;interactive=true;last=무선 디버깅 유지 중"
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm path com.aircon.a50manager
+package:[REDACTED_INSTALLED_APK_PATH]
+EXIT_CODE=0
+
+$ adb [verified A50] shell sha256sum [installed own APK]
+a5bbfd2cbc12cb9c32fc40b12fa0dd1f02549779ef986b6486dbe40546677feb  [REDACTED_INSTALLED_APK_PATH]
+EXIT_CODE=0
+
+LOCAL_DEVICE_APK_SHA256_MATCH=YES

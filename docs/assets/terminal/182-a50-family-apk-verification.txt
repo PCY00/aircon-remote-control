@@ -1,0 +1,19 @@
+# Actual phone SSH operations; private details removed
+
+$ apksigner verify --print-certs family-fixture.apk [public fingerprint compared privately]
+APK_SIGNATURE_AND_EXPECTED_CERTIFICATE=PASS
+$ aapt2 dump permissions family-fixture.apk
+package: com.aircon.family.fixture
+uses-permission: name='android.permission.INTERNET'
+uses-permission: name='android.permission.ACCESS_NETWORK_STATE'
+uses-permission: name='com.google.android.providers.gsf.permission.READ_GSERVICES'
+permission: com.aircon.family.fixture.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='com.aircon.family.fixture.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+
+$ apksigner verify --print-certs family-test.apk [public fingerprint compared privately]
+APK_SIGNATURE_AND_EXPECTED_CERTIFICATE=PASS
+$ aapt2 dump permissions family-test.apk
+package: com.aircon.family.fixture.test
+uses-permission: name='android.permission.REORDER_TASKS'
+
+FAMILY_APK_VERIFICATION=PASS

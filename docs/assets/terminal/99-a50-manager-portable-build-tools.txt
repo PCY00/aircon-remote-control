@@ -1,0 +1,26 @@
+# Actual official portable Java and Android tools preparation
+# Tools are in ignored tmp; system PATH and Windows services unchanged
+
+[
+  {
+    "name": "jdk",
+    "source": "https://aka.ms/download-jdk/microsoft-jdk-17.0.20.1-windows-x64.zip",
+    "checksum_algorithm": "sha256",
+    "checksum": "3d9006956fc8af5601cd24ffc4f468bef48279c7ebd8171b9bdf90d0aabfbf1f",
+    "bytes": 186915383
+  },
+  {
+    "name": "platform",
+    "source": "https://dl.google.com/android/repository/platform-30_r03.zip",
+    "checksum_algorithm": "sha1",
+    "checksum": "e7c6280901dcfa511af098d67dd88c4dfcbc6ea2",
+    "bytes": 52328361
+  },
+  {
+    "name": "build-tools",
+    "source": "https://dl.google.com/android/repository/build-tools_r34-windows.zip",
+    "checksum_algorithm": "sha1",
+    "checksum": "62cfde1b6fcc3ad12a4d2ba1b537e752768bfd47",
+    "bytes": 58253258
+  }
+]

@@ -1,0 +1,18 @@
+# Actual final read-only device checks after hands-free reboot; screen stays off
+
+$ adb [verified A50] shell getprop ro.product.model; settings get global adb_wifi_enabled; locksettings get-disabled
+SM-A505N
+1
+true
+EXIT_CODE=0
+$ adb [verified A50] shell am broadcast -a com.aircon.a50manager.STATUS -n com.aircon.a50manager/.StatusReceiver
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=70;last_approval=APPROVED_KNOWN_WIFI;interactive=false;last=무선 디버깅 유지 중"
+EXIT_CODE=0
+$ a50_ssh.py [actual final marker, uptime, boot log]
+SSH_FINAL_SCREEN_OFF_OK
+ 08:29:39 up 9 min,  load average: 17.23, 15.75, 8.94
+BOOT_START=2026-10-01T23:22:19Z
+SSH_START_COMMAND_COMPLETED
+EXIT_CODE=0
+FINAL_DISPLAY_OFF_SSH_AND_PAIRED_ADB=PASS

@@ -1,0 +1,62 @@
+# Actual Android debugging trust diagnostic; identities removed
+
+$ logcat -d -s A50Recovery:I AdbDebuggingManager:I AdbService:I *:S
+--------- beginning of main
+
+--------- beginning of system
+
+10-02 00:45:29.086  4582  4602 E AdbDebuggingManager: Expected keyStore, but got tag=null
+
+10-02 00:45:29.088  4582  4602 E AdbDebuggingManager: Expected keyStore, but got tag=null
+
+10-02 00:45:29.100  4582  4602 I AdbDebuggingManager: Not connected to any wireless network. Not enabling adbwifi.
+
+10-02 00:47:09.203 14306 14306 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+10-02 00:47:09.283 14306 14306 I A50Recovery: 무선 디버깅 복구 요청 완료
+
+--------- beginning of crash
+
+10-02 00:54:20.056  4582  4602 I AdbDebuggingManager: startAdbDebuggingThread ref=1
+
+10-02 00:54:20.059  4582  4602 I AdbDebuggingManager: adb start wireless adb
+
+10-02 00:54:20.061  4582 17324 E AdbDebuggingManager: Caught an exception opening the socket: java.io.IOException: No such file or directory
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: Cannot read system keys
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: java.io.FileNotFoundException: /adb_keys: open failed: ENOENT (No such file or directory)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at libcore.io.IoBridge.open(IoBridge.java:492)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at java.io.FileInputStream.<init>(FileInputStream.java:160)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at android.os.FileUtils.readTextFile(FileUtils.java:614)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at com.android.server.adb.AdbDebuggingManager.dump(AdbDebuggingManager.java:1817)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at com.android.server.adb.AdbService.dump(AdbService.java:547)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at android.os.Binder.doDump(Binder.java:902)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at android.os.Binder.dump(Binder.java:892)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at android.os.Binder.onTransact(Binder.java:818)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at android.debug.IAdbManager$Stub.onTransact(IAdbManager.java:341)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at android.os.Binder.execTransactInternal(Binder.java:1195)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at android.os.Binder.execTransact(Binder.java:1159)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at libcore.io.Linux.open(Native Method)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:254)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	at libcore.io.IoBridge.open(IoBridge.java:478)
+
+10-02 00:54:39.084  4582  6345 E AdbDebuggingManager: 	... 10 more

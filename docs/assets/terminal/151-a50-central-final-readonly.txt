@@ -1,0 +1,32 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - < final read-only status page, idle CPU, memory, log bounds probe
+STATUS_PAGE_HTTP=200
+STATUS_PAGE_READY_TEXT=PASS
+SERVER_IDLE_CPU_SINGLE_CORE_PERCENT=0.0
+SERVER_RSS=36212 kB
+CRASH_BLOCK_MARKER=False
+LOG_ROTATION_CONFIG='s1048576\nn3\n'
+
+EXIT_CODE=0
+$ SSH [verified host key] free -m; df -h [phone home]; tail [central boot log]
+               total        used        free      shared  buff/cache   available
+Mem:            3604        1872         151           9        1579        1301
+Swap:           2047         248        1799
+Filesystem                                        Size  Used Avail Use% Mounted on
+/dev/block/platform/13520000.ufs/by-name/userdata  52G  3.7G   48G   8% /data/user/0
+Starting daemon: service-daemon.
+CENTRAL_SERVICE_DAEMON_REQUESTED
+CENTRAL_BOOT=2026-10-02T00:04:21Z
+Starting daemon: service-daemon.
+CENTRAL_SERVICE_DAEMON_REQUESTED
+
+EXIT_CODE=0
+ANDROID_PROTECTED_ENABLED=28/28
+CONSUMER_DISABLED_STATES_PERSISTED=10/10
+$ adb [verified A50] shell [final management status]
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=63;last_approval=APPROVED_KNOWN_WIFI;interactive=false;last=무선 디버깅 복구 요청 완료"
+
+EXIT_CODE=0
+FINAL_CENTRAL_AND_MANAGEMENT_READ_ONLY_PROBE=PASS

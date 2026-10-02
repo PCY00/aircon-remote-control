@@ -1,0 +1,50 @@
+# Actual Termux:Boot installation and local-to-phone boot script deployment
+# Private identifiers removed
+
+# Downloaded from https://f-droid.org/repo/com.termux.boot_1000.apk
+APK_BYTES=26000
+APK_SHA256=6f7cf9b94f539d3efd4af3544ff819947b49395275d8cfa7e5f80de14f3d9cf8
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] push '[LOCAL_PROJECT]\tmp\com.termux.boot_1000.apk' /data/local/tmp/a50-termux-boot.apk
+[LOCAL_PROJECT]\tmp\com.termux.boot_1000.apk: 1 file pushed, 0 skipped. 96.3 MB/s (26000 bytes in 0.000s)
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'pm install -r /data/local/tmp/a50-termux-boot.apk'
+Success
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'cmd package resolve-activity --brief com.termux.boot'
+priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=false
+com.termux.boot/.BootActivity
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'input keyevent 224'
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'input keyevent 82'
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'am start -n com.termux.boot/.BootActivity'
+Starting: Intent { cmp=com.termux.boot/.BootActivity }
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'dumpsys deviceidle whitelist +com.termux.boot'
+Added: com.termux.boot
+EXIT_CODE=0
+
+$ ssh [private connection redacted] [upload local boot script via stdin, syntax-check, preserve existing target, install and run]
+bb708d5d1ca0445a80a1564fb5f542b5c180059c49a77ce7cf0480701b3292e2  /data/data/com.termux/files/home/.termux/boot/10-start-ssh
+BOOT_START=2026-10-01T15:09:24Z
+SSH_ALREADY_RUNNING
+BOOT_START=2026-10-01T15:10:09Z
+SSH_ALREADY_RUNNING
+EXIT_CODE=0
+
+LOCAL_REMOTE_BOOT_SCRIPT_HASH_MATCH=True
+
+$ ssh [private connection redacted] "sshd -T -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no" [selected effective settings]
+Port 8022
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+EXIT_CODE=0

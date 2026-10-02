@@ -1,0 +1,63 @@
+# Actual update follow-up; no reboot in this test
+# TermuxAm accepted result=1 also returns process exit=1; client now accepts the explicit reply
+AUTHORIZED_SSH_RPC_ACCEPTED=True
+$ dumpsys adb [current paired trust; identifiers redacted]
+ADB MANAGER STATE (dumpsys adb):
+
+{
+
+  debugging_manager={
+
+    connected_to_adb=true
+
+    user_keys=[REDACTED_KEY]
+
+
+
+    keystore=<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+
+    <keyStore version="1">
+
+    <adbKey key=REDACTED />
+
+    <wifiAP bssid="[REDACTED_AP]" />
+
+    </keyStore>
+
+
+
+  }
+
+}
+
+EXIT_CODE=0
+$ input [screen off]; settings put global adb_wifi_enabled 0 [single controlled recovery test]
+EXIT_CODE=0
+SCREEN_OFF_DISABLED_ADB_RECOVERY=PASS
+SSH_RPC_USED=True
+RECOVERY_SECONDS=9.0
+$ am broadcast [live state after recovery]
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=139;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 복구 요청 완료"
+
+EXIT_CODE=0
+$ input [screen off after recovery]
+EXIT_CODE=0
+SCREEN_OFF_ADB_CHECK=1/8 PASS
+SCREEN_OFF_ADB_CHECK=2/8 PASS
+SCREEN_OFF_ADB_CHECK=3/8 PASS
+SCREEN_OFF_ADB_CHECK=4/8 PASS
+SCREEN_OFF_ADB_CHECK=5/8 PASS
+SCREEN_OFF_ADB_CHECK=6/8 PASS
+SCREEN_OFF_ADB_CHECK=7/8 PASS
+SCREEN_OFF_ADB_CHECK=8/8 PASS
+$ a50_ssh.py [actual marker and uptime]
+SSH_SCREEN_OFF_TWO_MINUTES_OK
+ 08:13:07 up  7:10,  load average: 16.49, 16.53, 16.56
+EXIT_CODE=0
+SCREEN_OFF_SSH_AND_ADB_TWO_MINUTES=PASS
+
+$ a50_adb.py -- shell am broadcast [read-only live status after screen-off follow-up]
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=173;last_approval=APPROVED_KNOWN_WIFI;interactive=false;last=무선 디버깅 복구 요청 완료"
+# Live status confirms that the display remained non-interactive after the two-minute test.

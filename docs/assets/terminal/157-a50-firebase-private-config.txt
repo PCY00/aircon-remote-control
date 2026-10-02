@@ -1,0 +1,7 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - < configure_a50_firebase.py [verified project ID; value redacted]
+ok: run: /data/data/com.termux/files/usr/var/service/aircon-central: (pid 25423) 0s
+FIREBASE_PROJECT_CONFIGURATION=private_file CONFIG_PERMISSIONS=0600
+
+EXIT_CODE=0

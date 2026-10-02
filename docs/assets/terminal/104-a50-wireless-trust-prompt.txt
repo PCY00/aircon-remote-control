@@ -1,0 +1,29 @@
+# Actual follow-up after record 103; initial reboot recovery is not sustained recovery proof
+# User reported the Android Wi-Fi debugging permission prompt
+
+$ a50_adb.py --rediscover -- shell [CPU, memory, packages, battery, jobs]
+ADB_UNAVAILABLE=ConnectionError
+Paired A50 not discovered. Wireless debugging may be off, Wi-Fi may be unavailable, or mDNS may be blocked. Ordinary SSH remains independent.
+
+$ adb mdns services
+List of discovered mdns services
+
+$ adb devices -l
+List of devices attached
+
+$ socket.connect_ex([cached verified A50 endpoint])
+CACHED_ADB_TCP_CONNECT_RESULT=10061
+
+$ a50_ssh.py 'echo SSH_CURRENT_CONNECTION_OK; uptime'
+SSH_CURRENT_CONNECTION_OK
+ 00:42:14 up 4 min,  load average: 18.61, 13.02, 5.69
+
+$ a50_ssh.py 'am start -n com.aircon.a50manager/.MainActivity'
+Starting: Intent { cmp=com.aircon.a50manager/.MainActivity }
+
+$ a50_adb.py --rediscover --timeout 30 -- shell [marker and wireless state]
+ADB_UNAVAILABLE=ConnectionError
+Paired A50 not discovered. Wireless debugging may be off, Wi-Fi may be unavailable, or mDNS may be blocked. Ordinary SSH remains independent.
+
+# State: awaiting initial Wi-Fi trust approval on the phone.
+# Opening the helper over SSH did not bypass Android's Wi-Fi approval prompt.

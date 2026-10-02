@@ -1,0 +1,27 @@
+# Actual Termux background preparation over Wi-Fi ADB
+# Private connection and application user IDs removed
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell dumpsys deviceidle whitelist +com.termux
+Added: com.termux
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell cmd package resolve-activity --brief com.termux
+priority=0 preferredOrder=0 match=0x108000 specificIndex=-1 isDefault=false
+com.termux/.app.TermuxActivity
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell am start -n com.termux/.app.TermuxActivity
+Starting: Intent { cmp=com.termux/.app.TermuxActivity }
+Warning: Activity not started, its current task has been brought to the front
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell input text 'export%sPS1='"'"'$%s'"'"';%sclear;%stermux-wake-lock'
+
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell input keyevent 66
+
+EXIT_CODE=0
+
+TERMUX_IDLE_EXEMPTION=True
+WAKE_LOCK_VERIFICATION=see_device_service_and_power_state

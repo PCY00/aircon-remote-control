@@ -1,0 +1,97 @@
+# Actual SM-A505N System UI resources and manifest read over existing SSH
+# No phone package or system file changed
+
+$ aapt dump --values resources [actual SystemUI APK; default/Korean wireless debugging strings]
+config (default):
+        resource 0x7f0a008d com.android.systemui:id/always: t=0x12 d=0x00000000 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120e7f com.android.systemui:string/usb_debugging_allow: t=0x03 d=0x000015b0 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120e80 com.android.systemui:string/usb_debugging_always: t=0x03 d=0x000015cb (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120e81 com.android.systemui:string/usb_debugging_message: t=0x03 d=0x00001e3f (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120e82 com.android.systemui:string/usb_debugging_secondary_user_message: t=0x03 d=0x00001e50 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120e83 com.android.systemui:string/usb_debugging_secondary_user_title: t=0x03 d=0x00001f33 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120e84 com.android.systemui:string/usb_debugging_title: t=0x03 d=0x000015b8 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120f09 com.android.systemui:string/wifi_debugging_allow: t=0x03 d=0x000015b0 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120f0a com.android.systemui:string/wifi_debugging_always: t=0x03 d=0x000015cc (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120f0b com.android.systemui:string/wifi_debugging_message: t=0x03 d=0x00001ad7 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120f0c com.android.systemui:string/wifi_debugging_secondary_user_message: t=0x03 d=0x00001e51 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120f0d com.android.systemui:string/wifi_debugging_secondary_user_title: t=0x03 d=0x000020f0 (s=0x0008 r=0x00)
+
+config (default):
+        resource 0x7f120f0e com.android.systemui:string/wifi_debugging_title: t=0x03 d=0x000015c4 (s=0x0008 r=0x00)
+
+config ko:
+        resource 0x7f120e7f com.android.systemui:string/usb_debugging_allow: t=0x03 d=0x00007c5e (s=0x0008 r=0x00)
+
+config ko:
+        resource 0x7f120e80 com.android.systemui:string/usb_debugging_always: t=0x03 d=0x000079e7 (s=0x0008 r=0x00)
+
+config ko:
+        resource 0x7f120e81 com.android.systemui:string/usb_debugging_message: t=0x03 d=0x00007b85 (s=0x0008 r=0x00)
+
+config ko:
+        resource 0x7f120e82 com.android.systemui:string/usb_debugging_secondary_user_message: t=0x03 d=0x00007c6f (s=0x0008 r=0x00)
+
+config ko:
+        resource 0x7f120e83 com.android.systemui:string/usb_debugging_secondary_user_title: t=0x03 d=0x000073e3 (s=0x0008 r=0x00)
+
+config ko:
+        resource 0x7f120e84 com.android.systemui:string/usb_debugging_title: t=0x03 d=0x000073e2 (s=0x0008 r=0x00)
+
+          A: android:finishOnCloseSystemDialogs(0x010102a7)=(type 0x12)0xffffffff
+        E: activity (line=866)
+          A: android:theme(0x01010000)=@0x7f130343
+          A: android:name(0x01010003)="com.android.systemui.wifi.WifiDebuggingActivity" (Raw: "com.android.systemui.wifi.WifiDebuggingActivity")
+          A: android:permission(0x01010006)="android.permission.MANAGE_DEBUGGING" (Raw: "android.permission.MANAGE_DEBUGGING")
+          A: android:excludeFromRecents(0x01010017)=(type 0x12)0xffffffff
+          A: android:finishOnCloseSystemDialogs(0x010102a7)=(type 0x12)0xffffffff
+        E: activity-alias (line=874)
+          A: android:name(0x01010003)="com.android.systemui.WifiDebuggingActivityAlias" (Raw: "com.android.systemui.WifiDebuggingActivityAlias")
+          A: android:excludeFromRecents(0x01010017)=(type 0x12)0xffffffff
+          A: android:finishOnCloseSystemDialogs(0x010102a7)=(type 0x12)0xffffffff
+        E: activity-alias (line=874)
+          A: android:name(0x01010003)="com.android.systemui.WifiDebuggingActivityAlias" (Raw: "com.android.systemui.WifiDebuggingActivityAlias")
+          A: android:permission(0x01010006)="android.permission.DUMP" (Raw: "android.permission.DUMP")
+          A: android:exported(0x01010010)=(type 0x12)0xffffffff
+          A: android:targetActivity(0x01010202)="com.android.systemui.wifi.WifiDebuggingActivity" (Raw: "com.android.systemui.wifi.WifiDebuggingActivity")
+        E: activity (line=881)
+          A: android:theme(0x01010000)=@0x7f130343
+          A: android:name(0x01010003)="com.android.systemui.WifiDebuggingActivityAlias" (Raw: "com.android.systemui.WifiDebuggingActivityAlias")
+          A: android:permission(0x01010006)="android.permission.DUMP" (Raw: "android.permission.DUMP")
+          A: android:exported(0x01010010)=(type 0x12)0xffffffff
+          A: android:targetActivity(0x01010202)="com.android.systemui.wifi.WifiDebuggingActivity" (Raw: "com.android.systemui.wifi.WifiDebuggingActivity")
+        E: activity (line=881)
+          A: android:theme(0x01010000)=@0x7f130343
+          A: android:name(0x01010003)="com.android.systemui.wifi.WifiDebuggingSecondaryUserActivity" (Raw: "com.android.systemui.wifi.WifiDebuggingSecondaryUserActivity")
+          A: android:excludeFromRecents(0x01010017)=(type 0x12)0xffffffff
+          A: android:finishOnCloseSystemDialogs(0x010102a7)=(type 0x12)0xffffffff
+          A: android:targetActivity(0x01010202)="com.android.systemui.wifi.WifiDebuggingActivity" (Raw: "com.android.systemui.wifi.WifiDebuggingActivity")
+        E: activity (line=881)
+          A: android:theme(0x01010000)=@0x7f130343
+          A: android:name(0x01010003)="com.android.systemui.wifi.WifiDebuggingSecondaryUserActivity" (Raw: "com.android.systemui.wifi.WifiDebuggingSecondaryUserActivity")
+          A: android:excludeFromRecents(0x01010017)=(type 0x12)0xffffffff
+          A: android:finishOnCloseSystemDialogs(0x010102a7)=(type 0x12)0xffffffff
+        E: activity (line=889)
+          A: android:theme(0x01010000)=@0x0103013b
+          A: android:name(0x01010003)="com.android.systemui.net.NetworkOverLimitActivity" (Raw: "com.android.systemui.net.NetworkOverLimitActivity")

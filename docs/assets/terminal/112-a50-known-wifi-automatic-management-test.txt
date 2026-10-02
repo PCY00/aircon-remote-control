@@ -1,0 +1,17 @@
+# Actual test after user saved Always allow for the existing Wi-Fi
+# No manual action after reboot; verified SSH may open the approved management helper automatically; includes five-minute connection checks
+
+$ a50_adb.py --rediscover -- shell [marker, model, wireless state]
+A50_WIRELESS_ADB_CONNECTED
+
+SM-A505N
+
+1
+
+EXIT_CODE=0
+$ adb [verified A50] reboot
+EXIT_CODE=0
+TRUSTED_WIFI_AUTOMATIC_MANAGEMENT_TEST=FAIL
+ConnectionError
+
+# FIVE_MINUTE_AND_SCREEN_OFF_FOLLOWUP_NOT_REACHED: initial recovery failed.

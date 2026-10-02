@@ -1,0 +1,12 @@
+# Actual local checks after accepted-RPC retries and lockscreen diagnosis
+
+$ pytest tests/test_a50_adb.py -q
+...........                                                              [100%]
+11 passed in 0.18s
+EXIT_CODE=0
+$ ruff check [Android scripts and paired-device tests]
+All checks passed!
+EXIT_CODE=0
+$ java [compiled Wi-Fi/AP policy checks]
+APPROVED_WIFI_AND_ACCESS_POINT_POLICY=14_CHECKS_PASS
+EXIT_CODE=0

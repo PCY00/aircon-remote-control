@@ -1,0 +1,103 @@
+$ python -m pytest tests/test_central_server_foundation.py -q
+.....F.F                                                                 [100%]
+================================== FAILURES ===================================
+_____________ test_five_crashes_stop_restarts_and_persist_budget ______________
+
+tmp_path = WindowsPath('[REDACTED_TEST_PATH]')
+
+    def test_five_crashes_stop_restarts_and_persist_budget(tmp_path):
+        state, service = tmp_path/'state', tmp_path/'service'
+        service.mkdir()
+        for index in range(1, 6):
+>           assert record_failure(state, service, status=-1, signal=9, now=100+index) == index
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_central_server_foundation.py:67:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+state = WindowsPath('[REDACTED_TEST_PATH]')
+service = WindowsPath('[REDACTED_TEST_PATH]')
+
+    def record_failure(state: Path, service: Path, *, status: int, signal: int, now: float) -> int:
+        if signal in (2, 15):
+            return 0  # Explicit service stop/restart does not count as a crash.
+        state.mkdir(parents=True, exist_ok=True, mode=0o700)
+        path = state / 'restart-state.json'
+        try:
+            history = json.loads(path.read_text(encoding='utf-8'))['failures'] if path.exists() else []
+            if not isinstance(history, list) or not all(isinstance(x, (int, float)) for x in history):
+                raise ValueError('Invalid restart history')
+        except (ValueError, KeyError, OSError):
+            # Ambiguous history fails closed rather than silently resetting the budget.
+            history = [now] * LIMIT
+        recent = [x for x in history if now-x < WINDOW]
+        recent.append(now)
+        temporary = path.with_suffix('.tmp')
+        temporary.write_text(json.dumps({'failures': recent[-LIMIT:], 'last_exit': status,
+                                         'last_signal': signal}), encoding='utf-8')
+        temporary.replace(path)
+        if len(recent) >= LIMIT:
+            (service / 'down').touch(mode=0o600)
+            # Send runsv 'down' without waiting for the current finish hook to exit.
+            try:
+>               fd = os.open(service/'supervise/control', os.O_WRONLY | os.O_NONBLOCK)
+                                                                        ^^^^^^^^^^^^^
+E               AttributeError: module 'os' has no attribute 'O_NONBLOCK'
+
+services\central-server\central_server\restart_guard.py:37: AttributeError
+---------------------------- Captured stdout call -----------------------------
+CENTRAL_ABNORMAL_EXIT attempt=1/5
+CENTRAL_ABNORMAL_EXIT attempt=2/5
+CENTRAL_ABNORMAL_EXIT attempt=3/5
+CENTRAL_ABNORMAL_EXIT attempt=4/5
+________ test_corrupt_crash_history_stops_instead_of_resetting_budget _________
+
+tmp_path = WindowsPath('[REDACTED_TEST_PATH]')
+
+    def test_corrupt_crash_history_stops_instead_of_resetting_budget(tmp_path):
+        state, service = tmp_path/'state', tmp_path/'service'
+        state.mkdir()
+        service.mkdir()
+        (state/'restart-state.json').write_text('invalid json')
+>       assert record_failure(state, service, status=1, signal=0, now=100) >= 5
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_central_server_foundation.py:87:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+state = WindowsPath('[REDACTED_TEST_PATH]')
+service = WindowsPath('[REDACTED_TEST_PATH]')
+
+    def record_failure(state: Path, service: Path, *, status: int, signal: int, now: float) -> int:
+        if signal in (2, 15):
+            return 0  # Explicit service stop/restart does not count as a crash.
+        state.mkdir(parents=True, exist_ok=True, mode=0o700)
+        path = state / 'restart-state.json'
+        try:
+            history = json.loads(path.read_text(encoding='utf-8'))['failures'] if path.exists() else []
+            if not isinstance(history, list) or not all(isinstance(x, (int, float)) for x in history):
+                raise ValueError('Invalid restart history')
+        except (ValueError, KeyError, OSError):
+            # Ambiguous history fails closed rather than silently resetting the budget.
+            history = [now] * LIMIT
+        recent = [x for x in history if now-x < WINDOW]
+        recent.append(now)
+        temporary = path.with_suffix('.tmp')
+        temporary.write_text(json.dumps({'failures': recent[-LIMIT:], 'last_exit': status,
+                                         'last_signal': signal}), encoding='utf-8')
+        temporary.replace(path)
+        if len(recent) >= LIMIT:
+            (service / 'down').touch(mode=0o600)
+            # Send runsv 'down' without waiting for the current finish hook to exit.
+            try:
+>               fd = os.open(service/'supervise/control', os.O_WRONLY | os.O_NONBLOCK)
+                                                                        ^^^^^^^^^^^^^
+E               AttributeError: module 'os' has no attribute 'O_NONBLOCK'
+
+services\central-server\central_server\restart_guard.py:37: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_central_server_foundation.py::test_five_crashes_stop_restarts_and_persist_budget
+FAILED tests/test_central_server_foundation.py::test_corrupt_crash_history_stops_instead_of_resetting_budget
+2 failed, 6 passed in 0.44s
+
+EXIT_CODE=1

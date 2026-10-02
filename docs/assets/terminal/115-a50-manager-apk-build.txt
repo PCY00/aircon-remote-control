@@ -1,0 +1,41 @@
+# Actual A50 recovery helper build and signature verification
+# Dedicated signing key and password stored outside repository
+
+$ javac [Android API 30, Java 8 bytecode, local source files]
+Note: [REDACTED]\OneDrive\Desktop\����\������_����_����\android\a50-manager\src\com\aircon\a50manager\Maintenance.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+EXIT_CODE=0
+
+$ D8 [compile DEX]
+EXIT_CODE=0
+
+$ aapt [package manifest in ASCII staging]
+EXIT_CODE=0
+
+$ zipalign [align APK]
+EXIT_CODE=0
+
+$ apksigner [sign with dedicated private key]
+EXIT_CODE=0
+
+$ apksigner verify --verbose [built APK]
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+EXIT_CODE=0
+
+$ aapt dump permissions [built APK]
+package: com.aircon.a50manager
+uses-permission: name='android.permission.RECEIVE_BOOT_COMPLETED'
+uses-permission: name='android.permission.ACCESS_NETWORK_STATE'
+uses-permission: name='android.permission.WRITE_SECURE_SETTINGS'
+uses-permission: name='android.permission.WAKE_LOCK'
+EXIT_CODE=0
+
+APK_BYTES=25058
+APK_SHA256=7245da4b59a4f4f6c7736b883d950ba209fd68acc7f07e7736e192c2a1fc2bb5

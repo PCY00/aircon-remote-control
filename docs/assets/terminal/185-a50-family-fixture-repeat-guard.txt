@@ -1,0 +1,6 @@
+# Actual phone SSH operations; private details removed
+
+$ prepare_family_fixture.py [second attempt while isolated fixture runs]
+RUNNING_FIXTURE_REPLACEMENT=REFUSED
+LOCAL_FIXTURE_TOKENS_PRESERVED=PASS
+PRODUCTION_DATA=UNTOUCHED

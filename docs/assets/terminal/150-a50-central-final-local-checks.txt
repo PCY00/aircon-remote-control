@@ -1,0 +1,9 @@
+$ python -m pytest tests/test_central_server_foundation.py tests/test_a50_central_deploy.py -q
+............                                                             [100%]
+12 passed in 0.43s
+
+EXIT_CODE=0
+$ python -m ruff check scripts/android services/central-server tests/test_central_server_foundation.py tests/test_a50_central_deploy.py
+All checks passed!
+
+EXIT_CODE=0

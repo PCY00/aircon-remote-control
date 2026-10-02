@@ -1,0 +1,43 @@
+# Actual A50 recovery helper build and signature verification
+# Dedicated signing key and password stored outside repository
+
+$ javac [Android API 30, Java 8 bytecode, local source files]
+EXIT_CODE=0
+
+$ D8 [compile DEX]
+EXIT_CODE=0
+
+$ aapt [package manifest in ASCII staging]
+EXIT_CODE=0
+
+$ zipalign [align APK]
+EXIT_CODE=0
+
+$ keytool [dedicated signing key outside repository]
+������ ���� ��ȿ �Ⱓ�� 3,650���� 2,048��Ʈ RSA Ű �� �� ��ü ������ ������(SHA256withRSA)�� �����ϴ� ��
+	: CN=A50 Server Management
+EXIT_CODE=0
+
+$ apksigner [sign with dedicated private key]
+EXIT_CODE=0
+
+$ apksigner verify --verbose [built APK]
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+EXIT_CODE=0
+
+$ aapt dump permissions [built APK]
+package: com.aircon.a50manager
+uses-permission: name='android.permission.RECEIVE_BOOT_COMPLETED'
+uses-permission: name='android.permission.ACCESS_NETWORK_STATE'
+uses-permission: name='android.permission.WRITE_SECURE_SETTINGS'
+EXIT_CODE=0
+
+APK_BYTES=16727
+APK_SHA256=a3c5fbf70bd0bcc7725ad3487ea09af292bc8ffeeea9db641e1b49f58e81a3b1

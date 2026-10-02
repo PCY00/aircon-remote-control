@@ -1,0 +1,21 @@
+# Actual central foundation public artifact checks
+
+$ local verification: private values in changed public docs and transcripts
+SCANNED_FILES=15
+PRIVATE_VALUE_HITS=0
+$ local verification: actual TXT and rendered PNG pairs 143..151
+COMPLETE_PAIRS=9
+$ local verification: relative documentation links
+MISSING_LINKS=0
+$ git check-ignore -q .deploy/a50/connection.json
+EXIT_CODE=0
+$ python scripts/sanitize_blog_images.py --apply docs/assets/
+IMAGE_COUNT=195
+PRIVATE_METADATA_COUNT=0
+SANITIZED_COUNT=0
+EXIT_CODE=0
+$ python scripts/sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=195
+PRIVATE_METADATA_COUNT=0
+EXIT_CODE=0
+CENTRAL_PUBLIC_ARTIFACT_VERIFICATION=PASS

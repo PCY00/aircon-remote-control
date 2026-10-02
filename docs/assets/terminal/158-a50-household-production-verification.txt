@@ -1,0 +1,10 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - < verify_a50_households.py [read-only private comparisons]
+Traceback (most recent call last):
+  File "<stdin>", line 7, in <module>
+  File "/data/data/com.termux/files/home/services/aircon-central/current/central_server/auth.py", line 11, in <module>
+    import jwt
+ModuleNotFoundError: No module named 'jwt'
+
+EXIT_CODE=1
