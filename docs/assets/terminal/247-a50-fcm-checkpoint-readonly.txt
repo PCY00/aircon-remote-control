@@ -1,0 +1,11 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] dumpsys power [only display state preserved]
+Display Power: state=OFF
+DEVICE_DISPLAY_OFF=PASS USER_SESSION_NOT_CLEARED=TRUE
+$ SSH [verified host key] read-only API readiness after display sleep
+SCREEN_OFF_SSH_AND_CENTRAL_READY=PASS FCM_DELIVERY=NOT_YET_TESTED
+
+EXIT_CODE=0
+CHANGED_PUBLIC_TEXT_PRIVATE_VALUES_OR_CREDENTIAL_PATTERNS=0
+LOCAL_TESTS=76_PASS ANDROID_UNIT_TESTS=4_PASS ACTUAL_FCM_REGISTRATION=PASS ACTUAL_RECEIPT=PENDING_SERVER_KEY

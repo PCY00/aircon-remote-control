@@ -37,7 +37,7 @@ def main():
         json.loads((private / "google-services.json").read_text())
         if not args.fixture_only
         else {
-            "project_info": {"project_id": "test-project"},
+            "project_info": {"project_id": "test-project", "project_number": "123456789"},
             "client": [
                 {
                     "client_info": {
@@ -63,6 +63,7 @@ def main():
         FIREBASE_APP_ID=client["client_info"]["mobilesdk_app_id"],
         FIREBASE_API_KEY=client["api_key"][0]["current_key"],
         FIREBASE_PROJECT_ID=firebase["project_info"]["project_id"],
+        FIREBASE_SENDER_ID=firebase["project_info"]["project_number"],
         GOOGLE_WEB_CLIENT_ID=web,
     )
     root = Path.home() / ".codex/family-android-build"

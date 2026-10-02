@@ -117,14 +117,14 @@ public class FamilyActivity extends ComponentActivity {
         dialog.setOnShowListener(unused -> dialog.getButton(-1).setOnClickListener(view -> {
             try {
                 String selected=EndpointPolicy.validate(input.getText().toString(),BuildConfig.DEBUG);
-                if (!endpoint.isEmpty() && !endpoint.equals(selected) && session.userId()!=null) { session.signOut(); }
+                if (!endpoint.isEmpty() && !endpoint.equals(selected) && session.userId()!=null) { PushManager.disable(this); session.signOut(); }
                 generation++; working(false); endpoint=selected;
                 getPreferences(0).edit().putString("endpoint",endpoint).apply(); dialog.dismiss();
                 if(session.userId()!=null) homes(); else loginPage();
             } catch (IllegalArgumentException error) { input.setError(error.getMessage()); }
         })); dialog.show();
     }
-    private void logout() { generation++; session.signOut(); working(false); loginPage(); }
+    private void logout() { generation++; PushManager.disable(this); session.signOut(); working(false); loginPage(); }
     private void request(String method,String path,JSONObject value,Consumer<JSONObject> success) {
         if(session.userId()==null){ logout(); return; }
         working(true); final int epoch=generation; final String account=session.userId(); final String origin=endpoint;
@@ -157,6 +157,7 @@ public class FamilyActivity extends ComponentActivity {
         });
     }
     private void homes() {
+        PushManager.sync(this);
         generation++; currentHome=null; working(false);
         screen("우리 집", "참여한 집을 확인하고 가족과 연결해요.");
         text(page,"집 목록을 확인하고 있어요…",16,MUTED,false);
@@ -177,6 +178,7 @@ public class FamilyActivity extends ComponentActivity {
             button(page,"새 집 만들기",true,this::createHome);
             button(page,"가족 초대 수락",false,this::acceptInvitation);
             button(page,"새로고침",false,this::homes);
+            if(BuildConfig.FLAVOR.equals("production")) button(page,"알림 설정",false,this::notificationSettings);
             button(page,"연결 설정",false,this::connectionSettings);
             button(page,"로그아웃",false,this::logout);
         });
@@ -200,6 +202,9 @@ public class FamilyActivity extends ComponentActivity {
             LinearLayout events=card(); text(events,"알림 기록",21,INK,true);
             text(events,"최근에 도착한 집의 이벤트를 확인해요.",14,MUTED,false);
             if(house.optString("role").equals("owner")) {
+                if(BuildConfig.FLAVOR.equals("production")) button(page,"이 휴대폰에 시험 알림 보내기",false,()->
+                    request("POST","/v1/homes/"+id+"/notifications/test",json("installation_id",PushManager.installation(this)),reply ->
+                        message("알림 전송을 요청했어요. 휴대폰에 도착하는지 확인해 주세요.")));
                 button(page,"가족 초대 만들기",true,()-> invite(id));
                 button(page,"가족 관리",false,()-> members(id));
                 button(page,"우리 집 기기 등록",false,()-> singleInput("우리 집 기기 등록","10분 동안 유효한 등록 코드",128,code -> request("POST","/v1/homes/"+id+"/hubs/claim",json("claim_code",code),reply -> {message("기기를 등록했어요."); home(id);} )));
@@ -214,6 +219,32 @@ public class FamilyActivity extends ComponentActivity {
                 }
             });
         });
+    }
+    private void notificationSettings() {
+        screen("알림 설정","이 휴대폰에서 우리 집 알림을 받아요.");
+        android.content.SharedPreferences p=PushManager.prefs(this);
+        boolean enabled=p.getBoolean("enabled",false);
+        text(page,!enabled ? "알림 받기 꺼짐" : p.getBoolean("registration_error",false) ? "알림 연결 확인 필요"
+            : p.contains("binding") ? "알림 연결됨" : "알림 연결 준비 중",20,INK,true);
+        android.app.NotificationManager manager=getSystemService(android.app.NotificationManager.class);
+        if(!manager.areNotificationsEnabled()) text(page,"휴대폰 설정에서 이 앱의 알림을 허용해 주세요.",15,MUTED,false);
+        if(p.getLong("last_received",0)>0) text(page,"최근 알림 수신 완료",15,GREEN,true);
+        button(page,"이 휴대폰 알림 켜기",true,()-> {
+            if(android.os.Build.VERSION.SDK_INT>=33 && checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                    !=android.content.pm.PackageManager.PERMISSION_GRANTED) requestPermissions(new String[]{"android.permission.POST_NOTIFICATIONS"},70);
+            else { PushManager.enable(this,endpoint,session.userId()); notificationSettings(); }
+        });
+        button(page,"이 휴대폰 알림 끄기",false,()-> {PushManager.disable(this); notificationSettings();});
+        button(page,"알림 연결 확인",false,this::notificationSettings);
+        button(page,"집 목록으로",false,this::homes);
+    }
+    @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results) {
+        super.onRequestPermissionsResult(request,permissions,results);
+        if(request==70) {
+            if(results.length>0 && results[0]==android.content.pm.PackageManager.PERMISSION_GRANTED && session.userId()!=null)
+                PushManager.enable(this,endpoint,session.userId());
+            notificationSettings();
+        }
     }
     private void invite(String id){
         singleInput("가족 Google 이메일","초대할 가족의 Google 이메일",254,email -> {

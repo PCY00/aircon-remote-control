@@ -10,11 +10,14 @@ from flask import Blueprint, g, jsonify, request
 from werkzeug.exceptions import BadRequest, UnsupportedMediaType
 
 from central_server.households import APIError, Households
+from central_server.push import PushStore
 
 
 def register(app, database, identity_verifier):
     service = Households(database)
     app.extensions['households'] = service
+    push = PushStore(database)
+    app.extensions['push'] = push
     api = Blueprint('households', __name__, url_prefix='/v1')
 
     def bearer():
@@ -67,6 +70,43 @@ def register(app, database, identity_verifier):
     @user_route
     def me():
         return jsonify(user_id=g.user, homes=service.homes(g.user))
+
+    def installation_id(value):
+        if not isinstance(value, str) or not re.fullmatch(r'[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}', value):
+            raise APIError('invalid_body', 400)
+        return value
+
+    def installation_secret(value):
+        if not isinstance(value, str) or not re.fullmatch(r'[a-f0-9]{64}', value):
+            raise APIError('invalid_body', 400)
+        return value
+
+    @api.put('/installations/<installation>')
+    @user_route
+    def register_installation(installation):
+        value = body(['secret', 'token'])
+        token = value['token']
+        if not isinstance(token, str) or not re.fullmatch(r'[A-Za-z0-9_:.-]{32,4096}', token):
+            raise APIError('invalid_body', 400)
+        return jsonify(push.register(g.user, installation_id(installation),
+                                     installation_secret(value['secret']), token))
+
+    @api.post('/installations/<installation>/unregister')
+    @user_route
+    def unregister_installation(installation):
+        value = body(['secret', 'binding'])
+        return jsonify(push.unregister(g.user, installation_id(installation), installation_secret(value['secret']),
+                                       installation_id(value['binding'])))
+
+    @api.post('/homes/<home>/notifications/test')
+    @user_route
+    def notification_test(home):
+        value = body(['installation_id'])
+        if service.home(home, g.user)['role'] != 'owner':
+            raise APIError('owner_required', 403)
+        if not app.config['PUSH_SENDER_READY']:
+            raise APIError('notifications_not_configured', 503)
+        return jsonify(push.test(home, g.user, installation_id(value['installation_id']))), 202
 
     @api.get('/homes')
     @user_route

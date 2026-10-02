@@ -157,7 +157,7 @@ def test_migration_preserves_metadata_and_rolls_back_invalid_change(tmp_path, mo
     monkeypatch.undo(); initialize(db)
     with sqlite3.connect(db) as conn:
         assert conn.execute('SELECT * FROM runtime_metadata').fetchone() == (1,'keep-id','keep-date')
-        assert conn.execute('PRAGMA user_version').fetchone()[0] == 2
+        assert conn.execute('PRAGMA user_version').fetchone()[0] == 3
 
 
 def test_disabled_account_and_recreated_email_do_not_gain_old_rights(environment):

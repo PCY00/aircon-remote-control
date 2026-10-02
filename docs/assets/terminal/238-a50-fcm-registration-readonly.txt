@@ -1,0 +1,7 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] read-only installation registration, preserved homes and FCM configuration status
+COUNTS={"users": 1, "homes": 2, "hubs": 0, "events": 0, "installations": 1, "push_jobs": 0}
+FCM_TOKEN_AND_BINDING_REGISTERED=TRUE TOKEN=NOT_EXPORTED SERVER_CREDENTIAL_CONFIGURED=False
+
+EXIT_CODE=0

@@ -22,6 +22,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--home-name", required=True, help="User-approved real test home name")
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument('--push-test', choices=('registerRealInstallation','receiveRealFCMWhileBackgrounded'))
     args = parser.parse_args()
     if not 1 <= len(args.home_name) <= 80 or any(ord(c) < 32 for c in args.home_name):
         parser.error("Home name must contain 1–80 printable characters")
@@ -125,7 +126,7 @@ def main():
             "-w",
             "-e",
             "class",
-            "com.aircon.family.OwnFamilySmokeTest",
+            ('com.aircon.family.OwnPushSmokeTest#'+args.push_test if args.push_test else 'com.aircon.family.OwnFamilySmokeTest'),
             "-e",
             "home_name_b64",
             encoded,
@@ -145,7 +146,10 @@ def main():
     assert re.fullmatch(
         r"/storage/emulated/\d+/Android/data/com\.aircon\.family/files/test-captures", capture_root
     )
-    for name in ("08-a50-real-test-home", "09-a50-real-owner-members-redacted"):
+    captures = (("10-a50-fcm-installation-registered",) if args.push_test=='registerRealInstallation' else
+                ("11-a50-fcm-background-receipt",) if args.push_test else
+                ("08-a50-real-test-home", "09-a50-real-owner-members-redacted"))
+    for name in captures:
         result = adb.run(
             "-s",
             endpoint,
@@ -181,9 +185,9 @@ def main():
         node.get("text") for node in tree.iter("node") if node.get("package") == "com.aircon.family"
     }
     assert args.home_name in texts and "새 집 만들기" in texts
-    record.log("ORIGINAL_RELEASE_REAL_LOGIN_HTTPS_HOME_OWNER_MEMBERS_AND_CLIENT_RESTART=PASS")
+    record.log('SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST='+str(args.push_test or 'household_ui'))
     record.log(
-        "GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED FCM=NOT_TESTED"
+        "GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED"
     )
 
 

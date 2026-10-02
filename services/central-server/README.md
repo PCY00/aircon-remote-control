@@ -1,6 +1,6 @@
 # A50 중앙 서버 실행 기반
 
-버전 0.2.0. 집·가족 권한과 Firebase Google ID 토큰 검증 API를 포함한다. 별도 가족 APK는 구현했고 사용자가 Google 로그인 성공을 확인했다. FCM·실제 Pi 연결은 후속 작업이다.
+버전 0.3.0. 집·가족 권한과 Firebase Google ID 토큰 검증 API, 설치별 FCM 등록·영구 전송 대기열을 포함한다. A50의 실제 Google 계정으로 설치 등록까지 확인했다. 전송용 서비스 계정 키 연결·실제 FCM 수신·실제 Pi 연결은 아직 검증 전이다.
 Pi의 기존 app/·MQTT·IR 서비스와 데이터베이스는 사용하지 않는다.
 
 ## 구성
@@ -9,7 +9,7 @@ Pi의 기존 app/·MQTT·IR 서비스와 데이터베이스는 사용하지 않�
 - 기본 바인딩: 휴대폰 내부 127.0.0.1:8001, 작업 스레드 2개.
 - GET /: 준비 상태 화면. GET /health/live: 프로세스 생존.
 - GET /health/ready: 실제 SQLite 메타데이터 읽기 가능 여부, 실패하면 503.
-- SQLite WAL + 5초 쓰기 대기, 초기 메타데이터 보존. 스키마 2의 집·가족·초대·허브·이벤트 테이블을 포함한다.
+- SQLite WAL + 5초 쓰기 대기, 초기 메타데이터 보존. 스키마 3은 집·가족·초대·허브·이벤트에 설치·알림·전송 작업을 추가한다.
 - 중앙 서버만 runit으로 관리하며 기존 공개키 SSH 부팅 스크립트를 유지한다.
 
 ## 설치·명시적인 배포
@@ -40,7 +40,7 @@ current 링크를 사용한다. DB·로그·비밀정보는 릴리스 전송 목
 | 대상 | 경로 |
 | --- | --- |
 | 읽기용 배포 기록 | ~/services/aircon-central/deployment.json |
-| 릴리스 소스 | ~/services/aircon-central/releases/v0.2.0-소스해시/ |
+| 릴리스 소스 | ~/services/aircon-central/releases/v0.3.0-소스해시/ |
 | 실행 소스 링크 | ~/services/aircon-central/current |
 | 가상환경 | ~/services/aircon-central/.venv/ |
 | 영구 DB | ~/.local/share/aircon-central/central.sqlite3 |
@@ -89,14 +89,14 @@ python scripts/android/verify_a50_central.py --exercise-recovery --reboot
 
 이 기반의 성공은 실제 가족 인증·가구 격리·알림 발송 성공을 뜻하지 않는다.
 다른 집 Pi 연결 경로와 인증을 구성하기 전에는 휴대폰 내부 API로 운영한다.
-공유기 포트포워딩·Pi 서비스 변경·Firebase 키 설치는 하지 않았다.
+기반 구축 당시 공유기 포트포워딩·Pi 서비스 변경·Firebase 키 설치는 하지 않았다. 이후 변경은 아래 날짜별 후속 항목과 FCM 운영 절차를 따른다.
 
 ## 공식 자료
 
 2026-10-02 후속 작업: [별도 시험용 HTTPS 터널](../central-tunnel/README.md)을 A50에 구성했다.
 이 API의 루프백 바인딩·Firebase 검증·가구별 권한은 유지한다.
 실제 A50의 배포 APK로 사용자 Google 로그인·API 연결·집 등록·소유자 화면·클라이언트 재실행을 확인했다.
-고정 운영 주소·FCM·실제 Pi 연결은 후속 항목이다.
+고정 운영 주소·실제 Pi 연결은 후속 항목이다. FCM의 현재 구현·검증 범위는 아래 항목을 따른다.
 
 - [Flask의 Waitress 배포 안내](https://flask.palletsprojects.com/en/stable/deploying/waitress/)
 - [Waitress 설정](https://docs.pylonsproject.org/projects/waitress/en/stable/api.html)
@@ -148,3 +148,29 @@ POST /v1/hub/events는 기기 토큰과 event_id/kind/payload만 받으며 집�
 
 Google 서명 검증은 Firebase 계정의 전역 토큰 폐기 확인을 포함하지 않는다.
 집별 가족 제외는 현재 DB 권한으로 즉시 차단한다. 실제 Google 계정 로그인은 APK에서 검증해야 한다.
+
+## 설치별 FCM 운영 (0.3.0)
+
+스키마 3은 설치 등록·알림 메시지·전송 작업 테이블을 추가한다. 기존 집과 계정은 보존한다.
+Firebase 인증을 통과한 사용자만 자신의 설치를 등록하며, 이벤트 저장 시 해당 집의 활성 가족과
+설치로 전송 대상을 결정한다. 토큰·계정·등록 버전과 가족 권한을 전송 직전에 다시 확인한다.
+앱은 알림 설정을 켠 경우만 등록하고 로그아웃·주소 변경 즉시 로컬 수신을 차단한다.
+
+전송은 Google Auth Library와 FCM HTTP v1을 사용한다. 서비스 계정 JSON은 배포 소스 밖
+`~/.config/aircon-central/fcm-service-account.json`에 0600 권한으로 보관한다.
+같은 폴더의 config.json에 `fcm_service_account_file`을 지정하면 전송 작업자가 시작된다.
+설정이 없으면 설치 등록은 가능하지만 소유자의 시험 알림 API는 503으로 응답한다.
+
+```powershell
+.venv/Scripts/python.exe scripts/android/configure_a50_fcm.py --source "[서버키_JSON_절대경로]"
+.venv/Scripts/python.exe scripts/android/configure_a50_fcm.py --source "[서버키_JSON_절대경로]" --apply
+```
+
+첫 명령은 미리보기다. 실제 반영은 프로젝트·전용 계정·RSA 키를 검사하고 비공개 SSH 입력으로
+전달한 뒤 중앙 API만 재시작한다. 기존의 다른 키는 덮어쓰지 않는다. 설치 증명·FCM 토큰·키를
+로그나 APK에 쓰지 않는다. 상태 `accepted`는 Google의 접수이며 휴대폰 표시 성공을 뜻하지 않는다.
+
+현재 A50의 실제 계정 설치 등록은 완료됐고 관련 로컬 검사 76개가 통과했다.
+Google Cloud 전송 전용 계정·키는 생성했지만 다운로드 경로를 확인하지 못해 서버 키 연결·
+실제 전송·수신은 미실행이다. [블로그 6편](../../docs/blog/mobile-app/06-family-fcm-notifications.md)에
+준비부터 실패 기록·실제 수신 판단 기준까지 정리했다.

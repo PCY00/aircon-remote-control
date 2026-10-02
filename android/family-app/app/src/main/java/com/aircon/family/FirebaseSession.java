@@ -19,11 +19,7 @@ final class FirebaseSession implements AuthSession {
     private final Executor callbacks;
     FirebaseSession(Activity activity) {
         this.activity=activity; callbacks=activity::runOnUiThread;
-        if (FirebaseApp.getApps(activity).isEmpty()) {
-            FirebaseApp.initializeApp(activity, new FirebaseOptions.Builder()
-                .setApplicationId(BuildConfig.FIREBASE_APP_ID).setApiKey(BuildConfig.FIREBASE_API_KEY)
-                .setProjectId(BuildConfig.FIREBASE_PROJECT_ID).build());
-        }
+        FamilyApplication.initialize(activity);
         auth=FirebaseAuth.getInstance(); manager=CredentialManager.create(activity);
     }
     public String userId() { return auth.getCurrentUser()==null ? null : auth.getCurrentUser().getUid(); }

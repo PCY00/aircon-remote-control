@@ -29,9 +29,10 @@ p{line-height:1.7}footer{margin-top:32px;color:#61728a;font-size:13px}
 <footer>준비 단계 · 버전 {{ version }}</footer></main></html>'''
 
 
-def create_app(database: Path, *, identity_verifier=None) -> Flask:
+def create_app(database: Path, *, identity_verifier=None, push_sender_ready=False) -> Flask:
     app = Flask(__name__)
     app.config.update(MAX_CONTENT_LENGTH=16384)
+    app.config['PUSH_SENDER_READY'] = push_sender_ready
     started = time.monotonic()
 
     def database_ready():

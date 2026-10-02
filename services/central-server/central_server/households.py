@@ -237,6 +237,8 @@ class Households:
                                   'content_digest,received_at) VALUES (?,?,?,?,?,?,?)',
                                   (hub['home_id'], hub['id'], sender_id, kind, encoded,
                                    content, self.clock()))
+            from central_server.push import enqueue
+            enqueue(conn, hub['home_id'], self.clock(), event=cursor.lastrowid)
             return {'id': cursor.lastrowid, 'duplicate': False}
 
     def events(self, home, user, event=None):

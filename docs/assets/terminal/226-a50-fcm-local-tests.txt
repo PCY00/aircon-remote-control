@@ -1,0 +1,7 @@
+# Actual phone SSH operations; private details removed
+
+$ -m pytest -q tests/test_central_push.py tests/test_central_households.py tests/test_central_server_foundation.py tests/test_a50_central_deploy.py tests/test_a50_public_tunnel.py tests/test_a50_adb.py
+............................................................             [100%]
+60 passed in 10.30s
+
+EXIT_CODE=0

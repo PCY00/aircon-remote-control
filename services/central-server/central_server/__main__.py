@@ -36,16 +36,26 @@ def main():
     config_path = Path.home()/'.config/aircon-central/config.json'
     try:
         config = json.loads(config_path.read_text()) if config_path.exists() else {}
-        if not isinstance(config, dict) or set(config)-{'firebase_project_id'}:
+        if not isinstance(config, dict) or set(config)-{'firebase_project_id', 'fcm_service_account_file'}:
             raise ValueError('Invalid private configuration')
         project = os.environ.get('A50_FIREBASE_PROJECT_ID') or config.get('firebase_project_id')
         verifier = FirebaseIdentity(project) if project else None
+        sender = None
+        if config.get('fcm_service_account_file'):
+            from central_server.fcm import FCMSender
+            sender = FCMSender(project, Path(config['fcm_service_account_file']))
     except (OSError, ValueError, TypeError):
         logging.error('STARTUP_CONFIGURATION_FAILED')
         raise SystemExit(1) from None
     print(f'CENTRAL_START version={VERSION} bind=loopback port=8001', flush=True)
     logging.info('CENTRAL_START version=%s bind=loopback port=8001', VERSION)
-    serve(create_app(database, identity_verifier=verifier), host='127.0.0.1', port=8001, threads=2,
+    if sender:
+        from central_server.push import PushStore, PushWorker
+        PushWorker(PushStore(database), sender).start()
+        logging.info('FCM_SENDER_CONFIGURED')
+    else:
+        logging.info('FCM_SENDER_NOT_CONFIGURED')
+    serve(create_app(database, identity_verifier=verifier, push_sender_ready=sender is not None), host='127.0.0.1', port=8001, threads=2,
           connection_limit=32, channel_timeout=15, max_request_header_size=16384,
           max_request_body_size=16384, expose_tracebacks=False)
 

@@ -1,0 +1,8 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] return own phone to home
+EXIT_CODE=0
+$ adb [verified A50] switch display off after testing
+EXIT_CODE=0
+READINESS_CHECK_ABORTED=AssertionError
+The generic mWakefulness=Asleep field was absent in Samsung dumpsys output. This was a verifier assumption; no FCM test ran. Use the actual Display Power state in the following check.

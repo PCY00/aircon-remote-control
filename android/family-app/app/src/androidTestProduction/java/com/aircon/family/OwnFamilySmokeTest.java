@@ -26,10 +26,10 @@ import static org.junit.Assert.*;
 @RunWith(AndroidJUnit4.class)
 public class OwnFamilySmokeTest {
     @Rule public ActivityTestRule<MainActivity> activity = new ActivityTestRule<>(MainActivity.class);
-    private final UiAutomation automation = InstrumentationRegistry.getInstrumentation()
+    protected final UiAutomation automation = InstrumentationRegistry.getInstrumentation()
         .getUiAutomation(UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES);
 
-    private List<AccessibilityNodeInfo> nodes(AccessibilityNodeInfo root) {
+    protected List<AccessibilityNodeInfo> nodes(AccessibilityNodeInfo root) {
         List<AccessibilityNodeInfo> result = new ArrayList<>();
         if (root == null) return result;
         if ("com.aircon.family".contentEquals(root.getPackageName() == null ? "" : root.getPackageName())) {
@@ -38,13 +38,13 @@ public class OwnFamilySmokeTest {
         for (int i = 0; i < root.getChildCount(); i++) result.addAll(nodes(root.getChild(i)));
         return result;
     }
-    private AccessibilityNodeInfo find(String text) {
+    protected AccessibilityNodeInfo find(String text) {
         for (AccessibilityNodeInfo node : nodes(automation.getRootInActiveWindow())) {
             if (text.contentEquals(node.getText() == null ? "" : node.getText())) return node;
         }
         return null;
     }
-    private AccessibilityNodeInfo await(String text) throws Exception {
+    protected AccessibilityNodeInfo await(String text) throws Exception {
         long deadline = System.currentTimeMillis() + 20000;
         while (System.currentTimeMillis() < deadline) {
             AccessibilityNodeInfo node = find(text);
@@ -53,7 +53,7 @@ public class OwnFamilySmokeTest {
         }
         throw new AssertionError("Expected own-family UI state did not appear");
     }
-    private void click(String text) throws Exception {
+    protected void click(String text) throws Exception {
         AccessibilityNodeInfo node = await(text);
         if (!node.isVisibleToUser()) {
             AccessibilityNodeInfo parent = node.getParent();
@@ -64,7 +64,7 @@ public class OwnFamilySmokeTest {
         }
         assertTrue("Own-family button did not accept click", node.performAction(AccessibilityNodeInfo.ACTION_CLICK));
     }
-    private void screenshot(String name) throws Exception {
+    protected void screenshot(String name) throws Exception {
         Bitmap original = automation.takeScreenshot();
         assertNotNull("Native capture unavailable", original);
         Bitmap safe = original.copy(Bitmap.Config.ARGB_8888, true);

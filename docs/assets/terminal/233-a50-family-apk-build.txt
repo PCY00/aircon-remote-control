@@ -1,0 +1,141 @@
+# Actual phone SSH operations; private details removed
+
+$ Gradle 8.13 testProductionDebugUnitTest assembleProductionDebug assembleProductionRelease [ASCII staging, private configuration]
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preProductionDebugBuild UP-TO-DATE
+> Task :app:generateProductionDebugBuildConfig
+> Task :app:javaPreCompileProductionDebug
+> Task :app:checkProductionDebugAarMetadata
+> Task :app:processProductionDebugNavigationResources
+> Task :app:generateProductionDebugResValues
+> Task :app:compileProductionDebugNavigationResources
+> Task :app:mapProductionDebugSourceSetPaths
+> Task :app:generateProductionDebugResources
+> Task :app:packageProductionDebugResources
+> Task :app:parseProductionDebugLocalResources
+> Task :app:createProductionDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksProductionDebug
+> Task :app:mergeProductionDebugResources
+> Task :app:processProductionDebugMainManifest
+> Task :app:processProductionDebugManifest
+> Task :app:preProductionDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileProductionDebugUnitTest
+> Task :app:processProductionDebugManifestForPackage
+> Task :app:processProductionDebugJavaRes NO-SOURCE
+> Task :app:processProductionDebugUnitTestJavaRes NO-SOURCE
+> Task :app:mergeProductionDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeProductionDebugShaders
+> Task :app:compileProductionDebugShaders NO-SOURCE
+> Task :app:generateProductionDebugAssets UP-TO-DATE
+> Task :app:mergeProductionDebugAssets
+> Task :app:compressProductionDebugAssets
+> Task :app:checkProductionDebugDuplicateClasses
+> Task :app:desugarProductionDebugFileDependencies
+> Task :app:processProductionDebugResources
+
+> Task :app:compileProductionDebugJavaWithJavac
+
+> Task :app:bundleProductionDebugClassesToRuntimeJar
+> Task :app:mergeExtDexProductionDebug
+> Task :app:mergeLibDexProductionDebug
+> Task :app:bundleProductionDebugClassesToCompileJar
+> Task :app:dexBuilderProductionDebug
+> Task :app:compileProductionDebugUnitTestJavaWithJavac
+> Task :app:testProductionDebugUnitTest
+> Task :app:mergeProductionDebugGlobalSynthetics
+> Task :app:mergeProjectDexProductionDebug
+> Task :app:mergeProductionDebugJniLibFolders
+> Task :app:mergeProductionDebugNativeLibs
+
+> Task :app:stripProductionDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:validateSigningProductionDebug
+> Task :app:writeProductionDebugAppMetadata
+> Task :app:writeProductionDebugSigningConfigVersions
+> Task :app:preProductionReleaseBuild UP-TO-DATE
+> Task :app:mergeProductionReleaseJniLibFolders
+> Task :app:mergeProductionReleaseNativeLibs
+
+> Task :app:stripProductionReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:extractProductionReleaseNativeSymbolTables
+> Task :app:mergeProductionReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkProductionReleaseDuplicateClasses
+> Task :app:generateProductionReleaseBuildConfig
+> Task :app:javaPreCompileProductionRelease
+> Task :app:checkProductionReleaseAarMetadata
+> Task :app:processProductionReleaseNavigationResources
+> Task :app:compileProductionReleaseNavigationResources
+> Task :app:generateProductionReleaseResValues
+> Task :app:mapProductionReleaseSourceSetPaths
+> Task :app:generateProductionReleaseResources
+> Task :app:mergeProductionDebugJavaResource
+> Task :app:mergeProductionReleaseResources
+> Task :app:packageProductionReleaseResources
+> Task :app:parseProductionReleaseLocalResources
+> Task :app:createProductionReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksProductionRelease
+> Task :app:processProductionReleaseMainManifest
+> Task :app:processProductionReleaseManifest
+> Task :app:packageProductionDebug
+> Task :app:createProductionDebugApkListingFileRedirect
+> Task :app:processProductionReleaseManifestForPackage
+> Task :app:assembleProductionDebug
+> Task :app:desugarProductionReleaseFileDependencies
+> Task :app:mergeProductionReleaseStartupProfile
+> Task :app:processProductionReleaseResources
+
+> Task :app:compileProductionReleaseJavaWithJavac
+
+> Task :app:dexBuilderProductionRelease
+> Task :app:mergeProductionReleaseArtProfile
+> Task :app:mergeExtDexProductionRelease
+> Task :app:mergeProductionReleaseGlobalSynthetics
+> Task :app:mergeProductionReleaseShaders
+> Task :app:compileProductionReleaseShaders NO-SOURCE
+> Task :app:generateProductionReleaseAssets UP-TO-DATE
+> Task :app:mergeProductionReleaseAssets
+> Task :app:compressProductionReleaseAssets
+> Task :app:extractProductionReleaseVersionControlInfo
+> Task :app:extractProguardFiles
+> Task :app:generateProductionReleaseLintVitalReportModel
+> Task :app:mergeDexProductionRelease
+> Task :app:compileProductionReleaseArtProfile
+> Task :app:processProductionReleaseJavaRes NO-SOURCE
+> Task :app:mergeProductionReleaseJavaResource
+> Task :app:optimizeProductionReleaseResources
+> Task :app:collectProductionReleaseDependencies
+> Task :app:sdkProductionReleaseDependencyData
+> Task :app:validateSigningProductionRelease
+> Task :app:writeProductionReleaseAppMetadata
+> Task :app:writeProductionReleaseSigningConfigVersions
+> Task :app:lintVitalAnalyzeProductionRelease
+> Task :app:lintVitalReportProductionRelease
+> Task :app:lintVitalProductionRelease
+> Task :app:packageProductionRelease
+> Task :app:createProductionReleaseApkListingFileRedirect
+> Task :app:assembleProductionRelease
+
+[Incubating] Problems report is available at: file:///[REDACTED_BUILD_CONFIG]/.codex/family-android-build/project-n7bdclpw/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 54s
+91 actionable tasks: 91 executed
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+EXIT_CODE=0
+SIGNED_APK=family-debug.apk BYTES=5499318 SHA256=6890b69894af4ae9ced8c361e06ac503d7b27acd8ac412ea55de0c76f4655d8e
+SIGNED_APK=family-release.apk BYTES=4389669 SHA256=834f3354c5c9e163945d94a178b6f0bc4faf2128e326b13db7a10b7b8a18dd1d
+FAMILY_APK_BUILD=PASS

@@ -1,0 +1,18 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] install -r verified family-release.apk
+Performing Streamed Install
+Success
+
+EXIT_CODE=0
+INSTALLED_PRODUCTION_APK_EQUALS_LOCAL_VERIFIED_RELEASE=PASS DATA_NOT_CLEARED=TRUE
+$ adb [verified A50] wake for own app test
+
+$ adb [verified A50] open updated own app
+Starting: Intent { cmp=com.aircon.family/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.aircon.family/.MainActivity
+TotalTime: 842
+WaitTime: 850
+Complete

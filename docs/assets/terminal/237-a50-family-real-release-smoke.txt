@@ -1,0 +1,43 @@
+# Actual phone SSH operations; private details removed
+
+INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS
+$ adb [verified A50] install -r signed production instrumentation test APK
+Performing Streamed Install
+Success
+
+EXIT_CODE=0
+$ adb [verified A50] native UI smoke [user-approved home; existing real Google session; no token extraction]
+
+com.aircon.family.OwnPushSmokeTest:INSTRUMENTATION_STATUS: capture_root=/storage/emulated/0/Android/data/com.aircon.family/files/test-captures
+INSTRUMENTATION_STATUS_CODE: 0
+INSTRUMENTATION_STATUS: push_registration=real_fcm_token_registered_no_token_export
+INSTRUMENTATION_STATUS_CODE: 0
+.
+
+Time: 5.361
+
+OK (1 test)
+
+
+
+EXIT_CODE=0
+ACTUAL_REAL_ACCOUNT_UI_CAPTURE=10-a50-fcm-installation-registered.png EMAIL_REDACTED_BEFORE_EXPORT=TRUE
+$ adb [verified A50] restart own family client only [server continues]
+
+EXIT_CODE=0
+$ adb [verified A50] reopen original release APK [verify saved Google session and HTTPS origin]
+Starting: Intent { cmp=com.aircon.family/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.aircon.family/.MainActivity
+TotalTime: 376
+WaitTime: 380
+Complete
+
+EXIT_CODE=0
+$ adb [verified A50] read own client UI after restart
+UI hierchary dumped to: /data/local/tmp/family-post-restart.xml
+
+EXIT_CODE=0
+SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST=registerRealInstallation
+GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED

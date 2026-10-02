@@ -10,10 +10,11 @@ root = home/'services/aircon-central'
 sys.path.insert(0,str(root/'current'))
 from central_server.auth import Certificates
 from central_server import VERSION
+from central_server.storage import SCHEMA_VERSION
 db = home/'.local/share/aircon-central/central.sqlite3'
 baseline = json.loads((home/'.local/state/aircon-central/verification-baseline.json').read_text())
 with sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True) as conn:
-    assert conn.execute('PRAGMA user_version').fetchone()[0] == 2
+    assert conn.execute('PRAGMA user_version').fetchone()[0] == SCHEMA_VERSION
     assert conn.execute('PRAGMA integrity_check').fetchone() == ('ok',)
     actual_identity = conn.execute('SELECT * FROM runtime_metadata').fetchall()
     assert actual_identity == [tuple(x) for x in baseline['identity']]
@@ -23,7 +24,7 @@ with sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True) as conn:
     issuer = 'https://securetoken.google.com/'+config['firebase_project_id']
     unexpected = conn.execute('SELECT COUNT(*) FROM users WHERE issuer != ?', (issuer,)).fetchone()
     assert unexpected == (0,)
-print('SCHEMA_VERSION=2 DATABASE_INTEGRITY=ok ORIGINAL_RUNTIME_ID_PRESERVED=TRUE')
+print('SCHEMA_VERSION='+str(SCHEMA_VERSION)+' DATABASE_INTEGRITY=ok ORIGINAL_RUNTIME_ID_PRESERVED=TRUE')
 print('CURRENT_PRODUCTION_COUNTS='+json.dumps(counts,sort_keys=True))
 print('PRODUCTION_USER_ISSUERS_MATCH_CONFIGURED_FIREBASE=PASS')
 boot_hash = hashlib.sha256((home/'.termux/boot/10-start-ssh').read_bytes()).hexdigest()
@@ -31,11 +32,14 @@ assert boot_hash == baseline['ssh_boot_sha256']
 print('EXISTING_SSH_BOOT_UNCHANGED=TRUE')
 backups = list((db.parent/'backups').glob('*.sqlite3'))
 assert backups
-with sqlite3.connect(backups[-1].resolve().as_uri()+'?mode=ro',uri=True) as backup:
-    assert backup.execute('PRAGMA user_version').fetchone()[0] == 1
-    backup_identity = backup.execute('SELECT * FROM runtime_metadata').fetchall()
-    assert backup_identity == [tuple(x) for x in baseline['identity']]
-print('PRE_MIGRATION_BACKUP_SCHEMA_1_AND_IDENTITY=PASS')
+versions=set()
+for saved in backups:
+    with sqlite3.connect(saved.resolve().as_uri()+'?mode=ro',uri=True) as backup:
+        versions.add(backup.execute('PRAGMA user_version').fetchone()[0])
+        assert backup.execute('PRAGMA integrity_check').fetchone() == ('ok',)
+        assert backup.execute('SELECT * FROM runtime_metadata').fetchall() == [tuple(x) for x in baseline['identity']]
+assert {1,2}.issubset(versions)
+print('PRE_MIGRATION_BACKUPS_SCHEMA_1_2_INTEGRITY_AND_IDENTITY=PASS')
 ledger = json.loads((root/'deployment.json').read_text())
 assert (root/'current').resolve() == Path(ledger['release'])
 for filename,expected in ledger['managed'].items():
@@ -58,7 +62,7 @@ assert response('/v1/me')[0] == 401
 assert response('/v1/me','Bearer forged-token')[0] == 401
 assert response('/v1/me?user_id=owner')[0] == 401
 print('PRODUCTION_MISSING_AND_FORGED_CREDENTIALS=401 QUERY_ID_BYPASS=DENIED')
-print('REAL_GOOGLE_LOGIN_AND_HOME_UI=SEPARATE_DEVICE_TEST FCM=NOT_IMPLEMENTED')
+print('REAL_GOOGLE_LOGIN_HOME_UI_AND_FCM_RECEIPT=SEPARATE_DEVICE_TEST')
 print('A50_HOUSEHOLD_PRODUCTION_VERIFICATION=PASS')
 """
 

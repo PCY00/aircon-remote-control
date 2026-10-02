@@ -1,0 +1,9 @@
+# Actual phone SSH operations; private details removed
+
+$ -m pytest -q tests/test_central_push.py tests/test_central_households.py tests/test_central_server_foundation.py tests/test_a50_central_deploy.py tests/test_a50_tunnel.py tests/test_a50_adb.py
+
+no tests ran in 0.00s
+ERROR: file or directory not found: tests/test_a50_tunnel.py
+
+
+EXIT_CODE=4

@@ -69,6 +69,7 @@ def main():
             expected_config = [
                 client["client_info"]["mobilesdk_app_id"],
                 firebase["project_info"]["project_id"],
+                firebase["project_info"]["project_number"],
                 client["api_key"][0]["current_key"],
                 next(c["client_id"] for c in client["oauth_client"] if c["client_type"] == 3),
             ]
@@ -123,6 +124,10 @@ def main():
                 for line in manifest.splitlines()
             ):
                 raise RuntimeError("Manifest does not reference the checked network policy")
+            assert 'android.permission.POST_NOTIFICATIONS' in permissions
+            assert 'FamilyMessagingService' in manifest
+            assert 'firebase_messaging_auto_init_enabled' in manifest
+            record.log('FCM_SENDER_CONFIGURATION_NOTIFICATION_PERMISSION_AND_PRIVATE_RECEIVER=PASS')
             network = subprocess.run(
                 [
                     str(buildtools / "aapt2.exe"),
