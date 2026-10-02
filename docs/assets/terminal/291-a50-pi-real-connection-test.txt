@@ -1,0 +1,6 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] queue and send one real hub.connection_test [no sensor fabrication]
+AGENT_ONCE=PASS SOURCE_HISTORY_UNMODIFIED=TRUE
+
+EXIT_CODE=0

@@ -1,0 +1,71 @@
+# Actual recorded operations; private details removed
+
+INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS
+$ adb [verified A50] install -r signed production instrumentation test APK
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] wake own A50 client for native test
+
+EXIT_CODE=0
+$ adb [verified A50] prepare own test pairing directory
+
+EXIT_CODE=0
+$ adb [verified A50] copy one-use private claim to signed own test; no credential in arguments
+[REDACTED_LOCAL_PATH]\.deploy\a50\pairing\approved-hub-claim.json: 1 file pushed, 0 skipped. 0.1 MB/s (117 bytes in 0.001s)
+
+
+EXIT_CODE=0
+$ adb [verified A50] native UI smoke [user-approved home; existing real Google session; no token extraction]
+
+
+com.aircon.family.OwnHubSmokeTest:INSTRUMENTATION_STATUS: hub_claim=one_time_claim_consumed_by_existing_Google_owner_exact_hub_and_home_verified
+
+INSTRUMENTATION_STATUS_CODE: 0
+
+.
+
+
+
+Time: 0.959
+
+
+
+OK (1 test)
+
+
+
+
+
+
+EXIT_CODE=0
+$ adb [verified A50] restart own family client only [server continues]
+
+EXIT_CODE=0
+$ adb [verified A50] reopen original release APK [verify saved Google session and HTTPS origin]
+Starting: Intent { cmp=com.aircon.family/.MainActivity }
+
+Status: ok
+
+LaunchState: COLD
+
+Activity: com.aircon.family/.MainActivity
+
+TotalTime: 373
+
+WaitTime: 377
+
+Complete
+
+
+EXIT_CODE=0
+$ adb [verified A50] read own client UI after restart
+UI hierchary dumped to: /data/local/tmp/family-post-restart.xml
+
+
+EXIT_CODE=0
+SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST=claimApprovedHub
+GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED

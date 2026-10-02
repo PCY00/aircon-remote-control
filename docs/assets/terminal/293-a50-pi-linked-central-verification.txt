@@ -1,0 +1,12 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] read-only exact private hub binding, consumed claim, event kinds, other-home isolation and push result; no token export
+EXACT_PROVISIONED_HUB_ACTIVE_AND_APPROVED_HOME_BOUND=PASS ONE_TIME_CLAIM_CONSUMED=TRUE
+PRODUCTION_COUNTS={"users": 1, "homes": 2, "hubs": 1, "events": 1, "installations": 1}
+EVENT_KINDS=[["hub.connection_test", 1]]
+OTHER_HOME_EVENT_COUNT=0
+PUSH_STATES=[["accepted", 4]]
+CENTRAL_DATABASE_AND_READINESS=PASS PRIVATE_PROVISIONING_MODE=0600
+
+EXIT_CODE=0
+LOCAL_ONE_USE_CLAIM_FILE_REMOVED=TRUE

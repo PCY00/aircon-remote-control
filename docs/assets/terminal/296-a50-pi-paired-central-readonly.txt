@@ -1,0 +1,10 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] verify_central_agent.py [read-only A50 private hub binding, events and readiness]
+PROVISIONED_HUB_ACTIVE_AND_ONE_TIME_CLAIM_CONSUMED=PASS
+CENTRAL_COUNTS={"users": 1, "homes": 2, "hubs": 1, "events": 1, "installations": 1}
+BOUND_HOME_EVENT_KINDS=[["hub.connection_test", 1]]
+PUSH_STATES=[["accepted", 4]]
+PAIRED_A50_DATABASE_AND_READINESS=PASS PRIVATE_PROVISIONING_MODE=0600
+
+EXIT_CODE=0

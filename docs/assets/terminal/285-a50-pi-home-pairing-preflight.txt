@@ -1,0 +1,18 @@
+# Actual recorded operations; private details removed
+
+PI_ORIGINAL_CONTROLLER_ACTIVE=PASS LINGER=True
+$ SSH [verified host key] install dedicated hub config via private stdin; no credential in logs
+PI_PRIVATE_CONFIG=PASS MODE=0600 CREDENTIAL_CONTENT=NOT_LOGGED
+
+EXIT_CODE=0
+$ SSH [verified host key] initialize new read-only source cursors; skip historical rows
+AGENT_ONCE=PASS SOURCE_HISTORY_UNMODIFIED=TRUE
+
+EXIT_CODE=0
+$ SSH [verified host key] verify source checksums; systemctl --user enable --now aircon-central-agent
+active
+enabled
+active
+PI_RELAY_ENABLED_AND_ORIGINAL_CONTROLLER_ACTIVE=PASS
+
+EXIT_CODE=0

@@ -1,0 +1,9 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] one systemctl --user restart of new relay; compare private queue identity/cursors/events without exporting values
+active
+active
+ONE_RELAY_SERVICE_RESTART=PASS DURABLE_IDENTITY_CURSORS_AND_ACCEPTED_EVENT_PRESERVED=TRUE
+NO_EXTRA_CONNECTION_EVENT_OR_OLD_HISTORY_REPLAY=TRUE ORIGINAL_CONTROLLER_NOT_RESTARTED=TRUE
+
+EXIT_CODE=0

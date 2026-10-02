@@ -1,0 +1,20 @@
+# Actual recorded operations; private details removed
+
+$ SSH [verified host key] read-only deployed source, private modes, source cursors, outbox, original data and runtime checks
+active
+DEPLOYED_SOURCE_AND_UNIT_SHA256_MATCH=PASS ORIGINAL_PI_APP_6_FILES_UNCHANGED=TRUE
+PRIVATE_PI_CONFIG_MODE=0600
+SOURCE_CURSORS=[["automation", 150], ["door", 552]]
+OUTBOX_STATES=[["hub.connection_test", "accepted", 1]]
+OUTBOX_PENDING=0
+READONLY_SOURCE_COUNT=door_events:552
+READONLY_SOURCE_COUNT=automation_events:150
+MainPID=22096
+NRestarts=0
+ActiveState=active
+SubState=running
+UnitFileState=enabled
+PI_AGENT_RSS=26368 kB
+PI_RELAY_AND_ORIGINAL_CONTROLLER_HEALTHY=PASS NO_OLD_HISTORY_PUSHED=TRUE
+
+EXIT_CODE=0
