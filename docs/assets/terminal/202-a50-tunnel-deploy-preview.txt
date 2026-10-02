@@ -1,0 +1,10 @@
+# Actual phone SSH operations; private details removed
+
+LOCAL_TUNNEL_RELEASE=quick-37f282fc59f1a408
+$ SSH [verified host key] python - < deploy_a50_tunnel.py [checked manifest; preview]
+PLAN=separate_quick_test_tunnel ORIGIN=loopback:8001 ROUTER_CHANGES=none
+SOURCE_FILES=4
+ORIGINAL_CENTRAL_SOURCE_DATABASE_AND_SSH_HOOK=preserved
+PREVIEW_ONLY=NO_DEVICE_MUTATION
+
+EXIT_CODE=0

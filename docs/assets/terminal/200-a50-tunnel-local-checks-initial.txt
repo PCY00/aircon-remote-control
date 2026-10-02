@@ -1,0 +1,298 @@
+# Actual phone SSH operations; private details removed
+
+$ [REDACTED_LOCAL_PATH]\.venv\Scripts\python.exe -m pytest tests/test_a50_public_tunnel.py -q
+.FF....                                                                  [100%]
+================================== FAILURES ===================================
+___________ test_stop_does_not_count_and_repeated_failures_disable ____________
+
+tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_stop_does_not_count_and_r0')
+
+    def test_stop_does_not_count_and_repeated_failures_disable(tmp_path):
+        state, service = tmp_path/'state', tmp_path/'service'
+        service.mkdir()
+        assert tunnel.record_failure(state, service, status=0, sig=0, now=1) == 0
+        assert tunnel.record_failure(state, service, status=1, sig=15, now=1) == 0
+        assert not state.exists()
+        for count in range(1, 6):
+>           assert tunnel.record_failure(state, service, status=1, sig=0, now=count) == count
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_a50_public_tunnel.py:32:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+state = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_stop_does_not_count_and_r0/state')
+service = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_stop_does_not_count_and_r0/service')
+
+    def record_failure(state: Path, service: Path, *, status: int, sig: int, now: float) -> int:
+        if status == 0 or sig in (2, 15):
+            return 0
+        state.mkdir(parents=True, exist_ok=True, mode=0o700)
+        path = state / 'restart-state.json'
+        try:
+            failures = json.loads(path.read_text())['failures'] if path.exists() else []
+            if not isinstance(failures, list) or not all(type(x) in (int, float) for x in failures):
+                raise ValueError('Invalid failure history')
+        except (ValueError, KeyError, OSError):
+            failures = [now] * 5
+        failures = [x for x in failures if now - x < 300] + [now]
+        path.write_text(json.dumps({'failures': failures[-5:]}), encoding='utf-8')
+        if len(failures) >= 5:
+            (service / 'down').touch(mode=0o600)
+            try:
+>               fd = os.open(service / 'supervise/control', os.O_WRONLY | os.O_NONBLOCK)
+                                                                          ^^^^^^^^^^^^^
+E               AttributeError: module 'os' has no attribute 'O_NONBLOCK'
+
+services\central-tunnel\tunnel.py:55: AttributeError
+---------------------------- Captured stdout call -----------------------------
+TUNNEL_ABNORMAL_EXIT attempt=1/5
+TUNNEL_ABNORMAL_EXIT attempt=2/5
+TUNNEL_ABNORMAL_EXIT attempt=3/5
+TUNNEL_ABNORMAL_EXIT attempt=4/5
+__________________ test_expired_failures_and_corrupt_history __________________
+
+tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_expired_failures_and_corr0')
+
+    def test_expired_failures_and_corrupt_history(tmp_path):
+        state, service = tmp_path/'state', tmp_path/'service'
+        state.mkdir()
+        service.mkdir()
+        (state/'restart-state.json').write_text(json.dumps({'failures': [1, 2, 3, 4]}))
+        assert tunnel.record_failure(state, service, status=1, sig=0, now=400) == 1
+        (state/'restart-state.json').write_text('corrupt')
+>       assert tunnel.record_failure(state, service, status=1, sig=0, now=401) == 5
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_a50_public_tunnel.py:43:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+state = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_expired_failures_and_corr0/state')
+service = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_expired_failures_and_corr0/service')
+
+    def record_failure(state: Path, service: Path, *, status: int, sig: int, now: float) -> int:
+        if status == 0 or sig in (2, 15):
+            return 0
+        state.mkdir(parents=True, exist_ok=True, mode=0o700)
+        path = state / 'restart-state.json'
+        try:
+            failures = json.loads(path.read_text())['failures'] if path.exists() else []
+            if not isinstance(failures, list) or not all(type(x) in (int, float) for x in failures):
+                raise ValueError('Invalid failure history')
+        except (ValueError, KeyError, OSError):
+            failures = [now] * 5
+        failures = [x for x in failures if now - x < 300] + [now]
+        path.write_text(json.dumps({'failures': failures[-5:]}), encoding='utf-8')
+        if len(failures) >= 5:
+            (service / 'down').touch(mode=0o600)
+            try:
+>               fd = os.open(service / 'supervise/control', os.O_WRONLY | os.O_NONBLOCK)
+                                                                          ^^^^^^^^^^^^^
+E               AttributeError: module 'os' has no attribute 'O_NONBLOCK'
+
+services\central-tunnel\tunnel.py:55: AttributeError
+---------------------------- Captured stdout call -----------------------------
+TUNNEL_ABNORMAL_EXIT attempt=1/5
+=========================== short test summary info ===========================
+FAILED tests/test_a50_public_tunnel.py::test_stop_does_not_count_and_repeated_failures_disable
+FAILED tests/test_a50_public_tunnel.py::test_expired_failures_and_corrupt_history
+2 failed, 5 passed in 0.27s
+
+EXIT_CODE=1
+$ [REDACTED_LOCAL_PATH]\.venv\Scripts\python.exe -m ruff check services/central-tunnel scripts/android/deploy_a50_tunnel.py tests/test_a50_public_tunnel.py
+I001 [*] Import block is un-sorted or un-formatted
+  --> scripts\android\deploy_a50_tunnel.py:3:1
+   |
+ 1 |   """Deploy the requested temporary HTTPS route; preview is the default."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import argparse
+ 6 | | import base64
+ 7 | | import hashlib
+ 8 | | import json
+ 9 | | from pathlib import Path
+10 | | import sys
+11 | |
+12 | | from a50_record import PhoneSession
+   | |___________________________________^
+help: Organize imports
+   |
+8  | import json
+9  + import sys
+10 | from pathlib import Path
+   - import sys
+11 |
+12 | from a50_record import PhoneSession
+   -
+13 |
+   |
+
+E501 Line too long (107 > 100)
+  --> scripts\android\deploy_a50_tunnel.py:61:101
+   |
+59 |     service.mkdir(parents=True,exist_ok=True,mode=0o700)
+60 |     (service/'down').touch(mode=0o600)
+61 |     for name,target in {'run':service/'run','finish':service/'finish','log-run':service/'log/run'}.items():
+   |                                                                                                     ^^^^^^^
+62 |         target.parent.mkdir(parents=True,exist_ok=True)
+63 |         staging=target.with_name(target.name+'.tunnel-new')
+   |
+
+E501 Line too long (104 > 100)
+  --> scripts\android\deploy_a50_tunnel.py:74:101
+   |
+72 |     managed[str(logs/'config')] = digest(logs/'config')
+73 |     staging=root/'current.new'
+74 |     if staging.exists() or staging.is_symlink(): raise RuntimeError('Untracked staging link; preserve.')
+   |                                                                                                     ^^^^
+75 |     staging.symlink_to(release,target_is_directory=True)
+76 |     staging.replace(root/'current')
+   |
+
+E501 Line too long (114 > 100)
+   --> scripts\android\deploy_a50_tunnel.py:103:101
+    |
+101 |                'files': {name: base64.b64encode(data).decode() for name, data in files.items()}}
+102 |     encoded = base64.b64encode(json.dumps(payload).encode()).decode()
+103 |     script = REMOTE + '\ninstall(json.loads(base64.b64decode(' + repr(encoded) + ')), ' + repr(args.apply) + ')\n'
+    |                                                                                                     ^^^^^^^^^^^^^^
+104 |     session = PhoneSession('tunnel-deploy-' + ('apply' if args.apply else 'preview'))
+105 |     session.log('LOCAL_TUNNEL_RELEASE=' + payload['release_id'])
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> services\central-tunnel\tunnel.py:3:1
+   |
+ 1 |   """A supervised, explicitly enabled Quick Tunnel; endpoint and raw logs stay private."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import json
+ 6 | | import logging
+ 7 | | from logging.handlers import RotatingFileHandler
+ 8 | | import os
+ 9 | | from pathlib import Path
+10 | | import re
+11 | | import signal
+12 | | import subprocess
+13 | | import sys
+14 | | import time
+15 | | import urllib.request
+   | |_____________________^
+16 |
+17 |   URL = re.compile(r'https://([a-z0-9]+(?:-[a-z0-9]+)*)\.trycloudflare\.com\b')
+   |
+help: Organize imports
+   |
+6  | import logging
+   - from logging.handlers import RotatingFileHandler
+7  | import os
+   - from pathlib import Path
+8  | import re
+--------------------------------------------------------------------------------
+13 | import urllib.request
+14 + from logging.handlers import RotatingFileHandler
+15 + from pathlib import Path
+16 |
+   |
+
+E501 Line too long (112 > 100)
+  --> services\central-tunnel\tunnel.py:19:101
+   |
+17 | URL = re.compile(r'https://([a-z0-9]+(?:-[a-z0-9]+)*)\.trycloudflare\.com\b')
+18 | STATE = Path.home() / '.local/state/aircon-public-tunnel'
+19 | SERVICE = Path(os.environ.get('PREFIX', '/data/data/com.termux/files/usr')) / 'var/service/aircon-public-tunnel'
+   |                                                                                                     ^^^^^^^^^^^^
+
+E501 Line too long (105 > 100)
+  --> services\central-tunnel\tunnel.py:34:101
+   |
+32 |     temporary = path.with_suffix('.new')
+33 |     temporary.write_text(json.dumps({'status': status, 'url': url, 'supervisor_pid': pid,
+34 |                                      'updated_at': time.time(), 'mode': 'quick-test'}), encoding='utf-8')
+   |                                                                                                     ^^^^^
+35 |     temporary.chmod(0o600)
+36 |     temporary.replace(path)
+   |
+
+E501 Line too long (101 > 100)
+   --> services\central-tunnel\tunnel.py:99:101
+    |
+ 97 |             return 0
+ 98 |         try:
+ 99 |             with urllib.request.urlopen('http://[REDACTED_ADDRESS]/health/ready', timeout=2) as response:
+    |                                                                                                     ^
+100 |                 if response.status == 200:
+101 |                     break
+    |
+
+F841 Local variable `connected` is assigned to but never used
+   --> services\central-tunnel\tunnel.py:123:17
+    |
+121 |                 save_endpoint(STATE, status='connecting', url=endpoint, pid=os.getpid())
+122 |             if 'Registered tunnel connection' in line:
+123 |                 connected = True
+    |                 ^^^^^^^^^
+124 |                 if endpoint:
+125 |                     save_endpoint(STATE, status='connected', url=endpoint, pid=os.getpid())
+    |
+help: Remove assignment to unused variable `connected`
+
+E501 Line too long (110 > 100)
+   --> services\central-tunnel\tunnel.py:145:101
+    |
+143 |     os.umask(0o077)
+144 |     if len(sys.argv) > 1 and sys.argv[1] == 'finish':
+145 |         count = record_failure(STATE, SERVICE, status=int(sys.argv[2]), sig=int(sys.argv[3]), now=time.time())
+    |                                                                                                     ^^^^^^^^^^
+146 |         if 0 < count < 5:
+147 |             time.sleep(min(5 * count, 20))
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\test_a50_public_tunnel.py:3:1
+   |
+ 1 |   """Check URL selection, bounded recovery, and remote-change preservation."""
+ 2 |
+ 3 | / import importlib.util
+ 4 | | import json
+ 5 | | from pathlib import Path
+ 6 | | import sys
+ 7 | |
+ 8 | | import pytest
+   | |_____________^
+ 9 |
+10 |   ROOT = Path(__file__).parents[1]
+   |
+help: Organize imports
+  |
+4 | import json
+5 + import sys
+6 | from pathlib import Path
+  - import sys
+7 |
+  |
+
+E501 Line too long (101 > 100)
+  --> tests\test_a50_public_tunnel.py:11:101
+   |
+10 | ROOT = Path(__file__).parents[1]
+11 | spec = importlib.util.spec_from_file_location('a50_tunnel', ROOT/'services/central-tunnel/tunnel.py')
+   |                                                                                                     ^
+12 | tunnel = importlib.util.module_from_spec(spec)
+13 | spec.loader.exec_module(tunnel)
+   |
+
+E402 Module level import not at top of file
+  --> tests\test_a50_public_tunnel.py:15:1
+   |
+13 | spec.loader.exec_module(tunnel)
+14 | sys.path.insert(0, str(ROOT/'scripts/android'))
+15 | from deploy_a50_tunnel import REMOTE
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: Move module level imports to top of file
+
+Found 13 errors.
+[*] 3 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+
+EXIT_CODE=1

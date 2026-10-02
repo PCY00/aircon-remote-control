@@ -1,6 +1,6 @@
 # A50 중앙 서버 실행 기반
 
-버전 0.2.0. 집·가족 권한과 Firebase Google ID 토큰 검증 API를 포함한다. APK·FCM·실제 Pi 연결은 후속 작업이다.
+버전 0.2.0. 집·가족 권한과 Firebase Google ID 토큰 검증 API를 포함한다. 별도 가족 APK는 구현했고 사용자가 Google 로그인 성공을 확인했다. FCM·실제 Pi 연결은 후속 작업이다.
 Pi의 기존 app/·MQTT·IR 서비스와 데이터베이스는 사용하지 않는다.
 
 ## 구성
@@ -92,6 +92,10 @@ python scripts/android/verify_a50_central.py --exercise-recovery --reboot
 공유기 포트포워딩·Pi 서비스 변경·Firebase 키 설치는 하지 않았다.
 
 ## 공식 자료
+
+2026-10-02 후속 작업: [별도 시험용 HTTPS 터널](../central-tunnel/README.md)을 A50에 구성했다.
+이 API의 루프백 바인딩·Firebase 검증·가구별 권한은 유지한다.
+고정 운영 주소와 실제 사용자 앱의 API 연결 결과는 후속 확인 항목이다.
 
 - [Flask의 Waitress 배포 안내](https://flask.palletsprojects.com/en/stable/deploying/waitress/)
 - [Waitress 설정](https://docs.pylonsproject.org/projects/waitress/en/stable/api.html)
