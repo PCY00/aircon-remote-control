@@ -1,0 +1,10 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] read-only database comparison [authorized test name; IDs/email omitted]
+NAMED_TEST_HOME=1 ACTIVE_OWNER_RELATIONSHIP=1 PRE_EXISTING_OTHER_HOME=1
+DATABASE_INTEGRITY=ok REAL_TEST_HOME_NOT_DUPLICATED=PASS
+
+EXIT_CODE=0
+$ adb [verified A50] home [restore server phone] EXIT_CODE=0
+$ adb [verified A50] screen off [keep logged-in account and server] EXIT_CODE=0
+REAL_GOOGLE_SESSION_HOME_DATA_AND_SERVER_PRESERVED=TRUE

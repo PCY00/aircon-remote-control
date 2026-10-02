@@ -219,7 +219,9 @@ UI 시험은 집 만들기·가족 관리·로그아웃 후 집 정보 제거를
 현재 상태는 날짜별 [작업 기록](../../journal/2026-10-02-family-android-app.md)에 남긴다.
 실제 Google 계정 로그인은 사용자가 다른 휴대폰에서 성공했다고 보고했다.
 성공 화면은 직접 캡처하지 않았다. A50의 운영 사용자·허브는 0개이고, 외부 HTTPS 연결·
-서버의 실제 로그인 토큰 검증·집 등록·FCM 푸시 수신은 후속 검증이 필요하다.
+서버의 실제 로그인 토큰 검증·집 등록·FCM 푸시 수신은 당시 후속 검증 항목이었다.
+이후 [5편 보충](05a-a50-user-google-login.md)에서 A50 실제 Google 계정의 서버 연결·
+집 등록·소유자 화면·클라이언트 재실행을 확인했다. FCM·실제 Pi 연결은 아직 남아 있다.
 
 공식 자료: [Firebase Google 로그인](https://firebase.google.com/docs/auth/android/google-signin),
 [Android Credential Manager](https://developer.android.com/identity/sign-in/credential-manager-siwg),

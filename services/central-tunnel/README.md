@@ -68,3 +68,7 @@ sv -w 20 down "$SVDIR/aircon-public-tunnel"
 공식 자료: [Quick Tunnels](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/),
 [고정 Tunnel 준비](https://developers.cloudflare.com/tunnel/get-started/),
 [Termux cloudflared 패키지](https://github.com/termux/termux-packages/blob/master/packages/cloudflared/build.sh).
+
+후속 확인: A50의 실제 Google 로그인 세션과 원래 배포 APK로 HTTPS 집 목록·집 등록·
+소유자 관리 화면·클라이언트 재실행 후 로그인/주소 유지를 확인했다.
+이 결과가 Quick Tunnel 주소의 고정·가동 시간 보장이나 FCM 수신을 뜻하지는 않는다.

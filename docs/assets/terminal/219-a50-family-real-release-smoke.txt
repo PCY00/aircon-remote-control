@@ -1,0 +1,99 @@
+# Actual phone SSH operations; private details removed
+
+INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS
+$ adb [verified A50] install -r signed production instrumentation test APK
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] native UI smoke [user-approved home; existing real Google session; no token extraction]
+
+
+com.aircon.family.OwnFamilySmokeTest:
+
+Error in existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(com.aircon.family.OwnFamilySmokeTest):
+
+java.io.FileNotFoundException: /data/user/0/com.aircon.family.test/files/08-a50-real-test-home.png: open failed: ENOENT (No such file or directory)
+
+	at libcore.io.IoBridge.open(IoBridge.java:492)
+
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:236)
+
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:186)
+
+	at com.aircon.family.OwnFamilySmokeTest.screenshot(OwnFamilySmokeTest.java:84)
+
+	at com.aircon.family.OwnFamilySmokeTest.existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(OwnFamilySmokeTest.java:118)
+
+	... 33 trimmed
+
+Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+
+	at libcore.io.Linux.open(Native Method)
+
+	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+
+	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:254)
+
+	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+
+	at android.app.ActivityThread$AndroidOs.open(ActivityThread.java:8514)
+
+	at libcore.io.IoBridge.open(IoBridge.java:478)
+
+	... 38 more
+
+
+
+
+
+Time: 3.48
+
+There was 1 failure:
+
+1) existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(com.aircon.family.OwnFamilySmokeTest)
+
+java.io.FileNotFoundException: /data/user/0/com.aircon.family.test/files/08-a50-real-test-home.png: open failed: ENOENT (No such file or directory)
+
+	at libcore.io.IoBridge.open(IoBridge.java:492)
+
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:236)
+
+	at java.io.FileOutputStream.<init>(FileOutputStream.java:186)
+
+	at com.aircon.family.OwnFamilySmokeTest.screenshot(OwnFamilySmokeTest.java:84)
+
+	at com.aircon.family.OwnFamilySmokeTest.existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(OwnFamilySmokeTest.java:118)
+
+	... 33 trimmed
+
+Caused by: android.system.ErrnoException: open failed: ENOENT (No such file or directory)
+
+	at libcore.io.Linux.open(Native Method)
+
+	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+
+	at libcore.io.BlockGuardOs.open(BlockGuardOs.java:254)
+
+	at libcore.io.ForwardingOs.open(ForwardingOs.java:166)
+
+	at android.app.ActivityThread$AndroidOs.open(ActivityThread.java:8514)
+
+	at libcore.io.IoBridge.open(IoBridge.java:478)
+
+	... 38 more
+
+
+
+FAILURES!!!
+
+Tests run: 1,  Failures: 1
+
+
+
+
+
+
+EXIT_CODE=0

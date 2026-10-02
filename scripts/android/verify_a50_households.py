@@ -1,7 +1,8 @@
-"""Read-only production verification, with no real users, invites, or hub provisioning."""
+"""Read-only production verification; never create users, invites, or hubs."""
+
 from a50_record import PhoneSession
 
-PROBE = '''
+PROBE = """
 import hashlib,json,sqlite3,sys,urllib.request,urllib.error
 from pathlib import Path
 home = Path.home()
@@ -14,18 +15,26 @@ baseline = json.loads((home/'.local/state/aircon-central/verification-baseline.j
 with sqlite3.connect(db.resolve().as_uri()+'?mode=ro',uri=True) as conn:
     assert conn.execute('PRAGMA user_version').fetchone()[0] == 2
     assert conn.execute('PRAGMA integrity_check').fetchone() == ('ok',)
-    assert conn.execute('SELECT * FROM runtime_metadata').fetchall() == [tuple(x) for x in baseline['identity']]
-    assert conn.execute('SELECT COUNT(*) FROM users').fetchone()[0] == 0
-    assert conn.execute('SELECT COUNT(*) FROM hubs').fetchone()[0] == 0
+    actual_identity = conn.execute('SELECT * FROM runtime_metadata').fetchall()
+    assert actual_identity == [tuple(x) for x in baseline['identity']]
+    counts = {name:conn.execute('SELECT COUNT(*) FROM '+name).fetchone()[0]
+              for name in ('users','homes','hubs')}
+    config = json.loads((home/'.config/aircon-central/config.json').read_text())
+    issuer = 'https://securetoken.google.com/'+config['firebase_project_id']
+    unexpected = conn.execute('SELECT COUNT(*) FROM users WHERE issuer != ?', (issuer,)).fetchone()
+    assert unexpected == (0,)
 print('SCHEMA_VERSION=2 DATABASE_INTEGRITY=ok ORIGINAL_RUNTIME_ID_PRESERVED=TRUE')
-print('PRODUCTION_FIXTURE_USERS_AND_HUBS=0')
-assert hashlib.sha256((home/'.termux/boot/10-start-ssh').read_bytes()).hexdigest() == baseline['ssh_boot_sha256']
+print('CURRENT_PRODUCTION_COUNTS='+json.dumps(counts,sort_keys=True))
+print('PRODUCTION_USER_ISSUERS_MATCH_CONFIGURED_FIREBASE=PASS')
+boot_hash = hashlib.sha256((home/'.termux/boot/10-start-ssh').read_bytes()).hexdigest()
+assert boot_hash == baseline['ssh_boot_sha256']
 print('EXISTING_SSH_BOOT_UNCHANGED=TRUE')
 backups = list((db.parent/'backups').glob('*.sqlite3'))
 assert backups
 with sqlite3.connect(backups[-1].resolve().as_uri()+'?mode=ro',uri=True) as backup:
     assert backup.execute('PRAGMA user_version').fetchone()[0] == 1
-    assert backup.execute('SELECT * FROM runtime_metadata').fetchall() == [tuple(x) for x in baseline['identity']]
+    backup_identity = backup.execute('SELECT * FROM runtime_metadata').fetchall()
+    assert backup_identity == [tuple(x) for x in baseline['identity']]
 print('PRE_MIGRATION_BACKUP_SCHEMA_1_AND_IDENTITY=PASS')
 ledger = json.loads((root/'deployment.json').read_text())
 assert (root/'current').resolve() == Path(ledger['release'])
@@ -49,12 +58,18 @@ assert response('/v1/me')[0] == 401
 assert response('/v1/me','Bearer forged-token')[0] == 401
 assert response('/v1/me?user_id=owner')[0] == 401
 print('PRODUCTION_MISSING_AND_FORGED_CREDENTIALS=401 QUERY_ID_BYPASS=DENIED')
-print('PRODUCTION_API_REAL_FIREBASE_TOKEN=NOT_YET_TESTED FCM=NOT_IMPLEMENTED')
+print('REAL_GOOGLE_LOGIN_AND_HOME_UI=SEPARATE_DEVICE_TEST FCM=NOT_IMPLEMENTED')
 print('A50_HOUSEHOLD_PRODUCTION_VERIFICATION=PASS')
-'''
+"""
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
-    sys.stdout.reconfigure(encoding='utf-8')
-    PhoneSession('household-production-verification').run('$HOME/services/aircon-central/.venv/bin/python -',data=PROBE.encode(),
-        label='$HOME/services/aircon-central/.venv/bin/python - < verify_a50_households.py [read-only private comparisons]',timeout=60)
+
+    sys.stdout.reconfigure(encoding="utf-8")
+    PhoneSession("household-production-verification").run(
+        "$HOME/services/aircon-central/.venv/bin/python -",
+        data=PROBE.encode(),
+        label="$HOME/services/aircon-central/.venv/bin/python - "
+        "< verify_a50_households.py [read-only private comparisons]",
+        timeout=60,
+    )

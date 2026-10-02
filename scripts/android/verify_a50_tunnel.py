@@ -116,7 +116,7 @@ def main():
         session.log(
             path + " AUTH=" + ("forged" if token else "missing") + " STATUS=401 NO_STORE=PASS"
         )
-    session.log("EXTERNAL_ROUTE=PASS REAL_USER_TOKEN_AND_HOME_CREATION=USER_APP_CHECK_PENDING")
+    session.log("EXTERNAL_ROUTE=PASS REAL_APP_FLOW_REQUIRES_SEPARATE_UI_VERIFICATION")
     session.log(
         "TEMPORARY_ENDPOINT_SAVED_PRIVATELY=TRUE URL_CHANGES_AFTER_TUNNEL_PROCESS_RESTART=TRUE"
     )

@@ -95,7 +95,8 @@ python scripts/android/verify_a50_central.py --exercise-recovery --reboot
 
 2026-10-02 후속 작업: [별도 시험용 HTTPS 터널](../central-tunnel/README.md)을 A50에 구성했다.
 이 API의 루프백 바인딩·Firebase 검증·가구별 권한은 유지한다.
-고정 운영 주소와 실제 사용자 앱의 API 연결 결과는 후속 확인 항목이다.
+실제 A50의 배포 APK로 사용자 Google 로그인·API 연결·집 등록·소유자 화면·클라이언트 재실행을 확인했다.
+고정 운영 주소·FCM·실제 Pi 연결은 후속 항목이다.
 
 - [Flask의 Waitress 배포 안내](https://flask.palletsprojects.com/en/stable/deploying/waitress/)
 - [Waitress 설정](https://docs.pylonsproject.org/projects/waitress/en/stable/api.html)

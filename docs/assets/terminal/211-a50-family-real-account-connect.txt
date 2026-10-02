@@ -1,0 +1,13 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+ACTUAL_A50_GOOGLE_LOGIN_COMPLETE_SCREEN=CONFIRMED USER_ENTERED_CREDENTIALS=TRUE
+$ adb [verified A50] capture own app 06-a50-real-login-complete EXIT_CODE=0
+$ adb [verified A50] open own app connection settings EXIT_CODE=0
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+
+# Actual local runner error from the tool result
+AssertionError: Existing endpoint differs; stop before signing the user out
+LOCAL_RUNNER_EXIT_CODE=1

@@ -1,0 +1,17 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+ACTUAL_A50_GOOGLE_LOGIN_COMPLETE_SCREEN=CONFIRMED USER_ENTERED_CREDENTIALS=TRUE
+$ adb [verified A50] capture own app 06-a50-real-login-complete EXIT_CODE=0
+$ adb [verified A50] open own app connection settings EXIT_CODE=0
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+$ adb [verified A50] focus empty server address field EXIT_CODE=0
+$ adb [verified A50] enter privately verified current HTTPS origin [value omitted] EXIT_CODE=0
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+$ adb [verified A50] save server address [preserve first-login session] EXIT_CODE=0
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+REAL_A50_RELEASE_APK_HTTPS_AUTHENTICATED_HOME_LIST=PASS

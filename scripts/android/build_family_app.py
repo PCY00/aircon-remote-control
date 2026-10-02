@@ -17,11 +17,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tests", action="store_true")
     parser.add_argument(
+        "--production-smoke-only",
+        action="store_true",
+        help="Build only signed UI smoke-test APK; preserve previously delivered production APKs",
+    )
+    parser.add_argument(
         "--fixture-only",
         action="store_true",
         help="Build isolated tests without production Firebase configuration",
     )
     args = parser.parse_args()
+    if args.production_smoke_only and (args.tests or args.fixture_only):
+        parser.error("--production-smoke-only cannot be combined with fixture options")
     record = PhoneSession("family-apk-build")
     private = Path(".deploy/family-app")
     tools = json.loads((private / "tools.json").read_text())
@@ -86,6 +93,8 @@ def main():
             "assembleFixtureDebug",
             "assembleFixtureDebugAndroidTest",
         ]
+    if args.production_smoke_only:
+        tasks = ["assembleProductionDebugAndroidTest"]
     command = [
         str(Path(tools["java_home"]) / "bin/java.exe"),
         "-Dfile.encoding=UTF-8",
@@ -122,7 +131,9 @@ def main():
     )
     if result.returncode:
         raise RuntimeError("Family APK build failed; inspect sanitized build record.")
-    output = Path("tmp/family-app-build")
+    output = Path(
+        "tmp/family-app-smoke-tests" if args.production_smoke_only else "tmp/family-app-build"
+    )
     output.mkdir(exist_ok=True)
     verified = {}
     artifacts = (
@@ -155,6 +166,13 @@ def main():
                 "app/build/outputs/apk/androidTest/fixture/debug/app-fixture-debug-androidTest.apk",
             ),
         ]
+    if args.production_smoke_only:
+        artifacts = [
+            (
+                "family-production-test.apk",
+                "app/build/outputs/apk/androidTest/production/debug/app-production-debug-androidTest.apk",
+            )
+        ]
     for name, relative in artifacts:
         apk = stage / relative
         shutil.copyfile(apk, output / name)
@@ -163,9 +181,9 @@ def main():
             "SIGNED_APK=" + name + " BYTES=" + str(apk.stat().st_size) + " SHA256=" + verified[name]
         )
     (output / "build.json").write_text(json.dumps(verified, indent=2))
-    (private / "last-build.json").write_text(
-        json.dumps({"stage": str(stage), "fixture_only": args.fixture_only})
-    )
+    (
+        private / ("last-smoke-build.json" if args.production_smoke_only else "last-build.json")
+    ).write_text(json.dumps({"stage": str(stage), "fixture_only": args.fixture_only}))
     record.log("FAMILY_APK_BUILD=PASS")
 
 

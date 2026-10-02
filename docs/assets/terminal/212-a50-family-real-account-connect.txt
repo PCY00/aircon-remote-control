@@ -1,0 +1,14 @@
+# Actual phone SSH operations; private details removed
+
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+RESUME_EXISTING_OWN_CONNECTION_DIALOG=TRUE
+$ adb [verified A50] focus empty server address field EXIT_CODE=0
+$ adb [verified A50] enter privately verified current HTTPS origin [value omitted] EXIT_CODE=0
+$ adb [verified A50] save server address [preserve first-login session] EXIT_CODE=0
+$ adb [verified A50] read own family UI EXIT_CODE=0
+$ adb [verified A50] parse own family UI privately EXIT_CODE=0
+
+# Actual local runner error from the tool result
+RuntimeError: Own UI target is not unique
+LOCAL_RUNNER_EXIT_CODE=1

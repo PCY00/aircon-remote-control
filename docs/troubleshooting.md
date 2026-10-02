@@ -599,3 +599,21 @@ POSIX runit FIFO 제어가 없는 환경에서는 `down` 파일을 유지하고 
 Quick Tunnel 재시작 후 예전 앱 주소가 연결되지 않으면
 `verify_a50_tunnel.py`가 확인한 비공개 `endpoint.url`을 사용한다.
 시험 주소는 재시작마다 바뀐다. 고정 주소가 필요하면 도메인과 named tunnel을 준비한다.
+
+## A50 실제 release APK의 UI 검사와 캡처 경로
+
+2026-10-02 실제 Google 로그인 후 APK 검사에 `ActivityTestRule`이 빠져 집 목록을 기다리다
+실패했다(217). 원래 MainActivity를 명시적으로 실행한 뒤 정상 계정 세션을 사용하도록 수정했다.
+한글 집 이름은 UI 자동화의 `ACTION_SET_TEXT`로 넣으며 토큰을 읽거나 로그인 절차를 우회하지 않는다.
+
+대상은 실제 release 앱인데 검사 APK의 `getContext().getFilesDir()`에 캡처를 쓰려다 ENOENT가
+발생했다(219). 원래 대상 앱의 `getExternalFilesDir("test-captures")`에 가린 PNG를 저장하고
+실제 경로를 검사 결과로 전달해 읽는다. release 앱을 디버그 앱으로 바꾸거나 광범위한
+저장소 권한을 추가하지 않는다. 최종 221 검사에서 OK (1 test), 4.26초·가린 이미지 추출을 확인했다.
+검사 도구는 JUnit 성공 결과도 검사한다. adb 명령의 종료 코드 0만으로 검사 성공을 판정하지 않는다.
+
+키보드 표시 후 좌표가 바뀌는 UI에서는 입력 후 UI 트리를 다시 읽고 저장 버튼을 선택한다.
+UI 트리의 빈 EditText에는 안내 문구가 text로 반환될 수 있어 실제 입력과 구분한다(211~214).
+
+실제 사용자·집 등록 후 읽기 전용 서버 점검에서 사용자/허브 수를 무조건 0으로 기대하지 않는다.
+실제 수는 메타데이터로 기록하고 설정한 Firebase 발급자·DB 무결성·원래 식별자·소스 일치를 검증한다.

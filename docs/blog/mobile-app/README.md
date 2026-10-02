@@ -12,7 +12,7 @@
 2. [운영 환경 정리·중앙 서버 구축](02-a50-central-server.md): 앱 정리·중앙 API 기반·SQLite·프로세스 복구·조작 없는 재부팅·화면 꺼짐 2분 시험 완료. 가구 인증·FCM은 후속 작업.
 3. [Google 로그인·집 등록·가족 권한](03-household-permissions.md): Firebase 무료 프로젝트·Google 제공자 설정, A50 0.2.0 배포와 서명한 가상 계정으로 가구 격리 검증 완료. 실제 APK 로그인·FCM·Pi 연결은 후속 작업.
 4. [가족 Android APK·Google 로그인 연결](04-family-android-app.md): 앱·지문 등록, 실제 구성의 production APK 빌드·서명·시험 토큰 제외·A50 설치와 시작 화면 확인 완료. 사용자가 다른 휴대폰에서 실제 계정 로그인 성공을 확인했다. 외부 서버 연결은 검증 전.
-5. [다른 휴대폰에서 A50 연결](05-external-https-connection.md): 도메인 없는 시험용 HTTPS 터널 배포·외부 TLS·인증 차단 확인. 앱의 실제 서버 연결 결과·고정 주소는 후속 확인.
+5. [다른 휴대폰에서 A50 연결](05-external-https-connection.md): 시험용 HTTPS 터널·외부 TLS·인증 차단 확인. [보충](05a-a50-user-google-login.md)에서 A50의 실제 Google 계정·배포 APK로 집 등록·소유자 화면·앱 재실행 검사를 통과했다. 고정 주소는 후속 준비.
 6. 이후: FCM·실제 Pi 연결과 장시간 시험.
 
 1편 보충 자료: [SSH 세부 기록](02-termux-private-ssh.md),

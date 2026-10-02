@@ -1,0 +1,51 @@
+# Actual phone SSH operations; private details removed
+
+INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS
+$ adb [verified A50] install -r signed production instrumentation test APK
+Performing Streamed Install
+
+Success
+
+
+EXIT_CODE=0
+$ adb [verified A50] native UI smoke [user-approved home; existing real Google session; no token extraction]
+
+
+com.aircon.family.OwnFamilySmokeTest:
+
+Error in existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(com.aircon.family.OwnFamilySmokeTest):
+
+java.lang.AssertionError: Expected own-family UI state did not appear
+
+	at com.aircon.family.OwnFamilySmokeTest.await(OwnFamilySmokeTest.java:51)
+
+	at com.aircon.family.OwnFamilySmokeTest.existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(OwnFamilySmokeTest.java:90)
+
+
+
+
+
+Time: 20.247
+
+There was 1 failure:
+
+1) existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(com.aircon.family.OwnFamilySmokeTest)
+
+java.lang.AssertionError: Expected own-family UI state did not appear
+
+	at com.aircon.family.OwnFamilySmokeTest.await(OwnFamilySmokeTest.java:51)
+
+	at com.aircon.family.OwnFamilySmokeTest.existingGoogleSessionCreatesOrReusesNamedHomeAndShowsOwnerPages(OwnFamilySmokeTest.java:90)
+
+
+
+FAILURES!!!
+
+Tests run: 1,  Failures: 1
+
+
+
+
+
+
+EXIT_CODE=0
