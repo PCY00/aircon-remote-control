@@ -66,6 +66,6 @@
 <rect x="644" y="531" width="588" height="106" rx="8" fill="#eaf7f5" stroke="#087e83" stroke-width="1"/>
 <text x="660" y="561" font-size="19px" style="font-size:19px" fill="#087e83" font-weight="700">휴대폰마다 받고 싶은 소식만</text>
 <text x="660" y="592" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">문 / 경고 / 온습도 · 온습도 최소 간격 1·5·15·60분</text>
-<text x="660" y="620" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">FCM에는 알림 분류만, 자세한 기록은 인증된 API에서 읽는다.</text>
+<text x="660" y="620" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">FCM에는 식별·분류만, 자세한 기록은 인증된 API에서 읽는다.</text>
 <text x="28" y="666" font-size="14px" style="font-size:14px" fill="#526779" font-weight="400">현재 구현 · Pi 0.7.0 / 중앙·앱 0.4.0 · 전체 컴포넌트·저장·복구 구조는 A0 원본 참고</text>
 </svg>

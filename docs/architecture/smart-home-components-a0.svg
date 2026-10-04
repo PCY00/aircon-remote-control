@@ -279,7 +279,7 @@
 <text x="1170" y="970" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">현재 코드 구조다. 대규모 서비스나 새 시험 성공을 뜻하지 않는다.</text>
 <text x="1170" y="991" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">A50: Termux:Boot + wake-lock + runit / Pi: 사용자 systemd. PC는</text>
 <text x="1170" y="1009.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">코드·배포·SSH/ADB 관리용이다.</text>
-<text x="1170" y="1039" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi outbox: 만료 240초·최대 8회 재시도. 중앙 push: 최대 300초·최대 6회. 로그</text>
+<text x="1170" y="1039" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi outbox: 만료 240초·최대 8회 시도. 중앙 push: 최대 300초·최대 6회 시도. 로그</text>
 <text x="1170" y="1057.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">제한과 반복 실패 중단이 있다.</text>
 <text x="1170" y="1087" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Quick Tunnel 주소는 바뀔 수 있다. FCM 전송 접수 ≠ 휴대폰 표시. 물리 센서→폰</text>
 <text x="1170" y="1105.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">전체 시험·다른 가족 계정·장시간 운영은 남아 있다.</text>
