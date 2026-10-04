@@ -1,0 +1,22 @@
+# 2026-10-03, Windows PC. 실제 실행 명령과 출력 중 GPIO 판별에 필요한 부분.
+# USB 콘솔의 h는 도움말만 출력하며 IR 송신 명령이 아니다.
+
+PS> Get-CimInstance Win32_SerialPort | Select-Object DeviceID,Name,PNPDeviceID
+COM6    USB 직렬 장치(COM6)    USB\VID_303A&PID_1001&MI_00\[REDACTED]
+
+PS> [System.IO.Ports.SerialPort] COM6 115200을 열고 'h' 전송
+rst:0x15 (USB_UART_HPSYS),boot:0x8 (SPI_FAST_FLASH_BOOT)
+I (101) app_init: Project name:     aircon_h2_ir_node
+I (102) app_init: Compile time:     Sep 12 2026 15:14:29
+I (103) app_init: ESP-IDF:          v5.5.4
+I (110) h2_ir_node: IR output ready: GPIO5, 38 kHz, duty 33%
+
+ESP32-H2 IR test commands
+  c : camera test (does not contain an A/C command)
+  n : Carrier CS-A061GS power on / cool 17 C / high fan
+  f : Carrier CS-A061GS power off
+  h : show this help
+
+# 판단: 현재 플래시 앱은 GPIO5 출력. 제출된 배선도에는 GPIO8이 표시됐지만,
+# 사용자가 실제 만능기판은 GPIO5에 연결했다고 확인했다. 보고된 핀 불일치는 없다.
+# 이 단계에서는 IR 송신과 펌웨어 플래시를 실행하지 않았다.

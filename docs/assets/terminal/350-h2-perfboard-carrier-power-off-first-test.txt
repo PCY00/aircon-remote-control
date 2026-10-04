@@ -1,0 +1,13 @@
+# 2026-10-03, Windows PC. ESP32-H2 만능기판에서 Carrier POWER_OFF 첫 실기 시험.
+# 'f' 명령은 실제 에어컨 제어 신호를 송신한다. 사용자 요청으로 1회만 전송했다.
+
+PS> Get-CimInstance Win32_SerialPort | Where-Object DeviceID -eq 'COM6' | Select-Object DeviceID,Name
+COM6    USB 직렬 장치(COM6)
+
+PS> $port = [System.IO.Ports.SerialPort]::new('COM6',115200); $port.ReadTimeout = 500; try { $port.Open(); Start-Sleep -Milliseconds 1500; $port.DiscardInBuffer(); $port.Write('f'); Write-Output 'SENT: f (once)'; $until = (Get-Date).AddSeconds(10); while ((Get-Date) -lt $until) { Start-Sleep -Milliseconds 200; $data = $port.ReadExisting(); if ($data) { Write-Output $data } } } finally { if ($port.IsOpen) { $port.Close() }; $port.Dispose() }
+SENT: f (once)
+I (1407630) h2_ir_node: sending POWER_OFF: 2 frames, 100 symbols
+I (1407810) h2_ir_node: sent POWER_OFF
+
+# 현장 확인: 이후 사용자가 에어컨이 실제로 꺼졌다고 보고했다.
+# 단일 시험 결과이며, 장거리·반복 송신·Zigbee 경유 제어는 미검증.

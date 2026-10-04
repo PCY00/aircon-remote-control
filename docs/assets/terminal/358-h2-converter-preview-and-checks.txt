@@ -1,0 +1,23 @@
+# Selected actual output. Runtime configuration checksum is omitted from
+# public material; it was used as the apply command's compare-and-swap guard.
+
+# PC: node --check deploy/zigbee/zigbee2mqtt/external_converters/aircon-h2-ir.mjs
+# Exit code 0; no stdout.
+
+# PC: .venv/Scripts/python.exe -m pytest tests/test_h2_converter_install.py tests/test_h2_zigbee_protocol.py -q
+.......                                                                  [100%]
+7 passed in 0.58s
+
+# PC: .venv/Scripts/python.exe -m ruff check scripts/install_h2_zigbee_converter.py tests/test_h2_converter_install.py
+All checks passed!
+
+# Pi: python3 scripts/install_h2_zigbee_converter.py
+CONFIG_SHA256=[REDACTED_CONFIG_HASH]
+CONVERTER_SHA256=76e4a5970836f59df674f85006b441b06fb81a01ca28a6ca4d793554b1ae440c
+CONVERTER_ACTION=install
+EXTERNAL_JS_ACTION=added
+RESTART_REQUIRED=aircon-zigbee2mqtt
+NO_REMOTE_CHANGES=preview-only
+
+# Pi source files matched local SHA-256 before apply. The existing runtime
+# converter path did not exist. The configuration was not changed in preview.

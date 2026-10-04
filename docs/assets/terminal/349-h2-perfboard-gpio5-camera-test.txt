@@ -1,0 +1,15 @@
+# 2026-10-03, Windows PC. ESP32-H2 SuperMini 만능기판의 GPIO5 IR 카메라 테스트.
+# 'c'는 에어컨 제어 코드가 아닌 짧은 IR 발광 테스트 명령이다.
+
+PS> Get-CimInstance Win32_SerialPort | Select-Object DeviceID,Name
+COM12   표준 Bluetooth에서 직렬 링크(COM12)
+COM4    표준 Bluetooth에서 직렬 링크(COM4)
+COM3    표준 Bluetooth에서 직렬 링크(COM3)
+COM6    USB 직렬 장치(COM6)
+
+PS> $port = [System.IO.Ports.SerialPort]::new('COM6',115200); $port.ReadTimeout = 500; try { $port.Open(); Start-Sleep -Milliseconds 1500; $port.DiscardInBuffer(); $port.Write('c'); Write-Output 'SENT: c (once)'; $until = (Get-Date).AddSeconds(8); while ((Get-Date) -lt $until) { Start-Sleep -Milliseconds 200; $data = $port.ReadExisting(); if ($data) { Write-Output $data } } } finally { if ($port.IsOpen) { $port.Close() }; $port.Dispose() }
+SENT: c (once)
+I (863770) h2_ir_node: camera test: ten 20 ms IR bursts on GPIO5
+I (865770) h2_ir_node: camera test complete
+
+# 관찰 범위: 펌웨어의 송신 완료 로그만 확인. 카메라 발광 관찰은 사용자 확인 대기.

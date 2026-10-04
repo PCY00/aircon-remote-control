@@ -1,0 +1,7 @@
+# Actual phone SSH operations; private details removed
+
+$ .venv/Scripts/python.exe -m pytest tests/test_central_households.py tests/test_central_push_api.py tests/test_central_fcm.py -q
+.............................                                            [100%]
+29 passed in 3.34s
+
+EXIT_CODE=0

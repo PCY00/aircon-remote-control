@@ -3,6 +3,9 @@ param(
     [ValidateSet("build", "flash", "monitor")]
     [string]$Action = "build",
 
+    [ValidateSet("ir-node", "zigbee-ir-node")]
+    [string]$Variant = "ir-node",
+
     [string]$Port,
 
     [string]$IdfPath = "C:\Espressif\frameworks\esp-idf-v5.5.4",
@@ -17,7 +20,7 @@ if ($Action -in @("flash", "monitor") -and $Port -notmatch "^COM[1-9][0-9]*$") {
     throw "Specify the connected board's port with -Port COM<number>. No device was accessed."
 }
 
-$sourcePath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\firmware\esp32-h2-ir-node")).Path
+$sourcePath = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..\firmware\esp32-h2-$Variant")).Path
 $asciiRoot = [System.IO.Path]::GetFullPath($BuildRoot)
 if ($asciiRoot -match "[^\x20-\x7E]") {
     throw "BuildRoot must use an ASCII-only path for ESP-IDF on Windows."
@@ -31,7 +34,7 @@ try {
 } finally {
     $hasher.Dispose()
 }
-$projectPath = Join-Path $asciiRoot "aircon-h2-ir-node-$sourceHash"
+$projectPath = Join-Path $asciiRoot "aircon-h2-$Variant-$sourceHash"
 
 if (-not (Test-Path -LiteralPath (Join-Path $IdfPath "tools\idf.py"))) {
     throw "ESP-IDF was not found at $IdfPath"
@@ -59,6 +62,9 @@ New-Item -ItemType Directory -Path (Join-Path $projectPath "main") -Force | Out-
 Copy-Item -LiteralPath (Join-Path $sourcePath "CMakeLists.txt") -Destination $projectPath -Force
 Copy-Item -LiteralPath (Join-Path $sourcePath "sdkconfig.defaults") -Destination $projectPath -Force
 Copy-Item -Path (Join-Path $sourcePath "main\*") -Destination (Join-Path $projectPath "main") -Recurse -Force
+if (Test-Path -LiteralPath (Join-Path $sourcePath "partitions.csv")) {
+    Copy-Item -LiteralPath (Join-Path $sourcePath "partitions.csv") -Destination $projectPath -Force
+}
 
 $configPath = Join-Path $projectPath "sdkconfig"
 if ((Test-Path -LiteralPath $configPath) -and
@@ -82,7 +88,12 @@ function Invoke-Idf {
 
 Push-Location $projectPath
 try {
-    if (-not (Test-Path -LiteralPath "sdkconfig")) {
+    if (-not (Test-Path -LiteralPath "sdkconfig") -or
+        ($Variant -eq "zigbee-ir-node" -and
+         (-not (Select-String -LiteralPath "sdkconfig" -Pattern '^CONFIG_ZB_ENABLED=y$' -Quiet) -or
+          -not (Select-String -LiteralPath "sdkconfig" -Pattern '^CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y$' -Quiet)))) {
+        # set-target regenerates only this checkout's ASCII staging directory.
+        # It does not touch repository sources or the physical board.
         Invoke-Idf -Arguments @("set-target", "esp32h2")
     }
 

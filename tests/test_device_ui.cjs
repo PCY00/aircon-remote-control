@@ -55,7 +55,7 @@ function environment(apiCall) {
     getNames: () => rooms.map((room) => room.querySelector('span').textContent),
     refreshIcons() {}, updateCounts() {}, updateAirconView() {}, setApiStatus() {}
   });
-  const names = ['newAirconState', 'applyApiState', 'renderAirconState', 'sendAirconState',
+  const names = ['newAirconState', 'isH2Tile', 'applyApiState', 'renderAirconState', 'sendAirconState',
     'executeAirconCommand', 'changeAirconState', 'applySceneAction', 'upsertAirconTile', 'restoreRegisteredAircons'];
   vm.runInContext(names.map(applicationFunction).join('\n')
     + '\nObject.assign(globalThis, { ' + names.join(', ') + ' });', context);
@@ -140,6 +140,31 @@ test('rapid repeats cannot overlap a command for the same device', async () => {
   await first;
   assert.equal(context.airconStates.get('living-ac').power, false);
   assert.equal(context.pendingDeviceCommands.size, 0);
+});
+
+test('H2 air conditioner can send cooling, captured feature, and explicit off commands', async () => {
+  const calls = [];
+  const context = environment(async (url, options) => {
+    const body = JSON.parse(options.body);
+    calls.push({ url, body });
+    return { ...transmitted(body.power ?? false), transmission: { hardware_output: true } };
+  });
+  context.restoreRegisteredAircons([{
+    ...devices[0],
+    zigbee_binding: { type: 'h2_ir', friendly_name: 'h2_ir_01' }
+  }]);
+  const tile = context.tiles[0];
+  assert.equal(tile.dataset.irTransport, 'h2_ir');
+  assert.equal(tile.querySelector('small').textContent, 'Zigbee IR · 실제 상태 미확인');
+  await context.changeAirconState({ power: true, temperature: 24 }, { tile });
+  assert.deepEqual(calls[0].body, {
+    action: 'set_state', power: true, mode: 'cool', temperature_c: 24, fan: 'high'
+  });
+  await context.changeAirconState({ swing: false }, { tile, commandId: 'swing_toggle' });
+  assert.deepEqual(calls[1].body, { action: 'execute', command_id: 'swing_toggle' });
+  await context.changeAirconState({ power: false }, { tile });
+  assert.equal(calls.length, 3);
+  assert.deepEqual(calls[2].body, { action: 'set_state', power: false });
 });
 
 test('late successful response updates the originating device after navigation', async () => {

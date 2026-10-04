@@ -1,0 +1,25 @@
+# Pi: python3 scripts/test_h2_zigbee_power_off.py
+KST=2026-10-03 23:22:56
+GATEWAY=online
+PERMIT_JOIN=false
+MODEL=AIRCON_H2_IR_01
+SUPPORTED=true
+MODE=preview
+MQTT_PUBLISH_COUNT=0
+
+# Pi: python3 scripts/test_h2_zigbee_power_off.py --send
+KST=2026-10-03 23:23:02
+GATEWAY=online
+PERMIT_JOIN=false
+MODEL=AIRCON_H2_IR_01
+SUPPORTED=true
+MODE=one-shot-send
+REQUEST_ID=12495794
+MQTT_PUBLISH_COUNT=1
+COMMAND=POWER_OFF
+MATCHED_IR_RESULT=accepted
+MATCHED_IR_RESULT=sent
+IR_RESULT=RMT_COMPLETE_AC_STATE_NOT_VERIFIED
+
+# User physically observed the air conditioner turn off after this one request.
+# The observation is separate from the H2 firmware's 'sent' report.

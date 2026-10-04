@@ -81,6 +81,13 @@ class RegisterDeviceRequest(BaseModel):
     room: str = Field(min_length=1, max_length=100)
     profile_id: str = Field(min_length=1, max_length=200)
     icon: str = Field(default="box", min_length=1, max_length=50, pattern=r"^[a-z0-9-]+$")
+    zigbee_friendly_name: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class H2BindingRequest(BaseModel):
+    """Select an already interviewed Zigbee H2 IR node for this air conditioner."""
+
+    friendly_name: str = Field(min_length=1, max_length=200)
 
 
 class DeviceCommandRequest(BaseModel):
@@ -155,21 +162,28 @@ def create_app(
         )
     else:
         transport = MockIrTransport()
+    sensor_service = SensorService(
+        store=SensorStore(resolved_settings.data_dir),
+        base_topic=resolved_settings.mqtt_base_topic,
+    )
+    if sensor_bridge is not None:
+        bridge = sensor_bridge
+    elif resolved_settings.mqtt_enabled:
+        bridge = PahoSensorBridge(resolved_settings, sensor_service)
+    else:
+        bridge = DisabledSensorBridge()
     device_service = DeviceService(
         catalog=catalog,
         store=RegisteredDeviceStore(resolved_settings.data_dir),
         resolver=DeviceCommandResolver(catalog),
         transport=transport,
+        zigbee_bridge=bridge,
     )
     request_store = DeviceRequestStore(
         resolved_settings.data_dir,
         resolved_settings.max_upload_bytes,
     )
     event_hub = EventHub()
-    sensor_service = SensorService(
-        store=SensorStore(resolved_settings.data_dir),
-        base_topic=resolved_settings.mqtt_base_topic,
-    )
     automation_service = AutomationService(
         store=AutomationStore(resolved_settings.data_dir),
         sensors=sensor_service,
@@ -184,13 +198,6 @@ def create_app(
         lambda result: event_hub.publish("device.commanded", result)
     )
     device_service.add_listener(automation_service.notify_state_changed)
-    if sensor_bridge is not None:
-        bridge = sensor_bridge
-    elif resolved_settings.mqtt_enabled:
-        bridge = PahoSensorBridge(resolved_settings, sensor_service)
-    else:
-        bridge = DisabledSensorBridge()
-
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         event_hub.start()
@@ -467,12 +474,41 @@ def create_app(
                 room=request.room.strip(),
                 profile_id=request.profile_id,
                 icon=request.icon,
+                zigbee_friendly_name=request.zigbee_friendly_name,
             )
         except ProfileNotFoundError as exc:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="unsupported device profile",
             ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=str(exc),
+            ) from exc
+        except ZigbeeGatewayUnavailableError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(exc),
+            ) from exc
+
+    @application.put("/api/v1/devices/{device_id}/zigbee-h2", tags=["devices"])
+    def bind_device_h2(device_id: str, request: H2BindingRequest) -> dict[str, object]:
+        try:
+            return device_service.bind_h2(device_id, request.friendly_name)
+        except DeviceNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="registered device not found") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        except ZigbeeGatewayUnavailableError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    @application.delete("/api/v1/devices/{device_id}/zigbee-h2", tags=["devices"])
+    def unbind_device_h2(device_id: str) -> dict[str, object]:
+        try:
+            return device_service.unbind_h2(device_id)
+        except DeviceNotFoundError as exc:
+            raise HTTPException(status_code=404, detail="registered device not found") from exc
 
     @application.get("/api/v1/devices", tags=["devices"])
     def list_devices() -> dict[str, object]:
@@ -493,6 +529,16 @@ def create_app(
         except UnsupportedCommandError as exc:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=str(exc),
+            ) from exc
+        except ZigbeeGatewayUnavailableError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(exc),
+            ) from exc
+        except ZigbeeGatewayRequestError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=str(exc),
             ) from exc
         except TransportUnavailableError as exc:

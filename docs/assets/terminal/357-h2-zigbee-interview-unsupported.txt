@@ -1,0 +1,14 @@
+# Pi: docker logs --since 5m aircon-zigbee2mqtt 2>&1
+# Actual selected output, with IEEE address removed and ANSI colors omitted.
+[2026-10-03 23:06:40] info: z2m: Zigbee: allowing new devices to join via Coordinator.
+[2026-10-03 23:06:40] info: z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/response/permit_join', payload '{"data":{"device":"Coordinator","time":120},"status":"ok"}'
+[2026-10-03 23:07:04] info: zh:controller: Interview for '[REDACTED_IEEE]' started
+[2026-10-03 23:07:04] info: z2m: Device '[REDACTED_IEEE]' joined
+[2026-10-03 23:07:05] info: zh:controller: Succesfully interviewed '[REDACTED_IEEE]'
+[2026-10-03 23:07:05] info: z2m: Successfully interviewed '[REDACTED_IEEE]', device has successfully been paired
+[2026-10-03 23:07:05] warning: z2m: Device '[REDACTED_IEEE]' with Zigbee model 'AIRCON_H2_IR_01' and manufacturer name 'DIY Aircon' is NOT supported
+[2026-10-03 23:07:12] info: z2m: Zigbee: disabling joining new devices.
+[2026-10-03 23:07:12] info: z2m:mqtt: MQTT publish: topic 'zigbee2mqtt/bridge/response/permit_join', payload '{"data":{"device":"Coordinator","time":0},"status":"ok"}'
+
+# Interview succeeded, but Zigbee2MQTT has not loaded the local external
+# converter. The new device is not yet a working POWER_OFF control path.

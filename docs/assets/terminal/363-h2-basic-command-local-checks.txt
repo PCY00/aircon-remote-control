@@ -1,0 +1,18 @@
+# 2026-10-04 H2 기본 명령 펌웨어·변환기·웹 로컬 검사
+# 실제 실행 출력의 요약 줄만 발췌. 장치 고유 정보와 사설 주소는 포함하지 않음.
+> .\scripts\esp32_h2_firmware.ps1 -Action build -Variant zigbee-ir-node
+# 로컬 빌드 exit code 0. 전체 빌드 로그 대신 결과 바이너리 크기를 별도 확인.
+> (Get-Item -LiteralPath 'C:\esp\aircon-h2-zigbee-ir-node-1872b0c90271\build\aircon_h2_zigbee_ir_node.bin').Length
+511168
+
+> .\.venv\Scripts\python.exe -m pytest -q --ignore=tests/test_h2_ir_firmware.py
+210 passed, 2 skipped in 25.49s
+
+> node --test tests/test_sensor_refresh_policy.cjs tests/test_h2_converter.cjs tests/test_device_ui.cjs
+1..28
+# tests 28
+# pass 28
+# fail 0
+
+> node --check deploy/zigbee/zigbee2mqtt/external_converters/aircon-h2-ir.mjs
+# exit code 0, no output

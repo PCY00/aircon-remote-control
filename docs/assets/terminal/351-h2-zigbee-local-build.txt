@@ -1,0 +1,18 @@
+$ .\scripts\esp32_h2_firmware.ps1 -Action build -Variant zigbee-ir-node
+BUILD_DIRECTORY=C:\esp\aircon-h2-zigbee-ir-node-1872b0c90271
+Activating ESP-IDF 5.5
+Setting IDF_PATH to 'C:\Espressif\frameworks\esp-idf-v5.5.4'.
+* Checking python version ... 3.12.8
+* Checking python dependencies ... OK
+Done! You can now compile ESP-IDF projects.
+Executing action: all (aliases: build)
+Running ninja in directory C:\esp\aircon-h2-zigbee-ir-node-1872b0c90271\build
+Executing "ninja all"...
+[957/968] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+[966/968] Linking CXX executable aircon_h2_zigbee_ir_node.elf
+[967/968] Generating binary image from built executable
+Successfully created esp32h2 image.
+aircon_h2_zigbee_ir_node.bin binary size 0x7c930 bytes. Smallest app partition is 0xeb000 bytes. 0x6e6d0 bytes (47%) free.
+Project build complete.
+
+Note: This is a selected excerpt of the 4MB-configured local build output.

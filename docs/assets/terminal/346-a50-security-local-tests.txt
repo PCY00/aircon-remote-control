@@ -1,0 +1,47 @@
+# Actual phone SSH operations; private details removed
+
+$ python -m pytest tests/test_central_households.py tests/test_central_push_api.py tests/test_central_fcm.py -q
+
+=================================== ERRORS ====================================
+______________ ERROR collecting tests/test_central_households.py ______________
+ImportError while importing test module '[REDACTED_LOCAL_PATH]\OneDrive\Desktop\����\������_����_����\tests\test_central_households.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_central_households.py:9: in <module>
+    import jwt
+E   ModuleNotFoundError: No module named 'jwt'
+_______________ ERROR collecting tests/test_central_push_api.py _______________
+ImportError while importing test module '[REDACTED_LOCAL_PATH]\OneDrive\Desktop\����\������_����_����\tests\test_central_push_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_central_push_api.py:5: in <module>
+    from tests.test_central_households import environment as environment
+tests\test_central_households.py:9: in <module>
+    import jwt
+E   ModuleNotFoundError: No module named 'jwt'
+_________________ ERROR collecting tests/test_central_fcm.py __________________
+ImportError while importing test module '[REDACTED_LOCAL_PATH]\OneDrive\Desktop\����\������_����_����\tests\test_central_fcm.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\importlib\__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\test_central_fcm.py:11: in <module>
+    from central_server.fcm import FCMSender
+services\central-server\central_server\fcm.py:11: in <module>
+    from google.auth.transport.requests import Request
+E   ModuleNotFoundError: No module named 'google'
+=========================== short test summary info ===========================
+ERROR tests/test_central_households.py
+ERROR tests/test_central_push_api.py
+ERROR tests/test_central_fcm.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!
+3 errors in 1.60s
+
+EXIT_CODE=2

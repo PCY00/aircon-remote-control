@@ -1,7 +1,7 @@
 # ESP32-H2 SuperMini IR node firmware
 
 This is the first Step 4 bring-up firmware. It verifies the USB-powered
-ESP32-H2 SuperMini, GPIO8, AO3400A and one 940 nm IR LED before adding Zigbee.
+ESP32-H2 SuperMini, GPIO5, AO3400A and one 940 nm IR LED before adding Zigbee.
 
 The firmware starts idle. It never sends an air-conditioner command only because
 the board booted.
@@ -44,10 +44,13 @@ The old `C:\esp\aircon-h2-ir-node-build` is retained but no longer updated.
 The 2026-09-12 source improvements have not been flashed to the physical board.
 Do not infer the installed firmware version from the staging files alone.
 
-GPIO8 is the physically confirmed pin. Camera-visible IR emission was observed;
-carrier frequency and pulse timings have not been measured on the output.
-Carrier A/C `POWER_OFF` has not yet succeeded on this H2 setup. A transmission
-completion log only means the RMT driver finished processing its buffer.
+On 2026-10-03 the user confirmed that the new perfboard's IR gate circuit is
+connected to GPIO5. The currently flashed console firmware also reports GPIO5.
+A phone-camera video captured optical output from this perfboard after one
+`c` command, and the user physically confirmed that the A/C turned off after
+one `f` command. These are first observed successes, not range/reliability
+measurements. The carrier frequency and pulse timings have not been measured
+on the output. The transmission log alone does not prove the A/C response.
 
 Carrier packet data is isolated in `main/carrier_profile.h`. Host regression
 tests compare the actual C encoder output with the Raspberry Pi command profile.
@@ -58,8 +61,8 @@ sending another command; use `5` for a longer camera test instead of queuing `cc
 A TX error latches a fault and rejects further transmissions until reset. Its
 static payload remains valid even if the RMT driver cannot finish or stop.
 
-This project's current SDK is ESP-IDF 5.5.4. Zigbee integration will be added only
-after standalone RMT transmission succeeds.
+This project's current SDK is ESP-IDF 5.5.4. A separate Zigbee firmware
+prototype is under `../esp32-h2-zigbee-ir-node/`; it has not been flashed.
 
 Run host checks with `python -m pytest tests/test_h2_ir_firmware.py`. They require
 a host GCC or Clang compiler (on this PC: `C:\msys64\ucrt64\bin\gcc.exe`) and skip when one

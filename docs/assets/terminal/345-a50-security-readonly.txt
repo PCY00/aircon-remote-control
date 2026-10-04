@@ -1,0 +1,71 @@
+# Actual phone SSH operations; private details removed
+
+# Executed read-only script:
+set -eu
+printf 'ANDROID_VERSION='
+/system/bin/getprop ro.build.version.release
+printf 'ANDROID_SECURITY_PATCH='
+/system/bin/getprop ro.build.version.security_patch
+python - <<'PY'
+from pathlib import Path
+import stat
+home=Path.home()
+for label, suffix in [
+ ('FCM_CREDENTIAL','.config/aircon-central/fcm-service-account.json'),
+ ('SERVER_CONFIG','.config/aircon-central/config.json'),
+ ('HUB_CREDENTIAL','.config/aircon-central/pi-central-hub.json'),
+ ('HOUSEHOLD_DATABASE','.local/share/aircon-central/central.sqlite3'),
+ ('SERVER_CONFIG_DIRECTORY','.config/aircon-central'),
+ ('SERVER_DATA_DIRECTORY','.local/share/aircon-central'),
+ ('SSH_AUTHORIZED_KEYS','.ssh/authorized_keys'),
+]:
+ path=home/suffix
+ print(label+'_EXISTS='+str(path.exists()))
+ if path.exists(): print(label+'_MODE='+oct(stat.S_IMODE(path.stat().st_mode)))
+listeners=[]
+for path in Path('/proc').glob('[0-9]*/cmdline'):
+ try: args=path.read_bytes().split(b'\0')
+ except (OSError,PermissionError): continue
+ if not args or b'sshd' not in args[0]: continue
+ text=b' '.join(args)
+ if b'listener' in text or b'PasswordAuthentication' in text:
+  listeners.append(text)
+print('SSH_LISTENER_VISIBLE='+str(bool(listeners)))
+for args in listeners:
+ print('SSH_PASSWORD_DISABLED_IN_LAUNCH='+str(b'PasswordAuthentication=no' in args))
+ print('SSH_INTERACTIVE_AUTH_DISABLED_IN_LAUNCH='+str(b'KbdInteractiveAuthentication=no' in args))
+import urllib.request,json
+with urllib.request.urlopen('http://[REDACTED_ADDRESS]/health/ready',timeout=5) as response:
+ result=json.load(response)
+ print('CENTRAL_LOOPBACK_HEALTH_HTTP='+str(response.status))
+ print('CENTRAL_DATABASE_READY='+str(result.get('database', result.get('ready', 'FIELD_NOT_PRESENT'))))
+PY
+
+$ SSH [verified host key] read Android patch, private file permissions, SSH launch flags and local health; no settings changed
+ANDROID_VERSION=11
+ANDROID_SECURITY_PATCH=2023-02-01
+FCM_CREDENTIAL_EXISTS=True
+FCM_CREDENTIAL_MODE=0o600
+SERVER_CONFIG_EXISTS=True
+SERVER_CONFIG_MODE=0o600
+HUB_CREDENTIAL_EXISTS=True
+HUB_CREDENTIAL_MODE=0o600
+HOUSEHOLD_DATABASE_EXISTS=True
+HOUSEHOLD_DATABASE_MODE=0o600
+SERVER_CONFIG_DIRECTORY_EXISTS=True
+SERVER_CONFIG_DIRECTORY_MODE=0o700
+SERVER_DATA_DIRECTORY_EXISTS=True
+SERVER_DATA_DIRECTORY_MODE=0o700
+SSH_AUTHORIZED_KEYS_EXISTS=True
+SSH_AUTHORIZED_KEYS_MODE=0o600
+SSH_LISTENER_VISIBLE=True
+SSH_PASSWORD_DISABLED_IN_LAUNCH=True
+SSH_INTERACTIVE_AUTH_DISABLED_IN_LAUNCH=True
+SSH_PASSWORD_DISABLED_IN_LAUNCH=True
+SSH_INTERACTIVE_AUTH_DISABLED_IN_LAUNCH=True
+SSH_PASSWORD_DISABLED_IN_LAUNCH=True
+SSH_INTERACTIVE_AUTH_DISABLED_IN_LAUNCH=True
+CENTRAL_LOOPBACK_HEALTH_HTTP=200
+CENTRAL_DATABASE_READY=ok
+
+EXIT_CODE=0

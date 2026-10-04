@@ -1,0 +1,37 @@
+H2 Zigbee IR 웹 연결 Pi 배포/상태 확인 (2026-10-03 KST)
+Private Tailscale address and device identifier: [REDACTED]
+
+$ ./scripts/deploy.ps1 -Include @('app/main.py','app/devices/service.py','app/devices/store.py','app/integrations/mqtt.py','app/static/index.html')
+MODE=PREVIEW
+FILE_COUNT=5
+NO_REMOTE_CHANGES=preview-only
+
+Pi prior-state verification:
+  app/main.py, app/devices/store.py, app/integrations/mqtt.py matched known local baseline.
+  app/devices/service.py and app/static/index.html matched the documented 2026-09-08 deployment hashes.
+  Five files were backed up on the Pi before copying.
+
+$ ./scripts/deploy.ps1 -Include @('app/main.py','app/devices/service.py','app/devices/store.py','app/integrations/mqtt.py','app/static/index.html') -Apply
+MODE=APPLY
+FILE_COUNT=5
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+$ systemctl --user restart aircon-controller.service
+First status check: deactivating (stop-sigterm)
+Service log: Waiting for connections to close. (CTRL+C to force quit)
+TimeoutStopUSec=1min 30s
+Later status: active (running); Application startup complete.
+
+Read-only Tailscale API checks:
+GET /health => {"status":"ok","service":"aircon-controller"}
+GET /api/v1/devices => 1 Carrier CS-A061GS device, no prior Zigbee binding
+GET /api/v1/zigbee/devices => 3 devices, 1 AIRCON_H2_IR_01 supported and interviewed
+GET / => HTTP 200; H2 connection dialog and button-free joining instructions present
+
+Linking existing device (no IR transmission):
+PUT /api/v1/devices/[REDACTED]/zigbee-h2
+Binding result: type=h2_ir; profile=air_conditioner/Carrier/CS-A061GS
+GET /api/v1/devices => 1 device, binding type=h2_ir, last_command_id=null
+
+No web POWER_OFF command was sent in this deployment check.

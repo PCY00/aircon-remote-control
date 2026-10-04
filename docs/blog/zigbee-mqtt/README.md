@@ -18,8 +18,13 @@
    - 재부팅 후 TH01 새 MQTT 보고와 API 수신까지 실제 검증
    - USB/xHCI 장애·복구와 13인치 화면 전원 분리 판단을 실패 기록으로 포함
    - 실제 문 전환·경고 발생/해제와 화면 전원 분리 장기 관찰은 후속 검증으로 구분
-4. **Step 4 — ESP32-H2 Zigbee IR 노드로 에어컨 제어하기**
-   - 브레드보드 회로, RMT, Zigbee custom cluster, external converter, 실기 제어
+4. **[Step 4 — ESP32-H2 Zigbee IR 노드로 에어컨 제어하기](04-esp32-h2-zigbee-ir-aircon.md)** — 블로그 원고 작성·시제품 핵심 경로 실기 확인 (전체 완료 기준은 후속 검증)
+   - 만능기판 GPIO5 IR 카메라 발광 확인 영상과 Carrier 끄기 첫 1회 성공 확보
+   - 별도 Zigbee 펌웨어 로컬 빌드·프로토콜 테스트 성공, Zigbee2MQTT 변환기 로컬 시험
+   - H2 보드 플래시·첫 부팅 성공; 첫 가입 실패 후 120초 가입 창에서 재시도해 인터뷰 성공
+   - Pi 변환기 로드 후 Zigbee2MQTT에서 H2 지원됨 확인; Zigbee 단일 POWER_OFF와 실물 에어컨 꺼짐 확인
+   - 웹/API에 H2를 연결하고 기본 명령 펌웨어·변환기·대시보드를 배포; 대시보드 냉방 상태 명령의 실제 에어컨 반응 확인
+   - 무선 타임아웃도 재현. 단독 원인과 장기 안정성, 다른 모드·부가 기능의 실물 동작은 미검증
 
 세부 작업, 완료 기준과 단계별 캡처 체크리스트는
 [`../../plans/zigbee-mqtt-iot-roadmap.md`](../../plans/zigbee-mqtt-iot-roadmap.md)를 기준으로 한다.

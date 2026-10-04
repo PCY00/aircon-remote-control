@@ -79,6 +79,7 @@ class RegisteredDeviceStore:
         room: str,
         profile_id: str,
         icon: str = "box",
+        zigbee_binding: dict[str, str] | None = None,
     ) -> dict[str, object]:
         device_id = uuid4().hex
         record: dict[str, object] = {
@@ -91,6 +92,20 @@ class RegisteredDeviceStore:
             "last_desired_state": None,
             "last_command": None,
         }
+        if zigbee_binding is not None:
+            record["zigbee_binding"] = zigbee_binding
+        _write_json(self._directory / f"{device_id}.json", record)
+        return record
+
+    def set_zigbee_binding(
+        self, device_id: str, binding: dict[str, str] | None
+    ) -> dict[str, object]:
+        record = self.get(device_id)
+        if binding is None:
+            record.pop("zigbee_binding", None)
+        else:
+            record["zigbee_binding"] = binding
+        record["updated_at"] = _timestamp()
         _write_json(self._directory / f"{device_id}.json", record)
         return record
 

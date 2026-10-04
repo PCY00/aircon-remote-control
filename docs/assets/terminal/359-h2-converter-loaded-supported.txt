@@ -1,0 +1,38 @@
+# Selected actual output. Private backup path and configuration checksums
+# are omitted; no Zigbee IEEE address or network secret is included.
+
+# Pi: python3 scripts/install_h2_zigbee_converter.py --apply --expected-config-sha256 [REDACTED_CONFIG_HASH]
+CONVERTER_ACTION=install
+EXTERNAL_JS_ACTION=added
+PRIVATE_BACKUP=[REDACTED_PRIVATE_PATH]
+CONVERTER_SHA256_AFTER=76e4a5970836f59df674f85006b441b06fb81a01ca28a6ca4d793554b1ae440c
+INSTALL_STATUS=ready-for-zigbee2mqtt-restart
+
+# Pi: docker restart aircon-zigbee2mqtt
+aircon-zigbee2mqtt
+
+# Pi: docker logs --since 3m aircon-zigbee2mqtt (selected lines)
+[2026-10-03 23:16:07] info: z2m: Loaded external converter 'aircon-h2-ir.mjs'.
+[2026-10-03 23:16:08] info: z2m: Zigbee2MQTT started!
+
+# Pi: bash scripts/zigbee_device_summary.sh
+DEVICE_COUNT=3
+DEVICE_1_MODEL=TH01
+DEVICE_1_FRIENDLY_NAME=sensor_temperature_01
+DEVICE_1_INTERVIEW_COMPLETED=true
+DEVICE_1_SUPPORTED=true
+DEVICE_2_MODEL=TS0203
+DEVICE_2_FRIENDLY_NAME=sensor_door_01
+DEVICE_2_INTERVIEW_COMPLETED=true
+DEVICE_2_SUPPORTED=true
+DEVICE_3_MODEL=AIRCON_H2_IR_01
+DEVICE_3_FRIENDLY_NAME=[REDACTED_IEEE]
+DEVICE_3_INTERVIEW_COMPLETED=true
+DEVICE_3_SUPPORTED=true
+
+# Pi: bash scripts/zigbee_join_control.sh status
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+# The converter is loaded and the device is now supported. No POWER_OFF
+# Zigbee request or real air-conditioner test was performed in this step.

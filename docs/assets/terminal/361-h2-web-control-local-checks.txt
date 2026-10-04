@@ -1,0 +1,21 @@
+H2 Zigbee IR 웹 연결 로컬 검사 (2026-10-03)
+
+$ .venv\Scripts\python.exe -m pytest -q --ignore=tests/test_h2_ir_firmware.py
+........................................................................ [ 33%]
+........................................................................ [ 67%]
+.......ss...........................................................     [100%]
+210 passed, 2 skipped in 21.48s
+
+$ node --test tests/test_device_ui.cjs
+# Subtest: H2 air conditioner exposes POWER_OFF only and sends one request
+ok 5 - H2 air conditioner exposes POWER_OFF only and sends one request
+1..6
+# pass 6
+# fail 0
+
+$ .venv\Scripts\python.exe -m ruff check app/main.py app/devices/service.py app/devices/store.py app/integrations/mqtt.py tests/test_h2_web_control.py
+All checks passed!
+
+Note: tests/test_h2_ir_firmware.py was excluded from this Windows run because its
+host-C compiler path fails in this Unicode working directory. This is not a
+firmware build or hardware verification result.

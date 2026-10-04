@@ -1,0 +1,28 @@
+# Selected actual output; SSH host and device identifiers are omitted.
+# Pi: cd /home/air/aircon-controller && bash scripts/zigbee_join_control.sh status
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+# Pi: cd /home/air/aircon-controller && bash scripts/zigbee_join_control.sh open 120
+PERMIT_JOIN_REQUEST=open
+PERMIT_JOIN_SECONDS=120
+PERMIT_JOIN_TARGET=coordinator
+PERMIT_JOIN=true
+PERMIT_JOIN_END=[REDACTED_TIMESTAMP]
+
+# PC: .\scripts\esp32_h2_firmware.ps1 -Action monitor -Variant zigbee-ir-node -Port COM6
+I (227) aircon_h2_zigbee: First start; requesting Zigbee network steering
+I (227) aircon_h2_zigbee: GPIO5 IR ready; waiting for Zigbee; no automatic IR on boot
+I (2917) aircon_h2_zigbee: Zigbee joined; IR remains idle until a valid command arrives
+
+# Pi: cd /home/air/aircon-controller && bash scripts/zigbee_join_control.sh close
+PERMIT_JOIN_REQUEST=closed
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+# Pi: cd /home/air/aircon-controller && bash scripts/zigbee_join_control.sh status
+PERMIT_JOIN=false
+PERMIT_JOIN_END=none
+
+# No IR command was sent. A Zigbee join does not establish command conversion
+# or actual air-conditioner response.

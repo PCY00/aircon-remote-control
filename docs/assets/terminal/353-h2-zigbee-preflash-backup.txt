@@ -1,0 +1,21 @@
+$ python -m esptool --chip esp32h2 --port COM6 flash_id
+Chip is ESP32-H2 (revision v1.2)
+Detected flash size: 4MB
+Hard resetting via RTS pin...
+
+$ python -m esptool --chip esp32h2 --port COM6 read_flash 0x0 0x400000 C:\esp\aircon-h2-backups\before-zigbee-2026-10-03-4mb.bin
+Read 4194304 bytes at 0x00000000 in 20.3 seconds (1653.8 kbit/s)...
+Hard resetting via RTS pin...
+
+$ Get-Item C:\esp\aircon-h2-backups\before-zigbee-2026-10-03-4mb.bin | Select-Object Length
+ Length
+ ------
+4194304
+
+$ Get-FileHash -Algorithm SHA256 -LiteralPath C:\esp\aircon-h2-backups\before-zigbee-2026-10-03-4mb.bin | Select-Object Hash
+Hash
+----
+66A42B2D87931830E257FD7F5E3D7E6B55B035431258D6B7A493A869B18BB638
+
+Note: Selected output only. Device MAC and unique identifiers were removed.
+The full backup stays outside the repository; do not publish the binary.

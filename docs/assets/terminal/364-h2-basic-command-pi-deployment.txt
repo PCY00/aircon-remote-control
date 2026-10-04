@@ -1,0 +1,60 @@
+# 2026-10-04 H2 기본 명령 Pi 반영·읽기 전용 검증
+# 호스트명, 사설 주소, 장치 고유 식별자와 백업 경로는 [REDACTED].
+> .\scripts\deploy.ps1 -Include @('deploy/zigbee/zigbee2mqtt/external_converters/aircon-h2-ir.mjs','scripts/install_h2_zigbee_converter.py','app/integrations/mqtt.py','app/devices/service.py','app/static/index.html') -Apply
+MODE=APPLY
+FILE_COUNT=5
+TOTAL_BYTES=178893
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+> python3 scripts/install_h2_zigbee_converter.py  # Pi preview
+CONVERTER_ACTION=replace
+EXTERNAL_JS_ACTION=already-enabled
+NO_REMOTE_CHANGES=preview-only
+
+> python3 scripts/install_h2_zigbee_converter.py --apply --expected-config-sha256 [REDACTED] --expected-converter-sha256 [REDACTED]
+CONVERTER_ACTION=replace
+PRIVATE_CONVERTER_BACKUP=[REDACTED]
+PRIVATE_CONFIG_BACKUP=[REDACTED]
+INSTALL_STATUS=ready-for-zigbee2mqtt-restart
+
+> docker restart aircon-zigbee2mqtt
+aircon-zigbee2mqtt
+> docker logs --since 2m aircon-zigbee2mqtt  # selected startup lines
+Loaded external converter 'aircon-h2-ir.mjs'.
+Zigbee2MQTT started!
+
+> systemctl --user restart aircon-controller.service
+> systemctl --user is-active aircon-controller.service
+active
+> curl [PI_TAILSCALE_URL]/health
+{"status":"ok","service":"aircon-controller"}
+> curl [PI_TAILSCALE_URL]/api/v1/zigbee/devices  # parsed summary
+3 devices; AIRCON_H2_IR_01 supported=true, interview_state=SUCCESSFUL
+# 이번 배포 검증에서 새 IR 명령은 발행하지 않음.
+
+> .\scripts\deploy.ps1 -Include @('scripts/install_h2_zigbee_converter.py') -Apply
+MODE=APPLY
+FILE_COUNT=1
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+# 서식 검사 수정만 재전송; 서비스 재시작과 IR 송신 없음.
+
+> .\scripts\deploy.ps1 -Include @('app/static/index.html') -Apply
+MODE=APPLY
+FILE_COUNT=1
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+> curl [PI_TAILSCALE_URL]/ | sha256sum
+113609bafbcb7951ed70b3a8cd693415b7d4a197c2992dc7c09fd31e4c74c825  -
+> sha256sum app/static/index.html  # Pi
+113609bafbcb7951ed70b3a8cd693415b7d4a197c2992dc7c09fd31e4c74c825  app/static/index.html
+
+> .\scripts\deploy.ps1 -Include @('app/static/index.html') -Apply
+MODE=APPLY
+FILE_COUNT=1
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+> curl [PI_TAILSCALE_URL]/ | sha256sum
+090c0fb47f72447968e57cbcc36d40f22646cddd37749ebdf648c54e92cdfb81  -
+# 풍향 버튼을 움직임/고정의 서로 다른 캡처 명령으로 분리.

@@ -1,0 +1,11 @@
+$ python -m pytest tests/test_h2_zigbee_protocol.py -q
+..                                                                       [100%]
+2 passed in 1.24s
+
+$ node --input-type=module -e "import definition from './aircon-h2-ir.mjs'; console.log(definition.model, definition.extend.length, definition.fromZigbee[0].type.join(','), definition.toZigbee[0].key.join(','));"
+AIRCON_H2_IR_01 1 commandResult ir_request
+
+The Node check ran from a temporary directory with Zigbee2MQTT 2.14.1's
+pinned zigbee-herdsman 10.9.2 and zigbee-herdsman-converters 26.105.0.
+The converter was copied there for this local check. It was not installed on
+the Raspberry Pi or loaded into the live Zigbee2MQTT service.

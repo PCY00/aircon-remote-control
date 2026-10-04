@@ -60,6 +60,26 @@ runtime/zigbee/
 Never publish the contents of `secret.yaml`, `stack.env`, `database.db`, Coordinator backups or
 backup archives.
 
+## H2 IR external converter (explicit opt-in)
+
+`deploy/zigbee/zigbee2mqtt/external_converters/aircon-h2-ir.mjs` is the local
+source of truth. The converter accepts only the `POWER_OFF` request schema.
+Zigbee2MQTT 2.11+ disables external JavaScript by default on new installs,
+and enabling it allows arbitrary code from the runtime converter directory.
+Keep that directory private, install only reviewed files, and do not enable it
+for unrelated devices.
+
+Deploy the reviewed converter and `scripts/install_h2_zigbee_converter.py` from
+this checkout to the same relative paths on the Pi. Preview with
+`python3 scripts/install_h2_zigbee_converter.py`; pass its `CONFIG_SHA256` to
+`--apply --expected-config-sha256 <hash>` only after comparing the Pi files.
+The installer keeps the runtime configuration and a private backup on the Pi,
+never copies secrets into this repository, and does not restart the gateway.
+Restart only `aircon-zigbee2mqtt` in a short maintenance window, then verify
+the converter loaded, the H2 is supported, existing sensors remain registered,
+and `permit_join=false`. Do not claim IR control until a real command/result
+and the air conditioner's response are separately tested.
+
 ## Pinned versions and updates
 
 Versions are intentionally pinned in `compose.yaml`. Do not replace them with `latest` during

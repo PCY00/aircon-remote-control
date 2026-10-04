@@ -48,5 +48,8 @@ for index, device in enumerate(devices, start=1):
         + "_INTERVIEW_COMPLETED="
         + str(interview_completed).lower()
     )
-    print("DEVICE_" + str(index) + "_SUPPORTED=" + str(bool(definition)).lower())
+    supported = device.get("supported")
+    if not isinstance(supported, bool):
+        supported = bool(definition)
+    print("DEVICE_" + str(index) + "_SUPPORTED=" + str(supported).lower())
 '

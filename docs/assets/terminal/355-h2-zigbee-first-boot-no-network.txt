@@ -1,0 +1,17 @@
+$ .\scripts\esp32_h2_firmware.ps1 -Action monitor -Variant zigbee-ir-node -Port COM6
+I (25) boot.esp32h2: SPI Flash Size : 4MB
+I (31) boot: Defaulting to factory image
+I (179) app_init: Project name:     aircon_h2_zigbee_ir_node
+I (180) app_init: ESP-IDF:          v5.5.4
+I (187) main_task: Calling app_main()
+I (227) aircon_h2_zigbee: First start; requesting Zigbee network steering
+I (227) aircon_h2_zigbee: GPIO5 IR ready; waiting for Zigbee; no automatic IR on boot
+I (227) main_task: Returned from app_main()
+W (2957) aircon_h2_zigbee: Zigbee join failed: 0x03; reboot to retry
+
+SDK 2.0.4 enum: EZB_BDB_STATUS_NO_NETWORK = 3.
+This means network steering found no network during this attempt. It does not
+identify whether permit-join, distance, gateway availability, or another
+environmental factor caused the failure. No IR command was sent.
+
+Note: Selected output only. Device identifiers were removed.

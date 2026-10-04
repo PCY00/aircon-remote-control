@@ -219,11 +219,18 @@ SSE 이벤트도 관찰되지 않았으므로 실제 문 전환·경고 시험�
 
 ## Step 4 — ESP32-H2 Zigbee IR 노드와 에어컨 제어
 
-상태: **진행 중 — ESP32-H2 ROM 복구·IR 단독 펌웨어 빌드/플래시/안정 부팅 완료**
+상태: **시제품 핵심 경로 실기 확인 — 전체 완료 기준은 미달 (2026-10-04)**
+
+ESP32-H2 SuperMini 만능기판 시제품에서 GPIO5 IR 발광, USB 콘솔 및 Zigbee
+`POWER_OFF` 실물 꺼짐, 대시보드 `COOL_STATE` 실물 반응을 확인했다. 웹/API와
+Zigbee2MQTT 응답 연계도 동작했다. 그러나 무선 타임아웃이 재현됐고, 모든
+운전 모드의 실물 반응과 배치 거리 반복 성공률은 아직 검증하지 않았다.
+기록은 [Step 4 블로그 원고](../blog/zigbee-mqtt/04-esp32-h2-zigbee-ir-aircon.md)와
+[현장 시험 일지](../journal/2026-10-04-h2-dashboard-field-test.md)에 있다.
 
 ### 목표
 
-ESP32-H2-DevKitM-1, 940 nm IR LED, AO3400A와 브레드보드로 Zigbee IR 노드를 만들고,
+ESP32-H2 SuperMini, IR LED, MOSFET과 만능기판으로 Zigbee IR 시제품을 만들고,
 기존 웹 UI에서 보낸 에어컨 명령이 MQTT와 Zigbee를 거쳐 실제 에어컨을 제어하게 한다.
 
 ### 구현 작업

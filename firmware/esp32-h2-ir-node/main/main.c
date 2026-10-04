@@ -13,7 +13,7 @@
 #include "freertos/task.h"
 #include "carrier_profile.h"
 
-#define IR_TX_GPIO GPIO_NUM_8
+#define IR_TX_GPIO GPIO_NUM_5
 #define RMT_RESOLUTION_HZ 1000000U
 #define IR_CARRIER_DUTY 0.33F
 #define CAMERA_PERIOD_MS 200U

@@ -1,0 +1,30 @@
+# 2026-10-04 H2 대시보드 Zigbee IR 현장 시험 — Pi 읽기 전용 로그
+# 실제 명령 출력에서 필요한 시각·명령·상태만 발췌. 사설 IP와 장치 식별자는 생략.
+# 시각은 Asia/Seoul. 아래 로그만으로 실물 반응을 판정하지 않으며, 본문에 사용자 관찰을 별도 기록.
+
+> journalctl _UID=1000 --since '2026-10-04 00:20:00' --until '2026-10-04 00:51:00' --no-pager -o short-iso | grep 'POST /api/v1/devices'  # selected lines, private fields redacted
+2026-10-04T00:44:31+09:00  POST /api/v1/devices/[REDACTED]/commands  200 OK
+2026-10-04T00:44:41+09:00  POST /api/v1/devices/[REDACTED]/commands  200 OK
+2026-10-04T00:46:12+09:00  POST /api/v1/devices/[REDACTED]/commands  502 Bad Gateway
+2026-10-04T00:48:30+09:00  POST /api/v1/devices/[REDACTED]/commands  502 Bad Gateway
+2026-10-04T00:48:41+09:00  POST /api/v1/devices/[REDACTED]/commands  200 OK
+2026-10-04T00:48:49+09:00  POST /api/v1/devices/[REDACTED]/commands  200 OK
+2026-10-04T00:48:54+09:00  POST /api/v1/devices/[REDACTED]/commands  200 OK
+
+> docker logs --since 2026-10-03T15:20:00Z --until 2026-10-03T15:50:00Z aircon-zigbee2mqtt  # selected fields; UTC query, KST output
+2026-10-04 00:21:06  error=MAC_CHANNEL_ACCESS_FAILURE
+2026-10-04 00:21:33  error=MAC_NO_ACK
+2026-10-04 00:44:31  command=COOL_STATE  status=accepted
+2026-10-04 00:44:31  command=COOL_STATE  status=sent
+2026-10-04 00:44:40  command=COOL_STATE  status=accepted
+2026-10-04 00:44:41  command=COOL_STATE  status=sent
+2026-10-04 00:48:30  event=device_announce  # preceding cached sent is not a new request
+2026-10-04 00:48:41  command=COOL_STATE  status=accepted
+2026-10-04 00:48:41  command=COOL_STATE  status=sent
+2026-10-04 00:48:48  command=COOL_STATE  status=accepted
+2026-10-04 00:48:49  command=COOL_STATE  status=sent
+2026-10-04 00:48:54  command=COOL_STATE  status=accepted
+2026-10-04 00:48:54  command=COOL_STATE  status=sent
+
+# 사용자 현장 관찰: 성공 응답으로 처리된 송신마다 에어컨이 반응했고, 오류가 난 시험은 반응하지 않음.
+# 케이블·전원·거리 조건을 함께 바꾸었으므로 타임아웃의 단독 원인은 미확정.
