@@ -4,7 +4,7 @@
 
 이 README는 **처음부터 한 번 만들어 보는 순서**로 썼다. 아래 링크는 모두 이 저장소 안의 실제 파일을 가리킨다. 코드와 스크립트를 따로 요청할 필요 없이 GitHub에서 이 저장소를 내려받으면 된다.
 
-**현재 GitHub 저장소는 비공개다.** 초대받지 않은 사람은 이 페이지나 코드를 볼 수 없다. 비공개 상태에서 따라 한다면 접근 권한이 있는 GitHub 계정으로 PC와 Pi의 Git 인증을 먼저 준비해야 한다. 다른 사람 누구나 볼 수 있도록 공개하는 일은 별도의 보안 검토와 저장소 공개 설정 변경이 필요하다.
+공개 저장소에는 실제 SSH 키, MQTT 비밀번호, Firebase 서버 키와 집의 접속 주소를 넣지 않았다. 설치할 때 필요한 비공개 설정은 각자 자신의 장비에서 준비한다.
 
 ```text
 휴대폰·PC·13인치 터치 화면
@@ -72,8 +72,6 @@ PowerShell이 `.ps1` 실행을 막는 PC라면 현재 창에서만 `Set-Executio
 2. PC에서 SSH로 Pi에 접속한다. Pi가 처음 켜지지 않거나 SSH가 안 된다면 [Raspberry Pi의 초기 설정 안내](https://www.raspberrypi.com/documentation/computers/getting-started.html)를 먼저 따른다.
 3. Pi와 원격 접속할 휴대폰·PC에 Tailscale을 설치하고 **본인 계정의 같은 사설망(tailnet)**에 넣는다. 설치·로그인 명령은 [Tailscale의 현재 Linux 안내](https://tailscale.com/kb/1031/install-linux)를 따른다. Pi에서 `tailscale ip -4`로 주소가 나오는지 살핀다. 주소 자체는 블로그, 이슈, 화면 캡처에 공개하지 않는다.
 4. Pi에서도 이 저장소를 내려받고 Python 환경을 만든다. 이것은 **첫 설치**다. 이후 코드 수정은 PC를 기준으로 하고, Pi 파일을 직접 고쳐 서로 다른 버전을 만들지 않는다.
-
-비공개 저장소를 Pi에 내려받을 때는 접근 권한이 있는 GitHub 계정에 **Pi의 별도 SSH 공개키**를 등록하고, 아래 `git clone` 주소를 `git@github.com:PCY00/aircon-remote-control.git`로 바꾼다. PC에서 Pi에 접속할 때 쓰는 SSH 키와 Pi에서 GitHub에 접속할 때 쓰는 키는 방향이 다르다. 공개키만 GitHub에 등록하고 개인 키는 절대 저장소에 올리지 않는다.
 
 ```bash
 sudo apt update
@@ -271,3 +269,7 @@ systemctl --user status aircon-controller.service --no-pager
 전용 오류 기록은 [문제 해결 문서](docs/troubleshooting.md), 화면이 안 뜰 때는 [키오스크 문서](docs/operations/kiosk-display.md), Zigbee 기기가 안 붙을 때는 [게이트웨이 설치 문서](deploy/zigbee/README.md)를 본다. `H2 result timed out`은 **IR이 이미 전송됐을 수도 있는 모호한 오류**다. 재전송 전에 에어컨 실물을 먼저 본다. 펌웨어·USB 전원·Zigbee 거리 중 원인을 하나로 단정하지 않는다.
 
 사진과 터미널 자료는 [`docs/assets/`](docs/assets/)에 있다. 공개 전 사진 위치·촬영 기기 같은 메타데이터는 [`scripts/sanitize_blog_images.py`](scripts/sanitize_blog_images.py)로 제거하고, 비밀번호·사설 주소·장치 고유 식별자는 캡처에 남기지 않는다. 각 단계의 시행착오를 차례로 읽고 싶다면 [첫 번째 에어컨 제어 4편](docs/blog/README.md)과 [후속 Zigbee/MQTT 4편](docs/blog/zigbee-mqtt/README.md)으로 이어진다.
+
+## 10. 선택: Galaxy A50 가족 앱과 외부 알림까지 확장하기
+
+위 1~9단계만으로 Pi 대시보드와 Tailscale을 통한 에어컨 제어를 구성할 수 있다. 남는 Galaxy A50을 가족 계정·외부 알림 서버로 쓰려면 별도 [A50 서버·가족 앱 설치 가이드](server/README.md)로 이어간다. 이 앱은 현재 **문·온습도·경고 기록과 알림용**이며, 에어컨 제어는 Pi 웹 대시보드에서 한다. A50 확장은 시험 단계이므로 처음 설치하는 사람은 먼저 위의 기본 구성을 끝낸다.
