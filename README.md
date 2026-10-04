@@ -4,6 +4,8 @@
 
 이 README는 **처음부터 한 번 만들어 보는 순서**로 썼다. 아래 링크는 모두 이 저장소 안의 실제 파일을 가리킨다. 코드와 스크립트를 따로 요청할 필요 없이 GitHub에서 이 저장소를 내려받으면 된다.
 
+**현재 GitHub 저장소는 비공개다.** 초대받지 않은 사람은 이 페이지나 코드를 볼 수 없다. 비공개 상태에서 따라 한다면 접근 권한이 있는 GitHub 계정으로 PC와 Pi의 Git 인증을 먼저 준비해야 한다. 다른 사람 누구나 볼 수 있도록 공개하는 일은 별도의 보안 검토와 저장소 공개 설정 변경이 필요하다.
+
 ```text
 휴대폰·PC·13인치 터치 화면
         │ 웹 화면 (Tailscale 사설망의 8001 포트)
@@ -62,12 +64,16 @@ python -m venv .venv
 
 브라우저에서 `http://127.0.0.1:8001/`을 연다. `http://127.0.0.1:8001/health`가 응답하면 웹앱이 켜진 것이다. **PC의 기본 IR 송신은 모의 동작**이다. 화면이 열렸다고 에어컨이 움직이는 단계는 아니다. Python 패키지 설치는 PC에 직접 뿌리지 않고 이 저장소의 `.venv` 안에만 한다. 위 테스트 명령은 한글 경로의 Windows C 컴파일러에서 실패하는 H2 호스트 테스트 한 파일을 제외한다. 나머지 테스트는 이 PC에서 210개 통과, 2개 건너뜀으로 끝났다.
 
+PowerShell이 `.ps1` 실행을 막는 PC라면 현재 창에서만 `Set-ExecutionPolicy -Scope Process Bypass`를 먼저 실행한다. PC 전체 정책을 영구히 바꿀 필요는 없다.
+
 ## 3. Raspberry Pi와 Tailscale 준비
 
 1. [Raspberry Pi Imager](https://www.raspberrypi.com/software/)로 Raspberry Pi OS Lite 64-bit를 microSD에 기록한다. 이번 설치 기록의 기준은 Debian 13 Trixie arm64다. Imager의 사전 설정에서 네트워크, 시간대, 사용자 계정과 SSH 공개키 로그인을 설정한다. 아래 Pi 명령은 사용자 이름을 `air`, 프로젝트 경로를 `/home/air/aircon-controller`로 둔 **저장소 스크립트 기본값**에 맞췄다. 다른 이름을 쓰려면 서비스 파일과 배포 경로도 함께 바꿔야 한다.
 2. PC에서 SSH로 Pi에 접속한다. Pi가 처음 켜지지 않거나 SSH가 안 된다면 [Raspberry Pi의 초기 설정 안내](https://www.raspberrypi.com/documentation/computers/getting-started.html)를 먼저 따른다.
 3. Pi와 원격 접속할 휴대폰·PC에 Tailscale을 설치하고 **본인 계정의 같은 사설망(tailnet)**에 넣는다. 설치·로그인 명령은 [Tailscale의 현재 Linux 안내](https://tailscale.com/kb/1031/install-linux)를 따른다. Pi에서 `tailscale ip -4`로 주소가 나오는지 살핀다. 주소 자체는 블로그, 이슈, 화면 캡처에 공개하지 않는다.
 4. Pi에서도 이 저장소를 내려받고 Python 환경을 만든다. 이것은 **첫 설치**다. 이후 코드 수정은 PC를 기준으로 하고, Pi 파일을 직접 고쳐 서로 다른 버전을 만들지 않는다.
+
+비공개 저장소를 Pi에 내려받을 때는 접근 권한이 있는 GitHub 계정에 **Pi의 별도 SSH 공개키**를 등록하고, 아래 `git clone` 주소를 `git@github.com:PCY00/aircon-remote-control.git`로 바꾼다. PC에서 Pi에 접속할 때 쓰는 SSH 키와 Pi에서 GitHub에 접속할 때 쓰는 키는 방향이 다르다. 공개키만 GitHub에 등록하고 개인 키는 절대 저장소에 올리지 않는다.
 
 ```bash
 sudo apt update
