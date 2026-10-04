@@ -6,15 +6,24 @@
 
 공개 저장소에는 실제 SSH 키, MQTT 비밀번호, Firebase 서버 키와 집의 접속 주소를 넣지 않았다. 설치할 때 필요한 비공개 설정은 각자 자신의 장비에서 준비한다.
 
-```text
-휴대폰·PC·13인치 터치 화면
-        │ 웹 화면 (Tailscale 사설망의 8001 포트)
-        ▼
-Raspberry Pi: FastAPI ── Mosquitto(MQTT) ── Zigbee2MQTT ── ZBDongle-P
-                  ▲                                     │ Zigbee 무선
-                  │                                     ├─ 온습도·문 센서
-                  └──────── 에어컨 명령 ────────────────└─ ESP32-H2 → IR LED → 에어컨
-```
+## 소프트웨어 구조
+
+집마다 Raspberry Pi가 센서와 에어컨 제어를 맡는다. 선택 확장인 A50 중앙 서버는 각 Pi의 새 기록을 받고, **그 집에 등록된 가족의 휴대폰에만** 선택한 알림을 보낸다. 같은 계정으로 여러 휴대폰을 쓰더라도 알림 종류는 휴대폰마다 정한다. Google 로그인은 계정 확인을 맡고, 집에 들어갈 권한과 알림 대상은 중앙 서버가 결정한다.
+
+[![스마트홈 전체 연결: Pi 제어와 A50 가족 알림의 두 경로](docs/architecture/smart-home-overview.svg)](docs/architecture/smart-home-overview.svg)
+
+**현재 가족 APK는 기록·알림용이다.** 에어컨 조작은 Tailscale로 접속하는 Pi 웹 대시보드에서 한다. 가족 앱의 HTTPS 통로와 Pi 제어 경로는 별개다. FCM 전송 접수도 휴대폰에 알림이 표시됐다는 뜻은 아니다.
+
+[A0 벡터 SVG 원본](docs/architecture/smart-home-components-a0.svg) · [A0 인쇄용 PDF](docs/architecture/smart-home-components-a0.pdf) · [컴포넌트 역할·코드 위치·데이터 흐름](docs/architecture/README.md)
+
+<details>
+<summary>A0 컴포넌트 아키텍처 펼쳐 보기</summary>
+
+본문 글자 약 12px, A0 가로형(1189 × 841mm)으로 만들었다. SVG 좌표의 12px는 화면에서 확대·축소할 때 함께 변한다. 전체를 축소하면 세부 글자가 작아지므로 그림을 클릭하거나 PDF를 확대해서 읽는다. SVG의 글자·상자·화살표는 벡터이며, PDF에는 한글 글꼴을 포함했다.
+
+[![스마트홈 A0 컴포넌트 아키텍처: Pi, A50 중앙 서버, Android 앱, 집별 권한과 실행·복구](docs/architecture/smart-home-components-a0.svg)](docs/architecture/smart-home-components-a0.svg)
+
+</details>
 
 Zigbee2MQTT는 인터넷 회원가입 서비스가 아니다. Pi에 설치해 Zigbee 장치의 메시지를 웹앱이 읽을 수 있는 MQTT 메시지로 이어주는 프로그램이다. ESP32-H2도 Wi-Fi나 MQTT에 직접 연결하지 않는다.
 

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="680" viewBox="0 0 1260 680" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">Smart home component architecture</title>
+<desc id="diagram-desc">현재 코드의 Pi 제어, 집별 A50 알림 서버, Firebase 로그인 및 휴대폰별 FCM 전달 구조.</desc>
+<style>text{font-family:"Malgun Gothic","Noto Sans KR",sans-serif;font-size:16px}</style>
+<rect x="0" y="0" width="1260" height="680" rx="0" fill="#f8fafc" stroke="#f8fafc" stroke-width="1"/>
+<text x="28" y="42" font-size="26px" style="font-size:26px" fill="#172a3a" font-weight="700">스마트홈 · 제어와 가족 알림의 두 경로</text>
+<text x="28" y="72" font-size="17px" style="font-size:17px" fill="#526779" font-weight="400">각 집의 Pi → A50의 집별 권한·수신 선택 → 해당 가족의 휴대폰</text>
+<rect x="28" y="162" width="245" height="123" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="28" y="162" width="4" height="123" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="41" y="185" font-size="19px" style="font-size:19px" fill="#2664ad" font-weight="700">각 집의 Raspberry Pi</text>
+<text x="41" y="210.75" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">Zigbee 센서·웹 화면·기록 DB</text>
+<text x="41" y="233.15" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">연결 서비스: 새 기록만 읽음</text>
+<text x="41" y="255.55" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">Pi마다 전용 허브 키</text>
+<rect x="325" y="162" width="197" height="123" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="325" y="162" width="4" height="123" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="338" y="185" font-size="18px" style="font-size:18px" fill="#087e83" font-weight="700">Cloudflare HTTPS</text>
+<text x="338" y="209.5" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">시험용 Quick Tunnel</text>
+<text x="338" y="231.9" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">요청을 A50으로 중계</text>
+<text x="338" y="254.3" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">주소는 바뀔 수 있음</text>
+<rect x="574" y="162" width="313" height="123" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="574" y="162" width="4" height="123" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="587" y="185" font-size="19px" style="font-size:19px" fill="#087e83" font-weight="700">A50 · 가족 중앙 서버</text>
+<text x="587" y="210.75" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">계정 + 집·가족 권한 확인</text>
+<text x="587" y="233.15" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">휴대폰별 알림 선택·전송 대기</text>
+<text x="587" y="255.55" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">Flask / SQLite / FCM sender</text>
+<rect x="1010" y="162" width="222" height="123" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1"/>
+<rect x="1010" y="162" width="4" height="123" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="1023" y="185" font-size="19px" style="font-size:19px" fill="#7650a6" font-weight="700">가족 Android 앱</text>
+<text x="1023" y="210.75" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">Google 로그인</text>
+<text x="1023" y="233.15" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">집·기록·가족·알림 선택</text>
+<text x="1023" y="255.55" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">여러 폰, 각각 알림 설정</text>
+<polyline points="273,222 325,222" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="325.00,222.00 317.00,218.50 317.00,225.50" fill="#087e83"/>
+<text x="279" y="210" font-size="13px" style="font-size:13px" fill="#087e83" font-weight="400">HTTPS</text>
+<polyline points="522,222 574,222" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="574.00,222.00 566.00,218.50 566.00,225.50" fill="#087e83"/>
+<text x="530" y="210" font-size="13px" style="font-size:13px" fill="#087e83" font-weight="400">터널</text>
+<rect x="950" y="94" width="282" height="56" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1" stroke-dasharray="6 4"/>
+<rect x="950" y="94" width="4" height="56" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="963" y="117" font-size="16px" style="font-size:16px" fill="#7650a6" font-weight="700">Google / Firebase Auth</text>
+<text x="963" y="139.0" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">계정 로그인·ID 토큰 발급</text>
+<polyline points="1121,150 1121,162" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1121.00,162.00 1124.50,154.00 1117.50,154.00" fill="#7650a6"/>
+<polygon points="1121.00,150.00 1117.50,158.00 1124.50,158.00" fill="#7650a6"/>
+<polyline points="1121,285 1121,331 424,331 424,285" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="424.00,285.00 420.50,293.00 427.50,293.00" fill="#7650a6"/>
+<rect x="585" y="320" width="329.75" height="22" rx="2" fill="#f8fafc" stroke="#f8fafc" stroke-width="1"/>
+<text x="589" y="337" font-size="16px" style="font-size:16px" fill="#7650a6" font-weight="400">HTTPS + Firebase ID 토큰 / 집·기록·설정 API</text>
+<rect x="911" y="210" width="79" height="69" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="911" y="210" width="4" height="69" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="924" y="233" font-size="17px" style="font-size:17px" fill="#087e83" font-weight="700">FCM</text>
+<text x="924" y="256.25" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">외부</text>
+<polyline points="887,247 911,247" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="911.00,247.00 903.00,243.50 903.00,250.50" fill="#087e83"/>
+<polyline points="990,247 1010,247" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1010.00,247.00 1002.00,243.50 1002.00,250.50" fill="#087e83"/>
+<text x="899" y="191" font-size="15px" style="font-size:15px" fill="#087e83" font-weight="400">알림 전달</text>
+<rect x="28" y="389" width="1204" height="116" rx="8" fill="#edf5fd" stroke="#2664ad" stroke-width="1"/>
+<text x="44" y="420" font-size="20px" style="font-size:20px" fill="#2664ad" font-weight="700">에어컨 제어는 Pi 웹 대시보드에서</text>
+<text x="44" y="453" font-size="16px" style="font-size:16px" fill="#2664ad" font-weight="400">휴대폰·PC·터치 화면 → Tailscale :8001 → Pi FastAPI → MQTT → Zigbee2MQTT → H2 → IR → 에어컨</text>
+<text x="44" y="483" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">가족 APK는 현재 기록·알림용이다. Pi GPIO IR은 선택 경로이며, 화면의 에어컨 상태는 마지막 명령의 추정값이다.</text>
+<rect x="28" y="531" width="588" height="106" rx="8" fill="#f4effb" stroke="#7650a6" stroke-width="1"/>
+<text x="44" y="561" font-size="19px" style="font-size:19px" fill="#7650a6" font-weight="700">다른 집의 알림을 받지 않게</text>
+<text x="44" y="592" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">서버가 집 소속·현재 역할·활성 설치를 확인한다.</text>
+<text x="44" y="620" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">알림 전송 직전에도 가족 권한과 휴대폰 선택을 다시 읽는다.</text>
+<rect x="644" y="531" width="588" height="106" rx="8" fill="#eaf7f5" stroke="#087e83" stroke-width="1"/>
+<text x="660" y="561" font-size="19px" style="font-size:19px" fill="#087e83" font-weight="700">휴대폰마다 받고 싶은 소식만</text>
+<text x="660" y="592" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">문 / 경고 / 온습도 · 온습도 최소 간격 1·5·15·60분</text>
+<text x="660" y="620" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">FCM에는 알림 분류만, 자세한 기록은 인증된 API에서 읽는다.</text>
+<text x="28" y="666" font-size="14px" style="font-size:14px" fill="#526779" font-weight="400">현재 구현 · Pi 0.7.0 / 중앙·앱 0.4.0 · 전체 컴포넌트·저장·복구 구조는 A0 원본 참고</text>
+</svg>

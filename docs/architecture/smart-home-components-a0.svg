@@ -1,0 +1,287 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1189mm" height="841mm" viewBox="0 0 1682 1189" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">Smart home component architecture</title>
+<desc id="diagram-desc">현재 코드의 Pi 제어, 집별 A50 알림 서버, Firebase 로그인 및 휴대폰별 FCM 전달 구조.</desc>
+<style>text{font-family:"Malgun Gothic","Noto Sans KR",sans-serif;font-size:12px}</style>
+<rect x="0" y="0" width="1682" height="1189" rx="0" fill="#f8fafc" stroke="#f8fafc" stroke-width="1"/>
+<text x="36" y="54" font-size="30px" style="font-size:30px" fill="#172a3a" font-weight="700">스마트홈 소프트웨어 컴포넌트 아키텍처</text>
+<text x="36" y="82" font-size="15px" style="font-size:15px" fill="#526779" font-weight="400">집 안의 센서·에어컨 제어와 집별 가족 알림을 연결한 현재 구현</text>
+<text x="1230" y="49" font-size="13px" style="font-size:13px" fill="#526779" font-weight="400">A0 / 1189 × 841 mm / SVG + PDF</text>
+<text x="1230" y="74" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi 앱 0.7.0 · 중앙/가족 앱 0.4.0 · 2026-10-04</text>
+<polyline points="36,111 66,111" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="66.00,111.00 58.00,107.50 58.00,114.50" fill="#2664ad"/>
+<text x="77" y="115" font-size="12px" style="font-size:12px" fill="#2664ad" font-weight="400">센서·제어</text>
+<polyline points="211,111 241,111" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="241.00,111.00 233.00,107.50 233.00,114.50" fill="#087e83"/>
+<text x="252" y="115" font-size="12px" style="font-size:12px" fill="#087e83" font-weight="400">API·알림</text>
+<polyline points="386,111 416,111" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="416.00,111.00 408.00,107.50 408.00,114.50" fill="#7650a6"/>
+<text x="427" y="115" font-size="12px" style="font-size:12px" fill="#7650a6" font-weight="400">계정·권한</text>
+<polyline points="561,111 591,111" fill="none" stroke="#617184" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="591.00,111.00 583.00,107.50 583.00,114.50" fill="#617184"/>
+<text x="602" y="115" font-size="12px" style="font-size:12px" fill="#617184" font-weight="400">저장·운영</text>
+<text x="776" y="115" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">실선: 데이터/호출 방향 · 점선 상자: 외부 의존성 · 내부 호출은 핵심 흐름만 표시</text>
+<rect x="36" y="142" width="1610" height="223" rx="10" fill="#eaf7f5" stroke="#087e83" stroke-width="1"/>
+<text x="52" y="171" font-size="19px" style="font-size:19px" fill="#087e83" font-weight="700">전체 연결</text>
+<text x="52" y="193" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">각 집의 Pi는 기록을 보내고, A50은 해당 집 가족의 등록된 휴대폰만 선택한다.</text>
+<rect x="52" y="212" width="268" height="88" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="52" y="212" width="4" height="88" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="65" y="235" font-size="14px" style="font-size:14px" fill="#2664ad" font-weight="700">집 A / 집 B / … · 각 Raspberry Pi</text>
+<text x="65" y="254.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">센서·자동화 기록 + 독립 연결 서비스</text>
+<text x="65" y="271.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi마다 전용 허브 키 · 원본 DB는 읽기 전용</text>
+<rect x="370" y="212" width="188" height="88" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="370" y="212" width="4" height="88" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="383" y="235" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">Cloudflare HTTPS</text>
+<text x="383" y="254.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Quick Tunnel (시험용)</text>
+<text x="383" y="271.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">HTTPS 종료·요청 중계</text>
+<rect x="608" y="212" width="316" height="88" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="608" y="212" width="4" height="88" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="621" y="235" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">Galaxy A50 · Termux 중앙 서버</text>
+<text x="621" y="254.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Flask + Waitress / SQLite / 전송 작업</text>
+<text x="621" y="271.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">집·가족·허브 연결과 휴대폰별 수신 선택</text>
+<rect x="974" y="212" width="252" height="88" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="974" y="212" width="4" height="88" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="987" y="235" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">Google FCM · 외부 서비스</text>
+<text x="987" y="254.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">HTTP v1 전송 요청 → 설치 토큰별 전달</text>
+<text x="987" y="271.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">집 권한과 알림 대상은 A50이 결정</text>
+<rect x="1276" y="212" width="354" height="88" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="1276" y="212" width="4" height="88" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="1289" y="235" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">가족 Android 앱 · 여러 휴대폰</text>
+<text x="1289" y="254.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">같은 계정의 다른 폰도 각자 알림 선택</text>
+<text x="1289" y="271.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">문·온습도·경고 기록 조회와 알림 표시</text>
+<polyline points="320,254 370,254" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="370.00,254.00 362.00,250.50 362.00,257.50" fill="#087e83"/>
+<text x="322" y="244" font-size="11px" style="font-size:11px" fill="#087e83" font-weight="400">HTTPS</text>
+<polyline points="558,254 608,254" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="608.00,254.00 600.00,250.50 600.00,257.50" fill="#087e83"/>
+<text x="560" y="244" font-size="11px" style="font-size:11px" fill="#087e83" font-weight="400">터널</text>
+<polyline points="924,254 974,254" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="974.00,254.00 966.00,250.50 966.00,257.50" fill="#087e83"/>
+<text x="926" y="244" font-size="11px" style="font-size:11px" fill="#087e83" font-weight="400">FCM</text>
+<polyline points="1226,254 1276,254" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1276.00,254.00 1268.00,250.50 1268.00,257.50" fill="#087e83"/>
+<text x="1228" y="244" font-size="11px" style="font-size:11px" fill="#087e83" font-weight="400">Push</text>
+<polyline points="1453,300 1453,326 464,326 464,300" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="464.00,300.00 460.50,308.00 467.50,308.00" fill="#7650a6"/>
+<rect x="690" y="317" width="385.44921875" height="18" rx="2" fill="#f8fafc" stroke="#f8fafc" stroke-width="1"/>
+<text x="694" y="330" font-size="12px" style="font-size:12px" fill="#7650a6" font-weight="400">HTTPS + Firebase ID 토큰 / 집·기록 조회, 초대, 휴대폰 등록·알림 선택</text>
+<text x="52" y="351" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi 업로드: POST /v1/hub/events + 전용 허브 키 · A50 내부 API: 127.0.0.1:8001 · 노트북은 운영 중계가 아니다.</text>
+<text x="36" y="399" font-size="21px" style="font-size:21px" fill="#172a3a" font-weight="700">컴포넌트 내부</text>
+<text x="234" y="399" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">상자는 책임 단위다. 같은 실행 프로세스 안의 클래스도 나누어 그렸다.</text>
+<rect x="36" y="415" width="470" height="480" rx="10" fill="#edf5fd" stroke="#2664ad" stroke-width="1"/>
+<text x="52" y="444" font-size="19px" style="font-size:19px" fill="#2664ad" font-weight="700">집마다 한 세트 · Raspberry Pi</text>
+<text x="52" y="466" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">FastAPI / MQTT / 센서·자동화 DB / 사용자 systemd</text>
+<rect x="530" y="415" width="600" height="480" rx="10" fill="#eaf7f5" stroke="#087e83" stroke-width="1"/>
+<text x="546" y="444" font-size="19px" style="font-size:19px" fill="#087e83" font-weight="700">중앙 한 곳 · Galaxy A50</text>
+<text x="546" y="466" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Flask / Waitress 2 threads / 전송 worker / DB 스키마 4</text>
+<rect x="1154" y="415" width="492" height="480" rx="10" fill="#f4effb" stroke="#7650a6" stroke-width="1"/>
+<text x="1170" y="444" font-size="19px" style="font-size:19px" fill="#7650a6" font-weight="700">가족마다 여러 대 · Android APK</text>
+<text x="1170" y="466" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Google 로그인 + 기록 화면 + 설치별 FCM · Android 8 이상</text>
+<rect x="52" y="484" width="119" height="77" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="52" y="484" width="4" height="77" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="65" y="507" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">Zigbee 센서</text>
+<text x="65" y="525.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">문 / 온습도</text>
+<text x="65" y="542.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">무선 보고</text>
+<rect x="191" y="484" width="153" height="77" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="191" y="484" width="4" height="77" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="204" y="507" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">Zigbee2MQTT</text>
+<text x="204" y="525.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">USB ZBDongle-P</text>
+<text x="204" y="542.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">장치 메시지 변환</text>
+<rect x="364" y="484" width="126" height="77" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="364" y="484" width="4" height="77" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="377" y="507" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">Mosquitto</text>
+<text x="377" y="525.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">MQTT 1883</text>
+<text x="377" y="542.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi 내부 연결</text>
+<polyline points="171,522 191,522" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="191.00,522.00 183.00,518.50 183.00,525.50" fill="#2664ad"/>
+<polyline points="344,522 364,522" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="364.00,522.00 356.00,518.50 356.00,525.50" fill="#2664ad"/>
+<rect x="52" y="596" width="218" height="89" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="52" y="596" width="4" height="89" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="65" y="619" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">SensorService / MQTT</text>
+<text x="65" y="637.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">값 확인 → 상태·문 변화 저장</text>
+<text x="65" y="654.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">app/integrations/mqtt.py</text>
+<text x="65" y="671.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">app/sensors/service.py</text>
+<rect x="292" y="596" width="198" height="89" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="292" y="596" width="4" height="89" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="305" y="619" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">FastAPI + DeviceService</text>
+<text x="305" y="637.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">/api/v1 · 웹 화면 · SSE</text>
+<text x="305" y="654.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">기기 JSON / 명령 프로필</text>
+<text x="305" y="671.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">H2 또는 Pi IR 송신 선택</text>
+<polyline points="427,561 427,578 161,578 161,596" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="161.00,596.00 164.50,588.00 157.50,588.00" fill="#2664ad"/>
+<rect x="205" y="569" width="60.21875" height="18" rx="2" fill="#f8fafc" stroke="#f8fafc" stroke-width="1"/>
+<text x="209" y="582" font-size="12px" style="font-size:12px" fill="#2664ad" font-weight="400">센서 수신</text>
+<polyline points="270,633 292,633" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="292.00,633.00 284.00,629.50 284.00,636.50" fill="#2664ad"/>
+<rect x="52" y="722" width="218" height="74" rx="6" fill="#ffffff" stroke="#617184" stroke-width="1"/>
+<rect x="52" y="722" width="4" height="74" rx="0" fill="#617184" stroke="#617184" stroke-width="1"/>
+<text x="65" y="745" font-size="14px" style="font-size:14px" fill="#617184" font-weight="700">센서·자동화 SQLite</text>
+<text x="65" y="764.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">sensor_states / door_events</text>
+<text x="65" y="781.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">automation_events</text>
+<rect x="292" y="722" width="198" height="74" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="292" y="722" width="4" height="74" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="305" y="745" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">Automation + EventHub</text>
+<text x="305" y="763.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">문 열림 경고 발생·해제</text>
+<text x="305" y="780.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">웹 화면 갱신은 메모리 SSE</text>
+<polyline points="161,685 161,722" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="161.00,722.00 164.50,714.00 157.50,714.00" fill="#2664ad"/>
+<polyline points="250,685 250,703 391,703 391,722" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="391.00,722.00 394.50,714.00 387.50,714.00" fill="#2664ad"/>
+<polyline points="391,722 391,685" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="391.00,685.00 387.50,693.00 394.50,693.00" fill="#2664ad"/>
+<polyline points="292,759 270,759" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="270.00,759.00 278.00,762.50 278.00,755.50" fill="#2664ad"/>
+<rect x="52" y="825" width="438" height="60" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="52" y="825" width="4" height="60" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="65" y="848" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">Pi 연결 서비스 · agent.py</text>
+<text x="65" y="866.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">5초마다 새 기록 조회 / 자체 cursor + outbox.sqlite3 / HTTPS 전송</text>
+<polyline points="161,796 161,825" fill="none" stroke="#617184" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="161.00,825.00 164.50,817.00 157.50,817.00" fill="#617184"/>
+<rect x="170" y="808" width="60.21875" height="18" rx="2" fill="#f8fafc" stroke="#f8fafc" stroke-width="1"/>
+<text x="174" y="821" font-size="12px" style="font-size:12px" fill="#617184" font-weight="400">읽기 전용</text>
+<rect x="546" y="484" width="268" height="81" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1"/>
+<rect x="546" y="484" width="4" height="81" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="559" y="507" font-size="14px" style="font-size:14px" fill="#7650a6" font-weight="700">사용자 API + FirebaseIdentity</text>
+<text x="559" y="526.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Firebase ID 토큰 서명·만료·프로젝트 확인</text>
+<text x="559" y="543.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Google 공개 인증서 캐시 / auth.py</text>
+<rect x="836" y="484" width="278" height="81" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="836" y="484" width="4" height="81" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="849" y="507" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">허브 API · 기기 인증</text>
+<text x="849" y="526.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">허브 키의 해시 → 활성 hub → 소속 집</text>
+<text x="849" y="543.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">앱 사용자 토큰과 다른 인증 경로</text>
+<rect x="546" y="600" width="268" height="81" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1"/>
+<rect x="546" y="600" width="4" height="81" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="559" y="623" font-size="14px" style="font-size:14px" fill="#7650a6" font-weight="700">Households · 집·가족 권한</text>
+<text x="559" y="642.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">현재 memberships / owner·member·viewer</text>
+<text x="559" y="659.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">초대 수락 / 허브 연결 / 집 비활성화</text>
+<rect x="836" y="600" width="278" height="81" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="836" y="600" width="4" height="81" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="849" y="623" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">이벤트 수집 · 중복 처리</text>
+<text x="849" y="642.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">UNIQUE(hub_id, sender_event_id)</text>
+<text x="849" y="659.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">이벤트와 알림 대기를 한 DB 트랜잭션으로</text>
+<polyline points="680,565 680,600" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="680.00,600.00 683.50,592.00 676.50,592.00" fill="#7650a6"/>
+<polyline points="975,565 975,600" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="975.00,600.00 978.50,592.00 971.50,592.00" fill="#087e83"/>
+<rect x="546" y="721" width="268" height="80" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="546" y="721" width="4" height="80" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="559" y="744" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">PushStore + Preferences</text>
+<text x="559" y="763.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">활성 가족·설치·binding + 종류별 선택</text>
+<text x="559" y="780.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">온습도: 새 보고 + 1/5/15/60분 최소 간격</text>
+<rect x="836" y="721" width="278" height="80" rx="6" fill="#ffffff" stroke="#617184" stroke-width="1"/>
+<rect x="836" y="721" width="4" height="80" rx="0" fill="#617184" stroke="#617184" stroke-width="1"/>
+<text x="849" y="744" font-size="14px" style="font-size:14px" fill="#617184" font-weight="700">SQLite · central.sqlite3</text>
+<text x="849" y="763.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">users / homes / memberships / hubs / events</text>
+<text x="849" y="780.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">installations / preferences / push_jobs / audit</text>
+<polyline points="680,681 680,721" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="680.00,721.00 683.50,713.00 676.50,713.00" fill="#7650a6"/>
+<polyline points="814,640 825,640 825,702 900,702 900,721" fill="none" stroke="#617184" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="900.00,721.00 903.50,713.00 896.50,713.00" fill="#617184"/>
+<polyline points="975,681 975,721" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="975.00,721.00 978.50,713.00 971.50,713.00" fill="#087e83"/>
+<polyline points="814,761 836,761" fill="none" stroke="#617184" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="836.00,761.00 828.00,757.50 828.00,764.50" fill="#617184"/>
+<polygon points="814.00,761.00 822.00,764.50 822.00,757.50" fill="#617184"/>
+<rect x="546" y="825" width="568" height="60" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="546" y="825" width="4" height="60" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="559" y="848" font-size="13px" style="font-size:13px" fill="#087e83" font-weight="700">PushWorker → FCMSender</text>
+<text x="559" y="866.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">전송 직전 권한·선택 재확인 / 만료·재시도 / 서버 전용 키로 HTTP v1 요청</text>
+<polyline points="680,801 680,825" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="680.00,825.00 683.50,817.00 676.50,817.00" fill="#087e83"/>
+<polyline points="975,801 975,825" fill="none" stroke="#617184" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="975.00,825.00 978.50,817.00 971.50,817.00" fill="#617184"/>
+<rect x="1170" y="484" width="218" height="81" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1" stroke-dasharray="6 4"/>
+<rect x="1170" y="484" width="4" height="81" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="1183" y="507" font-size="14px" style="font-size:14px" fill="#7650a6" font-weight="700">Google / Firebase Auth</text>
+<text x="1183" y="526.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">APK 밖의 외부 로그인 서비스</text>
+<text x="1183" y="543.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Google 계정 → Firebase ID 토큰</text>
+<rect x="1406" y="484" width="224" height="81" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1"/>
+<rect x="1406" y="484" width="4" height="81" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="1419" y="507" font-size="14px" style="font-size:14px" fill="#7650a6" font-weight="700">FirebaseSession</text>
+<text x="1419" y="526.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Credential Manager 로그인</text>
+<text x="1419" y="543.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Firebase 사용자·세션 유지</text>
+<polyline points="1388,524 1406,524" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1406.00,524.00 1398.00,520.50 1398.00,527.50" fill="#7650a6"/>
+<polygon points="1388.00,524.00 1396.00,527.50 1396.00,520.50" fill="#7650a6"/>
+<rect x="1170" y="600" width="218" height="81" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1"/>
+<rect x="1170" y="600" width="4" height="81" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="1183" y="623" font-size="14px" style="font-size:14px" fill="#7650a6" font-weight="700">FamilyActivity · 화면</text>
+<text x="1183" y="642.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">홈 / 기록 / 설정 / 가족 관리</text>
+<text x="1183" y="659.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">알림 선택·오류 안내·스크롤 유지</text>
+<rect x="1406" y="600" width="224" height="81" rx="6" fill="#ffffff" stroke="#7650a6" stroke-width="1"/>
+<rect x="1406" y="600" width="4" height="81" rx="0" fill="#7650a6" stroke="#7650a6" stroke-width="1"/>
+<text x="1419" y="623" font-size="13px" style="font-size:13px" fill="#7650a6" font-weight="700">ApiClient + EndpointPolicy</text>
+<text x="1419" y="641.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">HTTPS / Bearer Firebase ID 토큰</text>
+<text x="1419" y="658.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">집·기록·설치·선택 API 호출</text>
+<polyline points="1518,565 1518,600" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1518.00,600.00 1521.50,592.00 1514.50,592.00" fill="#7650a6"/>
+<polyline points="1388,640 1406,640" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1406.00,640.00 1398.00,636.50 1398.00,643.50" fill="#7650a6"/>
+<rect x="1170" y="721" width="218" height="80" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="1170" y="721" width="4" height="80" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="1183" y="744" font-size="13px" style="font-size:13px" fill="#087e83" font-weight="700">PushManager + SyncWorker</text>
+<text x="1183" y="762.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">설치 증명·FCM 토큰 등록</text>
+<text x="1183" y="779.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">WorkManager / 선택 동기화</text>
+<rect x="1406" y="721" width="224" height="80" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="1406" y="721" width="4" height="80" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="1419" y="744" font-size="13px" style="font-size:13px" fill="#087e83" font-weight="700">FamilyMessagingService</text>
+<text x="1419" y="762.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">FCM data 메시지 수신</text>
+<text x="1419" y="779.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">계정·binding·중복·선택 재확인</text>
+<polyline points="1279,721 1279,701 1518,701 1518,681" fill="none" stroke="#7650a6" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1518.00,681.00 1514.50,689.00 1521.50,689.00" fill="#7650a6"/>
+<rect x="1170" y="825" width="218" height="60" rx="6" fill="#ffffff" stroke="#617184" stroke-width="1"/>
+<rect x="1170" y="825" width="4" height="60" rx="0" fill="#617184" stroke="#617184" stroke-width="1"/>
+<text x="1183" y="848" font-size="13px" style="font-size:13px" fill="#617184" font-weight="700">SharedPreferences</text>
+<text x="1183" y="866.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">설치 증명 / binding / 선택 / 중복</text>
+<rect x="1406" y="825" width="224" height="60" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="1406" y="825" width="4" height="60" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
+<text x="1419" y="848" font-size="12px" style="font-size:12px" fill="#087e83" font-weight="700">Android NotificationManager</text>
+<text x="1419" y="865.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">알림 권한 / 일반·온습도 채널</text>
+<polyline points="1279,801 1279,825" fill="none" stroke="#617184" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1279.00,825.00 1282.50,817.00 1275.50,817.00" fill="#617184"/>
+<polyline points="1518,801 1518,825" fill="none" stroke="#087e83" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="1518.00,825.00 1521.50,817.00 1514.50,817.00" fill="#087e83"/>
+<rect x="36" y="919" width="470" height="222" rx="10" fill="#edf5fd" stroke="#2664ad" stroke-width="1"/>
+<text x="52" y="948" font-size="19px" style="font-size:19px" fill="#2664ad" font-weight="700">에어컨 제어 · 별도 경로</text>
+<text x="52" y="970" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">가족 APK는 기록·알림용이다. 에어컨 명령은 Pi 웹 화면에서 보낸다.</text>
+<rect x="52" y="988" width="128" height="56" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="52" y="988" width="4" height="56" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="65" y="1011" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">웹 / 터치 화면</text>
+<text x="65" y="1029.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Tailscale :8001</text>
+<rect x="200" y="988" width="126" height="56" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="200" y="988" width="4" height="56" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="213" y="1011" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">Pi → MQTT</text>
+<text x="213" y="1029.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">DeviceService</text>
+<rect x="346" y="988" width="144" height="56" rx="6" fill="#ffffff" stroke="#2664ad" stroke-width="1"/>
+<rect x="346" y="988" width="4" height="56" rx="0" fill="#2664ad" stroke="#2664ad" stroke-width="1"/>
+<text x="359" y="1011" font-size="13px" style="font-size:13px" fill="#2664ad" font-weight="700">H2 → IR LED</text>
+<text x="359" y="1029.25" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Zigbee 펌웨어</text>
+<polyline points="180,1016 200,1016" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="200.00,1016.00 192.00,1012.50 192.00,1019.50" fill="#2664ad"/>
+<polyline points="326,1016 346,1016" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
+<polygon points="346.00,1016.00 338.00,1012.50 338.00,1019.50" fill="#2664ad"/>
+<text x="52" y="1069" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">H2 경로: MQTT → Zigbee2MQTT 변환기 → Zigbee → H2 → IR → 에어컨</text>
+<text x="52" y="1103" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">선택: Pi GPIO IR / ir-ctl. 화면 상태는 마지막 명령의 추정값이다. H2의 sent는</text>
+<text x="52" y="1121.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">에어컨의 실제 상태 응답이 아니다.</text>
+<rect x="530" y="919" width="600" height="222" rx="10" fill="#f4effb" stroke="#7650a6" stroke-width="1"/>
+<text x="546" y="948" font-size="19px" style="font-size:19px" fill="#7650a6" font-weight="700">집별 격리 · 서버에서 결정</text>
+<text x="546" y="970" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">로그인은 계정 확인이고, 집에 들어갈 권한은 중앙 DB에서 확인한다.</text>
+<text x="546" y="995" font-size="14px" style="font-size:14px" fill="#7650a6" font-weight="700">Pi A → 집 A → 집 A 가족의 활성 설치</text>
+<text x="546" y="1024" font-size="14px" style="font-size:14px" fill="#7650a6" font-weight="700">Pi B → 집 B → 집 B 가족의 활성 설치</text>
+<text x="890" y="995" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">같은 사용자가 여러 집에 소속될 수 있다.</text>
+<text x="890" y="1024" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">현재: 집마다 활성 허브 1대</text>
+<text x="546" y="1055" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">소유자만 초대·가족 변경·허브 연결·집 삭제·시험 알림을 요청한다. 초대는 지정 Google 계정, 1회</text>
+<text x="546" y="1073.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">사용·24시간. 허브 연결 코드는 10분이다.</text>
+<text x="546" y="1102" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">수신 대상을 고를 때와 전송 직전에 가족 소속을 읽는다. FCM에는 식별·분류만 보내고 상세 기록은</text>
+<text x="546" y="1120.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">인증된 API에서 읽는다.</text>
+<rect x="1154" y="919" width="492" height="222" rx="10" fill="#f2f5f8" stroke="#617184" stroke-width="1"/>
+<text x="1170" y="948" font-size="19px" style="font-size:19px" fill="#617184" font-weight="700">실행·복구와 현재 확인 범위</text>
+<text x="1170" y="970" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">현재 코드 구조다. 대규모 서비스나 새 시험 성공을 뜻하지 않는다.</text>
+<text x="1170" y="991" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">A50: Termux:Boot + wake-lock + runit / Pi: 사용자 systemd. PC는</text>
+<text x="1170" y="1009.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">코드·배포·SSH/ADB 관리용이다.</text>
+<text x="1170" y="1039" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi outbox: 만료 240초·최대 8회 재시도. 중앙 push: 최대 300초·최대 6회. 로그</text>
+<text x="1170" y="1057.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">제한과 반복 실패 중단이 있다.</text>
+<text x="1170" y="1087" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Quick Tunnel 주소는 바뀔 수 있다. FCM 전송 접수 ≠ 휴대폰 표시. 물리 센서→폰</text>
+<text x="1170" y="1105.0" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">전체 시험·다른 가족 계정·장시간 운영은 남아 있다.</text>
+<text x="36" y="1171" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">공개용 모델 · 실제 이메일·서버 주소·기기 고유값·인증키 제외 · 코드 근거와 재생성 방법: docs/architecture/README.md</text>
+</svg>
