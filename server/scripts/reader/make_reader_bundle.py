@@ -84,6 +84,7 @@ def sources():
         "android/family-app",
         "examples/mobile-app",
         "docs/blog/mobile-app",
+        "tests/android",
     ]:
         files.update(
             path.resolve()
@@ -95,6 +96,7 @@ def sources():
         "scripts/sanitize_blog_images.py",
         "tests/__init__.py",
         ".gitignore",
+        "pytest.ini",
     ]:
         files.add((ROOT / name).resolve())
     for pattern in [
@@ -102,6 +104,7 @@ def sources():
         "test_central_*.py",
         "test_pi_agent_deploy.py",
         "test_pi_central_agent.py",
+        "test_pi_receipt_trigger.py",
         "test_reader_setup.py",
     ]:
         files.update(p.resolve() for p in (ROOT / "tests").glob(pattern))

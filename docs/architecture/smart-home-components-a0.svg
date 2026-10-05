@@ -6,7 +6,7 @@
 <text x="36" y="54" font-size="30px" style="font-size:30px" fill="#172a3a" font-weight="700">스마트홈 소프트웨어 컴포넌트 아키텍처</text>
 <text x="36" y="82" font-size="15px" style="font-size:15px" fill="#526779" font-weight="400">집 안의 센서·에어컨 제어와 집별 가족 알림을 연결한 현재 구현</text>
 <text x="1230" y="49" font-size="13px" style="font-size:13px" fill="#526779" font-weight="400">A0 / 1189 × 841 mm / SVG + PDF</text>
-<text x="1230" y="74" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi 앱 0.7.0 · 중앙/가족 앱 0.4.0 · 2026-10-04</text>
+<text x="1230" y="74" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Pi 앱 0.7.0 · 중앙/가족 앱 0.4.0 · 2026-10-05</text>
 <polyline points="36,111 66,111" fill="none" stroke="#2664ad" stroke-width="1.6" stroke-linejoin="round"/>
 <polygon points="66.00,111.00 58.00,107.50 58.00,114.50" fill="#2664ad"/>
 <text x="77" y="115" font-size="12px" style="font-size:12px" fill="#2664ad" font-weight="400">센서·제어</text>

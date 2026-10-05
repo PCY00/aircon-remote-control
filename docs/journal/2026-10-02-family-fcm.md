@@ -52,7 +52,7 @@ Google Cloud에서 FCM HTTP v1이 이미 활성화된 것을 확인했다. 전�
 
 ## 자료
 
-- [블로그 6편](../blog/mobile-app/06-family-fcm-notifications.md)
+- [블로그 6편](../../server/docs/blog/mobile-app/06-family-fcm-notifications.md)
 - [권한·설치·대기열 결정](../decisions/0015-family-fcm-installations.md)
 - `docs/assets/hardware/fcm/`: 실제 Cloud 약관과 JSON 키 선택 화면, 개인정보·식별값 가림.
 - `docs/assets/hardware/family-app/10-a50-fcm-installation-registered.png`: 실제 설치 등록 UI.

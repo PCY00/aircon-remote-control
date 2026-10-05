@@ -34,7 +34,7 @@ A50 중앙 0.3.1-fc03a7555b62d530을 미리보기 뒤 반영했다. 일관 SQLit
 시험은 별도다. 현재 준비를 운영 연결 완료로 기록하지 않는다.
 
 자료: 터미널 264 이후 TXT/PNG,
-[블로그 7편](../blog/mobile-app/07-raspberry-pi-event-relay.md),
+[블로그 7편](../../server/docs/blog/mobile-app/07-raspberry-pi-event-relay.md),
 [설계 선택](../decisions/0016-pi-outgoing-family-event-relay.md).
 
 ## 사용자 승인 후 실제 연결과 운영 확인

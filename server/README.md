@@ -4,7 +4,9 @@
 
 블로그에서 사용하는 앱·중앙 서버·Pi 연결 서비스·설치 도구·글과 공개용 사진을 **이 `server` 폴더에 함께 넣었다.** 별도로 코드 ZIP을 블로그에 첨부할 필요 없이 이 GitHub 폴더를 연결하면 된다.
 
-[글에서 사용한 코드 0.4.0](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0/server)를 열고 **Code → Download ZIP**을 누른다. 내려받은 ZIP은 저장소 전체이므로 압축을 푼 뒤 안쪽의 **`server` 폴더**를 사용한다. 이 폴더를 `C:\`로 옮기고 `smart-home-reader`로 이름을 바꾸면 아래 글의 경로와 같다. 이미 같은 이름의 폴더가 있다면 새 빈 경로를 사용한다.
+**A50 관련 코드의 기준 위치는 이 폴더 한 곳이다.** 저장소 루트의 `app`, `firmware`, `deploy` 등은 Pi 에어컨 제어용이다. A50 앱·서버·설치 도구·테스트를 루트에 다시 복사하지 않는다.
+
+[글에서 사용한 코드 0.4.0](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server)를 열고 **Code → Download ZIP**을 누른다. 내려받은 ZIP은 저장소 전체이므로 압축을 푼 뒤 안쪽의 **`server` 폴더**를 사용한다. 이 폴더를 `C:\`로 옮기고 `smart-home-reader`로 이름을 바꾸면 아래 글의 경로와 같다. 이미 같은 이름의 폴더가 있다면 새 빈 경로를 사용한다.
 
 ```text
 server/                 ← 이 폴더에서 시작한다
@@ -33,11 +35,13 @@ py -3.12 -m venv .venv
 ZIP 대신 Git을 사용한다면 새 빈 경로에 아래처럼 같은 버전을 내려받는다. 명령을 실행할 위치는 저장소 루트가 아니라 안쪽 `server` 폴더다.
 
 ```powershell
-git clone --branch smart-home-reader-v0.4.0 --single-branch https://github.com/PCY00/aircon-remote-control.git C:\smart-home-project
+git clone --branch smart-home-reader-v0.4.0-r1 --single-branch https://github.com/PCY00/aircon-remote-control.git C:\smart-home-project
 Set-Location C:\smart-home-project\server
 ```
 
 아래 내용은 전체 연결을 한눈에 보는 설치 안내다. 세부 화면과 실패·해결 과정은 위 글 모음에 정리했다.
+
+자동 확인을 실행할 때도 이 폴더에서 `.venv/Scripts/python.exe -m pytest -q`를 사용한다. `pytest.ini`가 A50 테스트 위치를 지정한다. 루트의 Pi 테스트와 각각 실행한다.
 
 이 문서는 [메인 설치 가이드](../README.md)의 **맨 마지막에 있는 선택 단계**를 자세히 설명한다. 먼저 Raspberry Pi의 Zigbee 센서와 웹 대시보드가 동작하도록 메인 가이드 1~9단계를 끝낸다. A50 서버가 없어도 집 안 제어와 Tailscale 접속은 가능하다.
 

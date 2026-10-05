@@ -37,6 +37,6 @@ Cloudflare 계정·도메인이 필요 없는 시험 단계다. 주소가 프로
 
 ## 관련 자료
 
-[5편](../blog/mobile-app/05-external-https-connection.md),
-[서비스 운영 절차](../../services/central-tunnel/README.md),
+[5편](../../server/docs/blog/mobile-app/05-external-https-connection.md),
+[서비스 운영 절차](../../server/services/central-tunnel/README.md),
 [Cloudflare 공식 Quick Tunnel 제한](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/).

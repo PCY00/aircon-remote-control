@@ -292,7 +292,7 @@ def poster():
         color="muted",
     )
     d.text(1230, 49, "A0 / 1189 × 841 mm / SVG + PDF", size=13, color="muted")
-    d.text(1230, 74, "Pi 앱 0.7.0 · 중앙/가족 앱 0.4.0 · 2026-10-04", size=12, color="muted")
+    d.text(1230, 74, "Pi 앱 0.7.0 · 중앙/가족 앱 0.4.0 · 2026-10-05", size=12, color="muted")
     for x, color, label in [
         (36, "blue", "센서·제어"),
         (211, "teal", "API·알림"),
@@ -326,7 +326,7 @@ def poster():
         "집 A / 집 B / … · 각 Raspberry Pi",
         ["센서·자동화 기록 + 독립 연결 서비스", "Pi마다 전용 허브 키 · 원본 DB는 읽기 전용"],
         color="blue",
-        sources=["services/pi-central-agent/agent.py", "app/main.py"],
+        sources=["server/services/pi-central-agent/agent.py", "app/main.py"],
     )
     d.node(
         "https-edge",
@@ -337,7 +337,7 @@ def poster():
         "Cloudflare HTTPS",
         ["Quick Tunnel (시험용)", "HTTPS 종료·요청 중계"],
         color="teal",
-        sources=["services/central-tunnel/tunnel.py"],
+        sources=["server/services/central-tunnel/tunnel.py"],
     )
     d.node(
         "central-container",
@@ -348,7 +348,7 @@ def poster():
         "Galaxy A50 · Termux 중앙 서버",
         ["Flask + Waitress / SQLite / 전송 작업", "집·가족·허브 연결과 휴대폰별 수신 선택"],
         color="teal",
-        sources=["services/central-server/central_server/__main__.py"],
+        sources=["server/services/central-server/central_server/__main__.py"],
     )
     d.node(
         "fcm-provider",
@@ -359,7 +359,7 @@ def poster():
         "Google FCM · 외부 서비스",
         ["HTTP v1 전송 요청 → 설치 토큰별 전달", "집 권한과 알림 대상은 A50이 결정"],
         color="teal",
-        sources=["services/central-server/central_server/fcm.py"],
+        sources=["server/services/central-server/central_server/fcm.py"],
     )
     d.node(
         "android-container",
@@ -370,7 +370,7 @@ def poster():
         "가족 Android 앱 · 여러 휴대폰",
         ["같은 계정의 다른 폰도 각자 알림 선택", "문·온습도·경고 기록 조회와 알림 표시"],
         color="teal",
-        sources=["android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java"],
+        sources=["server/android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java"],
     )
     for a, b, x, y, label in [
         ("home-container", "https-edge", 320, 370, "HTTPS"),
@@ -536,7 +536,7 @@ def poster():
         "Pi 연결 서비스 · agent.py",
         ["5초마다 새 기록 조회 / 자체 cursor + outbox.sqlite3 / HTTPS 전송"],
         title_size=13,
-        sources=["services/pi-central-agent/agent.py"],
+        sources=["server/services/pi-central-agent/agent.py"],
     )
     d.arrow([(161, 796), (161, 825)], source="pi-db", target="pi-agent", color="slate")
     d.label(174, 821, "읽기 전용", color="slate")
@@ -551,8 +551,8 @@ def poster():
         ["Firebase ID 토큰 서명·만료·프로젝트 확인", "Google 공개 인증서 캐시 / auth.py"],
         color="purple",
         sources=[
-            "services/central-server/central_server/auth.py",
-            "services/central-server/central_server/api.py",
+            "server/services/central-server/central_server/auth.py",
+            "server/services/central-server/central_server/api.py",
         ],
     )
     d.node(
@@ -565,8 +565,8 @@ def poster():
         ["허브 키의 해시 → 활성 hub → 소속 집", "앱 사용자 토큰과 다른 인증 경로"],
         color="teal",
         sources=[
-            "services/central-server/central_server/api.py",
-            "services/central-server/central_server/households.py",
+            "server/services/central-server/central_server/api.py",
+            "server/services/central-server/central_server/households.py",
         ],
     )
     d.node(
@@ -578,7 +578,7 @@ def poster():
         "Households · 집·가족 권한",
         ["현재 memberships / owner·member·viewer", "초대 수락 / 허브 연결 / 집 비활성화"],
         color="purple",
-        sources=["services/central-server/central_server/households.py"],
+        sources=["server/services/central-server/central_server/households.py"],
     )
     d.node(
         "ingestion",
@@ -590,8 +590,8 @@ def poster():
         ["UNIQUE(hub_id, sender_event_id)", "이벤트와 알림 대기를 한 DB 트랜잭션으로"],
         color="teal",
         sources=[
-            "services/central-server/central_server/households.py",
-            "services/central-server/central_server/schema.py",
+            "server/services/central-server/central_server/households.py",
+            "server/services/central-server/central_server/schema.py",
         ],
     )
     d.arrow([(680, 565), (680, 600)], color="purple", source="user-api", target="households")
@@ -606,8 +606,8 @@ def poster():
         ["활성 가족·설치·binding + 종류별 선택", "온습도: 새 보고 + 1/5/15/60분 최소 간격"],
         color="teal",
         sources=[
-            "services/central-server/central_server/push.py",
-            "services/central-server/central_server/preferences.py",
+            "server/services/central-server/central_server/push.py",
+            "server/services/central-server/central_server/preferences.py",
         ],
     )
     d.node(
@@ -623,9 +623,9 @@ def poster():
         ],
         color="slate",
         sources=[
-            "services/central-server/central_server/storage.py",
-            "services/central-server/central_server/schema.py",
-            "services/central-server/central_server/push_schema.py",
+            "server/services/central-server/central_server/storage.py",
+            "server/services/central-server/central_server/schema.py",
+            "server/services/central-server/central_server/push_schema.py",
         ],
     )
     d.arrow([(680, 681), (680, 721)], color="purple", source="households", target="push-store")
@@ -654,14 +654,14 @@ def poster():
         color="teal",
         title_size=13,
         sources=[
-            "services/central-server/central_server/push.py",
-            "services/central-server/central_server/fcm.py",
+            "server/services/central-server/central_server/push.py",
+            "server/services/central-server/central_server/fcm.py",
         ],
     )
     d.arrow([(680, 801), (680, 825)], color="teal", source="push-store", target="push-worker")
     d.arrow([(975, 801), (975, 825)], color="slate", source="central-db", target="push-worker")
 
-    java = "android/family-app/app/src/main/java/com/aircon/family/"
+    java = "server/android/family-app/app/src/main/java/com/aircon/family/"
     d.node(
         "firebase-auth",
         1170,
@@ -912,7 +912,7 @@ def overview():
         "각 집의 Raspberry Pi",
         ["Zigbee 센서·웹 화면·기록 DB", "연결 서비스: 새 기록만 읽음", "Pi마다 전용 허브 키"],
         title_size=19,
-        sources=["app/main.py", "services/pi-central-agent/agent.py"],
+        sources=["app/main.py", "server/services/pi-central-agent/agent.py"],
     )
     d.node(
         "tunnel",
@@ -924,7 +924,7 @@ def overview():
         ["시험용 Quick Tunnel", "요청을 A50으로 중계", "주소는 바뀔 수 있음"],
         color="teal",
         title_size=18,
-        sources=["services/central-tunnel/tunnel.py"],
+        sources=["server/services/central-tunnel/tunnel.py"],
     )
     d.node(
         "central",
@@ -936,7 +936,7 @@ def overview():
         ["계정 + 집·가족 권한 확인", "휴대폰별 알림 선택·전송 대기", "Flask / SQLite / FCM sender"],
         color="teal",
         title_size=19,
-        sources=["services/central-server/central_server/__main__.py"],
+        sources=["server/services/central-server/central_server/__main__.py"],
     )
     d.node(
         "app",
@@ -948,7 +948,7 @@ def overview():
         ["Google 로그인", "집·기록·가족·알림 선택", "여러 폰, 각각 알림 설정"],
         color="purple",
         title_size=19,
-        sources=["android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java"],
+        sources=["server/android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java"],
     )
     d.arrow([(273, 222), (325, 222)], source="pi", target="tunnel", color="teal")
     d.text(279, 210, "HTTPS", size=13, color="teal")
@@ -965,7 +965,7 @@ def overview():
         color="purple",
         title_size=16,
         external=True,
-        sources=["android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java"],
+        sources=["server/android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java"],
     )
     d.arrow([(1121, 150), (1121, 162)], color="purple", reverse=True, source="auth", target="app")
     d.arrow(
@@ -985,7 +985,7 @@ def overview():
         ["외부"],
         color="teal",
         title_size=17,
-        sources=["services/central-server/central_server/fcm.py"],
+        sources=["server/services/central-server/central_server/fcm.py"],
     )
     d.arrow([(887, 247), (911, 247)], color="teal", source="central", target="fcm")
     d.arrow([(990, 247), (1010, 247)], color="teal", source="fcm", target="app")
@@ -1053,7 +1053,7 @@ def main():
     model = {
         "version": 1,
         "scope": "current implementation",
-        "snapshot_date": "2026-10-04",
+        "snapshot_date": "2026-10-05",
         "paper_mm": [1189, 841],
         "view_box": [0, 0, large.width, large.height],
         "body_font_px": 12,

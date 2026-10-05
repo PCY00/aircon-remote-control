@@ -49,7 +49,7 @@ GPIO18 → P2N2222A → 5V IR 송신기 → 실제 에어컨
 
 - [Zigbee/MQTT 스마트홈 확장](zigbee-mqtt/README.md): 게이트웨이, 상용 센서, UI 통합과 H2 노드 실험
 - [ESP32-H2 Zigbee IR 리모컨 PCB 만들기 — 4편](pcb-ir-node/README.md): 부품 선정, 회로도 검토, PCB 배선, JLCPCB 주문 준비
-- [가족 스마트홈 앱·공기계 중앙 서버 — 진행 중](mobile-app/README.md): A50 원격 관리·중앙 API·가구별 권한과 가족 APK 시험 기록. 실제 Google 로그인·외부 연결·FCM은 후속 검증.
+- [가족 스마트홈 앱·공기계 중앙 서버 — 진행 중](../../server/docs/blog/mobile-app/README.md): A50 원격 관리·중앙 API·가구별 권한과 가족 APK 시험 기록. 실제 Google 로그인·외부 연결·FCM은 후속 검증.
 
 PCB 시리즈는 사용자 설계의 시제품 제조 파일 준비까지 정리한 글이다. 아직 발주·실물 테스트를
 마친 상태가 아니며, 기존 시리즈의 미완료 실험과 별도로 관리한다.

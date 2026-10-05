@@ -1,6 +1,6 @@
 # 스마트홈 소프트웨어 아키텍처
 
-2026-10-04 로컬 코드 기준으로 그렸다. Pi 앱은 0.7.0, 중앙 서버와 가족 앱은 0.4.0, 중앙 DB는 스키마 4다. 앞으로 만들고 싶은 구조와 현재 돌아가는 코드를 섞지 않았다. 코드 위치는 아래와 `component-model.json`에 함께 남겼다.
+2026-10-05 로컬 코드 기준으로 그렸다. Pi 앱은 0.7.0, 중앙 서버와 가족 앱은 0.4.0, 중앙 DB는 스키마 4다. 앞으로 만들고 싶은 구조와 현재 돌아가는 코드를 섞지 않았다. 코드 위치는 아래와 `component-model.json`에 함께 남겼다.
 
 [![전체 연결](smart-home-overview.svg)](smart-home-overview.svg)
 
@@ -31,16 +31,16 @@ SVG는 가로 1189mm, 세로 841mm의 A0다. `viewBox="0 0 1682 1189"`, 본문 `
 | 각 집 Pi | AutomationService + EventHub | 문이 열린 채 에어컨이 켜진 조건의 경고, 화면 갱신 | [`app/automations/`](../../app/automations/), [`app/events.py`](../../app/events.py) |
 | 각 집 Pi | Mosquitto + Zigbee2MQTT | MQTT와 Zigbee 장치 연결, H2 외부 변환기 | [`deploy/zigbee/`](../../deploy/zigbee/) |
 | 에어컨 앞 H2 | Zigbee IR 펌웨어 | 요청 확인·중복 처리·작업 큐, IR 송신과 송신 결과 응답 | [`firmware/esp32-h2-zigbee-ir-node/`](../../firmware/esp32-h2-zigbee-ir-node/) |
-| 각 집 Pi | 독립 연결 서비스 | 기존 DB를 읽어 새 기록 수집, 자체 진행 위치·전송 대기 저장 | [`services/pi-central-agent/agent.py`](../../services/pi-central-agent/agent.py) |
-| A50 + Cloudflare | HTTPS 터널 | A50에서 시작한 통로로 외부 HTTPS 요청 전달 | [`services/central-tunnel/`](../../services/central-tunnel/) |
-| A50 | Flask API + FirebaseIdentity | 사용자/허브 인증 경로 구분, Google 공개 키로 ID 토큰 확인 | [`api.py`](../../services/central-server/central_server/api.py), [`auth.py`](../../services/central-server/central_server/auth.py) |
-| A50 | Households | 집 소속·역할, 지정 계정 초대, 허브 연결, 기록 격리 | [`households.py`](../../services/central-server/central_server/households.py) |
-| A50 | PushStore + Preferences | 설치 토큰·증명·binding, 종류별 수신 선택, 온습도 간격, 전송 작업 | [`push.py`](../../services/central-server/central_server/push.py), [`preferences.py`](../../services/central-server/central_server/preferences.py) |
-| A50 | PushWorker + FCMSender | 전송 직전 권한·설정 확인, 만료·재시도, FCM HTTP v1 요청 | [`push.py`](../../services/central-server/central_server/push.py), [`fcm.py`](../../services/central-server/central_server/fcm.py) |
-| 가족 휴대폰 | FirebaseSession + ApiClient | Google 로그인·Firebase 세션, HTTPS 사용자 API | [`FirebaseSession.java`](../../android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java), [`ApiClient.java`](../../android/family-app/app/src/main/java/com/aircon/family/ApiClient.java) |
-| 가족 휴대폰 | FamilyActivity | 홈·기록·설정, 가족 관리와 알림 선택, 오류 안내·스크롤 유지 | [`FamilyActivity.java`](../../android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java) |
-| 가족 휴대폰 | PushManager + PushSyncWorker | WorkManager로 FCM 토큰·설치 증명·알림 선택을 중앙에 등록 | [`PushManager.java`](../../android/family-app/app/src/main/java/com/aircon/family/PushManager.java), [`PushSyncWorker.java`](../../android/family-app/app/src/main/java/com/aircon/family/PushSyncWorker.java) |
-| 가족 휴대폰 | FamilyMessagingService + PushPolicy | 현재 계정·binding·중복·수신 선택 확인 후 Android 알림 표시 | [`FamilyMessagingService.java`](../../android/family-app/app/src/main/java/com/aircon/family/FamilyMessagingService.java), [`PushPolicy.java`](../../android/family-app/app/src/main/java/com/aircon/family/PushPolicy.java) |
+| 각 집 Pi | 독립 연결 서비스 | 기존 DB를 읽어 새 기록 수집, 자체 진행 위치·전송 대기 저장 | [`services/pi-central-agent/agent.py`](../../server/services/pi-central-agent/agent.py) |
+| A50 + Cloudflare | HTTPS 터널 | A50에서 시작한 통로로 외부 HTTPS 요청 전달 | [`services/central-tunnel/`](../../server/services/central-tunnel) |
+| A50 | Flask API + FirebaseIdentity | 사용자/허브 인증 경로 구분, Google 공개 키로 ID 토큰 확인 | [`api.py`](../../server/services/central-server/central_server/api.py), [`auth.py`](../../server/services/central-server/central_server/auth.py) |
+| A50 | Households | 집 소속·역할, 지정 계정 초대, 허브 연결, 기록 격리 | [`households.py`](../../server/services/central-server/central_server/households.py) |
+| A50 | PushStore + Preferences | 설치 토큰·증명·binding, 종류별 수신 선택, 온습도 간격, 전송 작업 | [`push.py`](../../server/services/central-server/central_server/push.py), [`preferences.py`](../../server/services/central-server/central_server/preferences.py) |
+| A50 | PushWorker + FCMSender | 전송 직전 권한·설정 확인, 만료·재시도, FCM HTTP v1 요청 | [`push.py`](../../server/services/central-server/central_server/push.py), [`fcm.py`](../../server/services/central-server/central_server/fcm.py) |
+| 가족 휴대폰 | FirebaseSession + ApiClient | Google 로그인·Firebase 세션, HTTPS 사용자 API | [`FirebaseSession.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java), [`ApiClient.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/ApiClient.java) |
+| 가족 휴대폰 | FamilyActivity | 홈·기록·설정, 가족 관리와 알림 선택, 오류 안내·스크롤 유지 | [`FamilyActivity.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java) |
+| 가족 휴대폰 | PushManager + PushSyncWorker | WorkManager로 FCM 토큰·설치 증명·알림 선택을 중앙에 등록 | [`PushManager.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/PushManager.java), [`PushSyncWorker.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/PushSyncWorker.java) |
+| 가족 휴대폰 | FamilyMessagingService + PushPolicy | 현재 계정·binding·중복·수신 선택 확인 후 Android 알림 표시 | [`FamilyMessagingService.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/FamilyMessagingService.java), [`PushPolicy.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/PushPolicy.java) |
 
 ## 집과 가족이 섞이지 않게 하는 연결
 

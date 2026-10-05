@@ -1,7 +1,7 @@
 {
   "version": 1,
   "scope": "current implementation",
-  "snapshot_date": "2026-10-04",
+  "snapshot_date": "2026-10-05",
   "paper_mm": [
     1189,
     841
@@ -24,7 +24,7 @@
         88
       ],
       "sources": [
-        "services/pi-central-agent/agent.py",
+        "server/services/pi-central-agent/agent.py",
         "app/main.py"
       ],
       "description": [
@@ -44,7 +44,7 @@
         88
       ],
       "sources": [
-        "services/central-tunnel/tunnel.py"
+        "server/services/central-tunnel/tunnel.py"
       ],
       "description": [
         "Quick Tunnel (시험용)",
@@ -63,7 +63,7 @@
         88
       ],
       "sources": [
-        "services/central-server/central_server/__main__.py"
+        "server/services/central-server/central_server/__main__.py"
       ],
       "description": [
         "Flask + Waitress / SQLite / 전송 작업",
@@ -82,7 +82,7 @@
         88
       ],
       "sources": [
-        "services/central-server/central_server/fcm.py"
+        "server/services/central-server/central_server/fcm.py"
       ],
       "description": [
         "HTTP v1 전송 요청 → 설치 토큰별 전달",
@@ -101,7 +101,7 @@
         88
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java"
       ],
       "description": [
         "같은 계정의 다른 폰도 각자 알림 선택",
@@ -260,7 +260,7 @@
         60
       ],
       "sources": [
-        "services/pi-central-agent/agent.py"
+        "server/services/pi-central-agent/agent.py"
       ],
       "description": [
         "5초마다 새 기록 조회 / 자체 cursor + outbox.sqlite3 / HTTPS 전송"
@@ -278,8 +278,8 @@
         81
       ],
       "sources": [
-        "services/central-server/central_server/auth.py",
-        "services/central-server/central_server/api.py"
+        "server/services/central-server/central_server/auth.py",
+        "server/services/central-server/central_server/api.py"
       ],
       "description": [
         "Firebase ID 토큰 서명·만료·프로젝트 확인",
@@ -298,8 +298,8 @@
         81
       ],
       "sources": [
-        "services/central-server/central_server/api.py",
-        "services/central-server/central_server/households.py"
+        "server/services/central-server/central_server/api.py",
+        "server/services/central-server/central_server/households.py"
       ],
       "description": [
         "허브 키의 해시 → 활성 hub → 소속 집",
@@ -318,7 +318,7 @@
         81
       ],
       "sources": [
-        "services/central-server/central_server/households.py"
+        "server/services/central-server/central_server/households.py"
       ],
       "description": [
         "현재 memberships / owner·member·viewer",
@@ -337,8 +337,8 @@
         81
       ],
       "sources": [
-        "services/central-server/central_server/households.py",
-        "services/central-server/central_server/schema.py"
+        "server/services/central-server/central_server/households.py",
+        "server/services/central-server/central_server/schema.py"
       ],
       "description": [
         "UNIQUE(hub_id, sender_event_id)",
@@ -357,8 +357,8 @@
         80
       ],
       "sources": [
-        "services/central-server/central_server/push.py",
-        "services/central-server/central_server/preferences.py"
+        "server/services/central-server/central_server/push.py",
+        "server/services/central-server/central_server/preferences.py"
       ],
       "description": [
         "활성 가족·설치·binding + 종류별 선택",
@@ -377,9 +377,9 @@
         80
       ],
       "sources": [
-        "services/central-server/central_server/storage.py",
-        "services/central-server/central_server/schema.py",
-        "services/central-server/central_server/push_schema.py"
+        "server/services/central-server/central_server/storage.py",
+        "server/services/central-server/central_server/schema.py",
+        "server/services/central-server/central_server/push_schema.py"
       ],
       "description": [
         "users / homes / memberships / hubs / events",
@@ -398,8 +398,8 @@
         60
       ],
       "sources": [
-        "services/central-server/central_server/push.py",
-        "services/central-server/central_server/fcm.py"
+        "server/services/central-server/central_server/push.py",
+        "server/services/central-server/central_server/fcm.py"
       ],
       "description": [
         "전송 직전 권한·선택 재확인 / 만료·재시도 / 서버 전용 키로 HTTP v1 요청"
@@ -417,7 +417,7 @@
         81
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java"
       ],
       "description": [
         "APK 밖의 외부 로그인 서비스",
@@ -436,7 +436,7 @@
         81
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java"
       ],
       "description": [
         "Credential Manager 로그인",
@@ -455,8 +455,8 @@
         81
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java",
-        "android/family-app/app/src/main/java/com/aircon/family/ApiErrorMessages.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java",
+        "server/android/family-app/app/src/main/java/com/aircon/family/ApiErrorMessages.java"
       ],
       "description": [
         "홈 / 기록 / 설정 / 가족 관리",
@@ -475,8 +475,8 @@
         81
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/ApiClient.java",
-        "android/family-app/app/src/main/java/com/aircon/family/EndpointPolicy.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/ApiClient.java",
+        "server/android/family-app/app/src/main/java/com/aircon/family/EndpointPolicy.java"
       ],
       "description": [
         "HTTPS / Bearer Firebase ID 토큰",
@@ -495,8 +495,8 @@
         80
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/PushManager.java",
-        "android/family-app/app/src/main/java/com/aircon/family/PushSyncWorker.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/PushManager.java",
+        "server/android/family-app/app/src/main/java/com/aircon/family/PushSyncWorker.java"
       ],
       "description": [
         "설치 증명·FCM 토큰 등록",
@@ -515,8 +515,8 @@
         80
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/FamilyMessagingService.java",
-        "android/family-app/app/src/main/java/com/aircon/family/PushPolicy.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/FamilyMessagingService.java",
+        "server/android/family-app/app/src/main/java/com/aircon/family/PushPolicy.java"
       ],
       "description": [
         "FCM data 메시지 수신",
@@ -535,7 +535,7 @@
         60
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/PushManager.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/PushManager.java"
       ],
       "description": [
         "설치 증명 / binding / 선택 / 중복"
@@ -553,7 +553,7 @@
         60
       ],
       "sources": [
-        "android/family-app/app/src/main/java/com/aircon/family/FamilyMessagingService.java"
+        "server/android/family-app/app/src/main/java/com/aircon/family/FamilyMessagingService.java"
       ],
       "description": [
         "알림 권한 / 일반·온습도 채널"

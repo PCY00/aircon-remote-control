@@ -11,4 +11,4 @@
 - 집 삭제는 소유자·이름 확인 후 목록/권한/허브/초대/대기 알림을 원자적으로 비활성화한다. 내부 감사 기록은 보존한다. 이미 수락된 FCM 메시지는 회수하지 못한다.
 - 스키마 4 추가 변경은 기존 계정·집·설치·키를 보존한다. 실제 사용자 집을 삭제해 기능을 시험하지 않는다.
 
-[재현·실제 검사·실패 기록](../blog/mobile-app/08-notification-choices-and-home-management.md).
+[재현·실제 검사·실패 기록](../../server/docs/blog/mobile-app/08-notification-choices-and-home-management.md).

@@ -19,7 +19,7 @@ from make_reader_bundle import audit, build as build_reader
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs/blog/mobile-app"
-PUBLIC_CODE_URL = "https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0/server"
+PUBLIC_CODE_URL = "https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server"
 CHAPTERS = [
     "01-galaxy-a50-preparation", "02-a50-central-server", "03-household-permissions",
     "04-family-android-app", "05-external-https-connection", "06-family-fcm-notifications",

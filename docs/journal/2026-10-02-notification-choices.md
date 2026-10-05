@@ -24,4 +24,4 @@ APK 데이터 보존 업데이트 310. 완료 전 실기기 검사 311은 설치
 325에서 실제 APK 패키지 com.aircon.family·versionCode 4·0.3.0과 Android JUnit XML tests 4/failures 0/errors 0, 문서 링크·비밀정보 패턴·캡처 짝·공개 이미지 메타데이터 검사를 확인했다.
 새 유료 서비스·결제 계정·도메인 없음. 다른 가족 계정·실제 문/온습도 이벤트·장시간과 사용자 폰 0.3.0 선택은 후속 확인이다.
 
-[블로그 8편](../blog/mobile-app/08-notification-choices-and-home-management.md), [설계](../decisions/0017-phone-notification-choices-and-home-delete.md).
+[블로그 8편](../../server/docs/blog/mobile-app/08-notification-choices-and-home-management.md), [설계](../decisions/0017-phone-notification-choices-and-home-delete.md).

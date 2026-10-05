@@ -6,6 +6,8 @@
 
 공개 저장소에는 실제 SSH 키, MQTT 비밀번호, Firebase 서버 키와 집의 접속 주소를 넣지 않았다. 설치할 때 필요한 비공개 설정은 각자 자신의 장비에서 준비한다.
 
+**루트는 Raspberry Pi 에어컨 제어 프로젝트이고, A50 가족 알림의 코드·앱·설치 도구·테스트는 [`server/`](server/) 아래에만 둔다.** A50 작업은 `server` 폴더에서 시작하며, 루트에는 같은 실행 코드를 복사해 두지 않는다. 전체 구조도와 소개는 이 README에 함께 남겼다.
+
 ## 소프트웨어 구조
 
 집마다 Raspberry Pi가 센서와 에어컨 제어를 맡는다. 선택 확장인 A50 중앙 서버는 각 Pi의 새 기록을 받고, **그 집에 등록된 가족의 휴대폰에만** 선택한 알림을 보낸다. 같은 계정으로 여러 휴대폰을 쓰더라도 알림 종류는 휴대폰마다 정한다. Google 로그인은 계정 확인을 맡고, 집에 들어갈 권한과 알림 대상은 중앙 서버가 결정한다.
@@ -283,4 +285,4 @@ systemctl --user status aircon-controller.service --no-pager
 
 위 1~9단계만으로 Pi 대시보드와 Tailscale을 통한 에어컨 제어를 구성할 수 있다. 남는 Galaxy A50을 가족 계정·외부 알림 서버로 쓰려면 별도 [A50 서버·가족 앱 설치 가이드](server/README.md)로 이어간다. 이 앱은 현재 **문·온습도·경고 기록과 알림용**이며, 에어컨 제어는 Pi 웹 대시보드에서 한다. A50 확장은 시험 단계이므로 처음 설치하는 사람은 먼저 위의 기본 구성을 끝낸다.
 
-직접 진행한 과정은 [A50 스마트홈 알림 글 모음](server/docs/blog/mobile-app/README.md)에 정리했다. [시작 안내](server/docs/blog/mobile-app/00-reader-start.md)에 PC 준비와 내려받는 방법을 적었다. 블로그를 따라 할 때는 [글에서 사용한 코드](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0/server)를 열고 **Code → Download ZIP**을 누른 뒤 저장소의 `server` 폴더를 사용한다. 이 이름으로 서버·가족 앱 0.4.0과 따라 하기 도구를 고정해 뒀다. 블로그에 별도 코드 ZIP을 첨부할 필요는 없다.
+직접 진행한 과정은 [A50 스마트홈 알림 글 모음](server/docs/blog/mobile-app/README.md)에 정리했다. [시작 안내](server/docs/blog/mobile-app/00-reader-start.md)에 PC 준비와 내려받는 방법을 적었다. 블로그를 따라 할 때는 [글에서 사용한 코드](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server)를 열고 **Code → Download ZIP**을 누른 뒤 저장소의 `server` 폴더를 사용한다. 이 이름으로 서버·가족 앱 0.4.0과 따라 하기 도구를 고정해 뒀다. 블로그에 별도 코드 ZIP을 첨부할 필요는 없다.
