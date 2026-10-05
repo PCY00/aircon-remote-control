@@ -30,9 +30,9 @@
 | JDK | Windows x64용 JDK 17을 설치한다. | `https://adoptium.net/temurin/releases/?version=17` |
 | OpenSSH 클라이언트 | Windows 선택적 기능에서 설치 여부를 확인한다. | Windows 설정 → 선택적 기능 |
 
-　내가 만든 도구와 앱 소스는 [GitHub의 따라 하기 코드](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server)에 올려뒀다. 링크를 열고 **Code → Download ZIP**을 누르면 된다. 글에서 사용한 서버와 앱 버전은 0.4.0이라, 이후 코드가 바뀌어도 같은 자료를 받을 수 있도록 이 버전의 링크를 넣었다.
+　내가 만든 도구와 앱 소스는 [GitHub의 서버 코드](https://github.com/PCY00/aircon-remote-control/tree/main/server)에 올려뒀다. 링크를 열고 **Code → Download ZIP**을 누르면 `main`의 현재 코드를 받을 수 있다.
 
-　GitHub에서 받은 ZIP에는 저장소 전체가 들어 있다. 압축을 풀면 `aircon-remote-control-smart-home-reader-v0.4.0` 같은 폴더가 나오는데, **그 안의 `server` 폴더**를 `C:\`로 옮기고 이름을 `smart-home-reader`로 바꾼다. `C:\smart-home-reader` 바로 아래에 `scripts`, `services`, `android`, `docs`가 있어야 한다. 이후 명령어는 이 폴더를 연 PowerShell에서 실행한다.
+　GitHub에서 받은 ZIP에는 저장소 전체가 들어 있다. 압축을 풀면 `aircon-remote-control-main` 폴더가 나오는데, **그 안의 `server` 폴더**를 `C:\`로 옮기고 이름을 `smart-home-reader`로 바꾼다. `C:\smart-home-reader` 바로 아래에 `scripts`, `services`, `android`, `docs`가 있어야 한다. 이후 명령어는 이 폴더를 연 PowerShell에서 실행한다.
 
 ```powershell
 Set-Location C:\smart-home-reader

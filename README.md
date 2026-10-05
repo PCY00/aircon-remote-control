@@ -285,4 +285,4 @@ systemctl --user status aircon-controller.service --no-pager
 
 위 1~9단계만으로 Pi 대시보드와 Tailscale을 통한 에어컨 제어를 구성할 수 있다. 남는 Galaxy A50을 가족 계정·외부 알림 서버로 쓰려면 별도 [A50 서버·가족 앱 설치 가이드](server/README.md)로 이어간다. 이 앱은 현재 **문·온습도·경고 기록과 알림용**이며, 에어컨 제어는 Pi 웹 대시보드에서 한다. A50 확장은 시험 단계이므로 처음 설치하는 사람은 먼저 위의 기본 구성을 끝낸다.
 
-직접 진행한 과정은 [A50 스마트홈 알림 글 모음](server/docs/blog/mobile-app/README.md)에 정리했다. [시작 안내](server/docs/blog/mobile-app/00-reader-start.md)에 PC 준비와 내려받는 방법을 적었다. 블로그를 따라 할 때는 [글에서 사용한 코드](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server)를 열고 **Code → Download ZIP**을 누른 뒤 저장소의 `server` 폴더를 사용한다. 이 이름으로 서버·가족 앱 0.4.0과 따라 하기 도구를 고정해 뒀다. 블로그에 별도 코드 ZIP을 첨부할 필요는 없다.
+직접 진행한 과정은 [A50 스마트홈 알림 글 모음](server/docs/blog/mobile-app/README.md)에 정리했다. [시작 안내](server/docs/blog/mobile-app/00-reader-start.md)에 PC 준비와 내려받는 방법을 적었다. 블로그를 따라 할 때는 [서버 코드](server/)를 열고 **main → Code → Download ZIP**으로 현재 코드를 받은 뒤 저장소의 `server` 폴더를 사용한다. 블로그에 별도 코드 ZIP을 첨부할 필요는 없다.

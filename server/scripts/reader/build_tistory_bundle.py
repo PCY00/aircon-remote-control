@@ -19,7 +19,7 @@ from make_reader_bundle import audit, build as build_reader
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs/blog/mobile-app"
-PUBLIC_CODE_URL = "https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server"
+PUBLIC_CODE_URL = "https://github.com/PCY00/aircon-remote-control/tree/main/server"
 CHAPTERS = [
     "01-galaxy-a50-preparation", "02-a50-central-server", "03-household-permissions",
     "04-family-android-app", "05-external-https-connection", "06-family-fcm-notifications",
@@ -251,7 +251,7 @@ def main():
         "압축을 전부 푼 뒤 미리보기.html을 열면 글과 사진 배치를 볼 수 있다.\n"
         "게시할 때는 제목 폴더의 TXT를 제목 칸에 넣는다. 본문 폴더의 HTML은 메모장으로 열고 전체 내용을 티스토리 HTML 모드에 붙여 넣는다. 미리보기 파일을 복사하지 않는다.\n"
         "사진은 자동으로 업로드되지 않는다. 기본 모드로 돌아가 사진 폴더의 해당 사진을 본문 위치에 직접 넣는다. 사진-배치표.txt에 파일과 설명을 모았다. 본문 HTML의 사진 위치 메모는 댓글 같은 설명으로, 게시 화면에는 나타나지 않는다.\n"
-        "첫 글의 본문에 공개 GitHub의 server 폴더 링크가 들어 있다. 독자는 링크를 열고 Code → Download ZIP으로 같은 버전의 저장소를 받은 뒤 그 안의 server 폴더를 사용한다. smart-home-reader-v0.4.0.zip은 로컬 보관용으로 함께 넣었으며 블로그에 따로 첨부할 필요는 없다.\n"
+        "첫 글의 본문에 공개 GitHub의 main/server 폴더 링크가 들어 있다. 독자는 링크를 열고 Code → Download ZIP으로 현재 저장소를 받은 뒤 그 안의 server 폴더를 사용한다. smart-home-reader-v0.4.0.zip은 로컬 보관용으로 함께 넣었으며 블로그에 따로 첨부할 필요는 없다.\n"
         "본문에는 로컬 문서 링크, 이미지 src나 외부 CSS가 없다. 사진을 넣기 전에도 설명과 명령어, 중요한 실행 결과는 읽을 수 있다. 본문에는 전체 HTML 페이지의 head/body나 중복 글 제목을 넣지 않았다.\n"
         "붙여 넣은 뒤 제목 아래 줄과 문단 들여쓰기, 표와 코드를 티스토리 미리보기에서 확인한다. 실제 편집기 저장 과정에서 서식이 유지되는지는 게시 전에 확인할 부분이다.\n"
         "계정 이메일, 서버 주소, 인증키가 보이는 새 사진을 올릴 때는 직접 가린다. 이번 자료에는 이미 가린 공개용 사진만 넣었다.\n"

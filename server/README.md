@@ -6,7 +6,7 @@
 
 **A50 관련 코드의 기준 위치는 이 폴더 한 곳이다.** 저장소 루트의 `app`, `firmware`, `deploy` 등은 Pi 에어컨 제어용이다. A50 앱·서버·설치 도구·테스트를 루트에 다시 복사하지 않는다.
 
-[글에서 사용한 코드 0.4.0](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server)를 열고 **Code → Download ZIP**을 누른다. 내려받은 ZIP은 저장소 전체이므로 압축을 푼 뒤 안쪽의 **`server` 폴더**를 사용한다. 이 폴더를 `C:\`로 옮기고 `smart-home-reader`로 이름을 바꾸면 아래 글의 경로와 같다. 이미 같은 이름의 폴더가 있다면 새 빈 경로를 사용한다.
+이 저장소의 **main → Code → Download ZIP**에서 현재 코드를 내려받는다. ZIP에는 저장소 전체가 들어 있으므로 압축을 푼 뒤 안쪽의 **`server` 폴더**를 사용한다. 이 폴더를 `C:\`로 옮기고 `smart-home-reader`로 이름을 바꾸면 아래 글의 경로와 같다. 이미 같은 이름의 폴더가 있다면 새 빈 경로를 사용한다.
 
 ```text
 server/                 ← 이 폴더에서 시작한다
@@ -32,10 +32,10 @@ py -3.12 -m venv .venv
 
 ### Git으로 내려받는 경우
 
-ZIP 대신 Git을 사용한다면 새 빈 경로에 아래처럼 같은 버전을 내려받는다. 명령을 실행할 위치는 저장소 루트가 아니라 안쪽 `server` 폴더다.
+ZIP 대신 Git을 사용한다면 새 빈 경로에 아래처럼 `main`의 현재 코드를 내려받는다. 명령을 실행할 위치는 저장소 루트가 아니라 안쪽 `server` 폴더다.
 
 ```powershell
-git clone --branch smart-home-reader-v0.4.0-r1 --single-branch https://github.com/PCY00/aircon-remote-control.git C:\smart-home-project
+git clone --branch main --single-branch https://github.com/PCY00/aircon-remote-control.git C:\smart-home-project
 Set-Location C:\smart-home-project\server
 ```
 

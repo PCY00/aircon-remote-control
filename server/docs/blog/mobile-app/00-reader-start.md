@@ -17,7 +17,7 @@
 
 ## 코드와 글을 준비한다
 
-[GitHub의 따라 하기 코드](https://github.com/PCY00/aircon-remote-control/tree/smart-home-reader-v0.4.0-r1/server)를 열고 **Code → Download ZIP**을 누른다. ZIP은 여러 파일을 하나로 묶은 압축 파일이다. 블로그에 코드 ZIP을 따로 첨부하지 않아도 이 링크에서 받을 수 있다. `smart-home-reader-v0.4.0-r1`은 글에서 사용한 코드를 고정해 둔 이름이며, 서버와 앱 버전은 0.4.0이다. 이후 최신 코드가 바뀌어도 이 링크의 자료는 그대로 사용한다.
+[GitHub의 서버 코드](https://github.com/PCY00/aircon-remote-control/tree/main/server)를 열고 **Code → Download ZIP**을 누른다. ZIP은 여러 파일을 하나로 묶은 압축 파일이다. 블로그에 코드 ZIP을 따로 첨부하지 않아도 이 링크에서 `main`의 현재 코드를 받을 수 있다.
 
 GitHub에서 내려받는 ZIP에는 저장소 전체가 들어 있다. 압축을 풀고 **안쪽 저장소 폴더의 `server` 폴더**를 `C:\`로 옮긴 뒤 이름을 `smart-home-reader`로 바꾼다. `C:\smart-home-reader` 바로 아래에 `scripts`, `services`, `android`, `docs`가 보여야 한다. 다른 폴더를 쓴다면 아래 경로만 바꾼다. 이미 같은 폴더가 있는 독자는 새 빈 경로를 사용해 기존 파일을 지킨다.
 
