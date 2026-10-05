@@ -1,0 +1,8 @@
+{
+  "adb_path": "C:/android/platform-tools/adb.exe",
+  "device_serial": "YOUR_PHONE_SERIAL",
+  "model": "SM-A505N",
+  "mdns_prefix": "adb-YOUR_PHONE_SERIAL-",
+  "cached_endpoint": "PHONE_WIFI_ADDRESS:CONNECTION_PORT",
+  "ssh_recovery_enabled": false
+}

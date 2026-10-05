@@ -1,0 +1,55 @@
+# Actual A50 reboot and automatic SSH recovery test
+# User had removed the phone lock before this test
+
+$ ssh [private connection redacted] "uptime; tail -n 4 ~/.local/state/a50-server/bootstrap.log"
+ 00:11:25 up  1:29,  load average: 16.75, 16.90, 17.22
+BOOT_START=2026-10-01T15:09:24Z
+SSH_ALREADY_RUNNING
+BOOT_START=2026-10-01T15:10:09Z
+SSH_ALREADY_RUNNING
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] reboot
+EXIT_CODE=0
+
+$ ssh [private connection redacted] [automatic recovery probe #1]
+ssh: connect to host [REDACTED_ADDRESS] port 8022: Connection timed out
+EXIT_CODE=255
+
+PROBE_2_EXIT_CODE=255
+
+PROBE_3_EXIT_CODE=255
+
+PROBE_4_EXIT_CODE=255
+
+PROBE_5_EXIT_CODE=255
+
+PROBE_6_EXIT_CODE=255
+
+PROBE_7_EXIT_CODE=255
+
+PROBE_8_EXIT_CODE=255
+
+PROBE_9_EXIT_CODE=255
+
+PROBE_10_EXIT_CODE=255
+
+PROBE_11_EXIT_CODE=255
+
+$ ssh [private connection redacted] [automatic recovery probe #12]
+REBOOT_SSH_AUTOSTART_OK
+ 00:14:04 up 2 min,  load average: 25.94, 11.59, 4.40
+BOOT_START=2026-10-01T15:09:24Z
+SSH_ALREADY_RUNNING
+BOOT_START=2026-10-01T15:10:09Z
+SSH_ALREADY_RUNNING
+BOOT_START=2026-10-01T15:13:54Z
+SSH_START_COMMAND_COMPLETED
+15040 sshd -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no
+15743 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+15750 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+EXIT_CODE=0
+
+REBOOT_AUTOMATIC_SSH_RECOVERY=True
+PROBE_ELAPSED_SECONDS=146.8
+# No Termux activity was launched by this test after reboot.

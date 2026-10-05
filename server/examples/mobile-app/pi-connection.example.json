@@ -1,0 +1,7 @@
+{
+  "host": "YOUR_VERIFIED_PI_HOST",
+  "port": 22,
+  "user": "YOUR_PI_USER",
+  "identity_file": "C:/PRIVATE_FOLDER/pi-reader",
+  "known_hosts_file": "C:/PRIVATE_FOLDER/pi-reader-known-hosts"
+}

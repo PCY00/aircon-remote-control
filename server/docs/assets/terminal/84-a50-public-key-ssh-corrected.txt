@@ -1,0 +1,24 @@
+# Actual public-key SSH bootstrap via wireless ADB
+# Secrets and device identifiers removed
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'am start -n com.termux/.app.TermuxActivity'
+Starting: Intent { cmp=com.termux/.app.TermuxActivity }
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'input text '"'"'mkdir%s-p%s~/.ssh;%schmod%s700%s~/.ssh;%stouch%s~/.ssh/authorized_keys;%sgrep%s-qxF%s'"'"'"'"'"'"'"'"'[REDACTED_PUBLIC_KEY]'"'"'"'"'"'"'"'"'%s~/.ssh/authorized_keys%s||%secho%s'"'"'"'"'"'"'"'"'[REDACTED_PUBLIC_KEY]'"'"'"'"'"'"'"'"'%s>>%s~/.ssh/authorized_keys;%schmod%s600%s~/.ssh/authorized_keys;%ssshd%s-p%s8022%s-o%sPasswordAuthentication=no%s-o%sKbdInteractiveAuthentication=no;%sclear;%sprintf%s"A50%sSSH%sready.%sPublic-key%sauthentication%senabled.\n"'"'"''
+EXIT_CODE=0
+
+$ adb -s [REDACTED_CONNECT_ENDPOINT] shell 'input keyevent 66'
+EXIT_CODE=0
+
+$ ssh -i [PRIVATE_KEY_OUTSIDE_REPOSITORY] -p 8022 -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=[PRIVATE_KNOWN_HOSTS] [REDACTED_APP_USER]@[REDACTED_PHONE_IP] [identity, version, host key, process and wake-lock checks]
+SSH_CONNECTION_OK
+[REDACTED_APP_USER]
+PREFIX=/data/data/com.termux/files/usr
+256 [REDACTED_HOST_FINGERPRINT] [REDACTED_APP_USER]@localhost (ED25519)
+5566 sshd -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no
+6011 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+6026 /data/data/com.termux/files/usr/libexec/sshd-session -p 8022 -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -R
+OpenSSH_10.5p1, OpenSSL 3.4.1 11 Feb 2025
+EXIT_CODE=0

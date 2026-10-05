@@ -1,0 +1,7 @@
+{
+  "host": "PHONE_WIFI_ADDRESS",
+  "port": 8022,
+  "user": "TERMUX_USER_FROM_WHOAMI",
+  "identity_file": "C:/PRIVATE_FOLDER/a50-reader",
+  "known_hosts_file": "C:/PRIVATE_FOLDER/a50-reader-known-hosts"
+}

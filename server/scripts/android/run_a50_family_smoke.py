@@ -1,0 +1,286 @@
+"""Test the user's signed-in release APK; preserve its binary, account, and existing homes."""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import hashlib
+import json
+import re
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+from a50_adb import A50ADB
+from a50_record import PhoneSession
+
+
+def main():
+    sys.stdout.reconfigure(encoding="utf-8")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--home-name", required=True, help="User-approved real test home name")
+    parser.add_argument("--apply", action="store_true")
+    parser.add_argument(
+        "--capture-suffix",
+        default="",
+        help="Keep screenshots from different APK versions separately",
+    )
+    parser.add_argument(
+        "--push-test",
+        choices=(
+            "registerRealInstallation",
+            "receiveRealFCMWhileBackgrounded",
+            "receiveRealFCMWhileScreenOff",
+            "verifyNotificationGuidanceAndChoices",
+        ),
+    )
+    parser.add_argument(
+        "--ui-test",
+        choices=("redesignedNavigationKeepsScrollAndDraft",),
+    )
+    parser.add_argument(
+        "--hub-test",
+        choices=("verifyOwnerBeforeProvisioning", "claimApprovedHub", "observeActualHubFCM"),
+    )
+    parser.add_argument(
+        "--claim-file", type=Path, help="Private one-use claim, never a hub credential"
+    )
+    parser.add_argument("--trigger-pi-connection", action="store_true")
+    args = parser.parse_args()
+    if args.capture_suffix and not re.fullmatch(r"[a-z0-9-]{1,20}", args.capture_suffix):
+        parser.error("Invalid capture suffix")
+    if sum(bool(value) for value in (args.push_test, args.hub_test, args.ui_test)) > 1:
+        parser.error("Choose one native test")
+    if bool(args.claim_file) != (args.hub_test == "claimApprovedHub"):
+        parser.error("--claim-file is required only for claimApprovedHub")
+    if args.trigger_pi_connection and args.hub_test != "observeActualHubFCM":
+        parser.error("--trigger-pi-connection requires observeActualHubFCM")
+    if not 1 <= len(args.home_name) <= 80 or any(ord(c) < 32 for c in args.home_name):
+        parser.error("Home name must contain 1–80 printable characters")
+    root = Path("tmp/family-app-smoke-tests")
+    original = Path("tmp/family-app-build")
+    hashes = json.loads((root / "build.json").read_text())
+    release_hash = json.loads((original / "build.json").read_text())["family-release.apk"]
+    apk = root / "family-production-test.apk"
+    assert hashlib.sha256(apk.read_bytes()).hexdigest() == hashes[apk.name]
+    assert (
+        hashlib.sha256((original / "family-release.apk").read_bytes()).hexdigest() == release_hash
+    )
+    private = Path(".deploy/family-app")
+    tools = json.loads((private / "tools.json").read_text())
+    signing = json.loads((private / "signing.json").read_text())
+    buildtools = Path(tools["sdk"]) / "build-tools/36.0.0"
+    signed = subprocess.run(
+        [
+            str(Path(tools["java_home"]) / "bin/java.exe"),
+            "-jar",
+            str(buildtools / "lib/apksigner.jar"),
+            "verify",
+            "--print-certs",
+            str(apk),
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=True,
+    ).stdout
+    actual = next(
+        line.split(": ", 1)[1]
+        for line in signed.splitlines()
+        if "certificate SHA-256 digest:" in line
+    )
+    assert actual.lower() == signing["sha256"].replace(":", "").lower()
+    manifest = subprocess.run(
+        [
+            str(buildtools / "aapt2.exe"),
+            "dump",
+            "xmltree",
+            str(apk),
+            "--file",
+            "AndroidManifest.xml",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=True,
+    ).stdout
+    assert "android:targetPackage" in manifest and 'com.aircon.family"' in manifest
+    assert "com.aircon.family.test" in manifest
+    print("SMOKE_APK_HASH_SIGNATURE_AND_EXACT_TARGET=PASS DELIVERED_RELEASE_HASH_UNCHANGED=TRUE")
+    if not args.apply:
+        print("PREVIEW_ONLY=NO_DEVICE_MUTATION")
+        print(
+            "PLAN=install_signed_test_apk; use_existing_Google_session; "
+            "create_or_reuse_named_home; capture_redacted_owner_UI"
+        )
+        return
+    record = PhoneSession("family-real-release-smoke")
+    adb = A50ADB(Path(".deploy/a50/adb.json"))
+    endpoint = adb.connect(timeout=40)
+
+    def run(arguments, label, timeout=30):
+        if args.trigger_pi_connection and arguments[:3] == ["shell", "am", "instrument"]:
+            sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "pi"))
+            from trigger_hub_receipt import instrument_and_trigger
+
+            result = instrument_and_trigger([adb.adb, "-s", endpoint, *arguments])
+        else:
+            result = adb.run("-s", endpoint, *arguments, timeout=timeout)
+        record.log(
+            "$ adb [verified A50] "
+            + label
+            + "\n"
+            + (result.stdout + result.stderr).decode("utf-8", errors="replace")
+            + "\nEXIT_CODE="
+            + str(result.returncode)
+        )
+        if result.returncode:
+            raise RuntimeError("Native production smoke step failed; stop and inspect.")
+        return result.stdout
+
+    # Read the installation location privately; publish the comparison result only.
+    located = adb.run("-s", endpoint, "shell", "pm", "path", "com.aircon.family", timeout=15)
+    paths = [
+        line.removeprefix("package:")
+        for line in located.stdout.decode().splitlines()
+        if line.startswith("package:")
+    ]
+    assert located.returncode == 0 and len(paths) == 1
+    digest = adb.run("-s", endpoint, "exec-out", "sha256sum", paths[0], timeout=20)
+    assert digest.returncode == 0 and digest.stdout.decode().split()[0] == release_hash
+    record.log("INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS")
+    run(
+        ["install", "-r", str(apk.resolve())],
+        "install -r signed production instrumentation test APK",
+        120,
+    )
+    run(["shell", "input", "keyevent", "224"], "wake own A50 client for native test")
+    if args.claim_file:
+        claim = json.loads(args.claim_file.read_text(encoding="utf-8"))
+        assert set(claim) == {"claim_code", "hub_id"}
+        assert re.fullmatch(r"claim_[A-Za-z0-9_-]{43}", claim["claim_code"])
+        assert re.fullmatch(r"[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}", claim["hub_id"])
+        target = "/sdcard/Android/data/com.aircon.family/files/pairing"
+        run(["shell", "mkdir", "-p", target], "prepare own test pairing directory")
+        run(
+            ["push", str(args.claim_file.resolve()), target + "/approved-hub-claim.json"],
+            "copy one-use private claim to signed own test; no credential in arguments",
+        )
+    encoded = base64.b64encode(args.home_name.encode()).decode()
+    output = run(
+        [
+            "shell",
+            "am",
+            "instrument",
+            "-w",
+            "-e",
+            "class",
+            (
+                "com.aircon.family.OwnPushSmokeTest#" + args.push_test
+                if args.push_test
+                else "com.aircon.family.OwnUiSmokeTest#" + args.ui_test
+                if args.ui_test
+                else "com.aircon.family.OwnHubSmokeTest#" + args.hub_test
+                if args.hub_test
+                else "com.aircon.family.OwnFamilySmokeTest"
+            ),
+            "-e",
+            "home_name_b64",
+            encoded,
+            "com.aircon.family.test/androidx.test.runner.AndroidJUnitRunner",
+        ],
+        "native UI smoke [user-approved home; existing real Google session; no token extraction]",
+        120,
+    )
+    if not re.search(rb"OK \(1 tests?\)", output):
+        raise RuntimeError(
+            "Native real-account smoke did not report success; inspect before retry."
+        )
+    images = Path("docs/assets/hardware/family-app")
+    roots = re.findall(rb"INSTRUMENTATION_STATUS: capture_root=([^\r\n]+)", output)
+    captures_required = not args.hub_test or args.hub_test == "observeActualHubFCM"
+    capture_root = ""
+    if captures_required:
+        assert roots and len(set(roots)) == 1
+        capture_root = roots[0].decode("utf-8")
+        assert re.fullmatch(
+            r"/storage/emulated/\d+/Android/data/com\.aircon\.family/files/test-captures",
+            capture_root,
+        )
+    captures = (
+        (
+            "17-a50-redesigned-home",
+            "18-a50-redesigned-history",
+            "19-a50-redesigned-settings",
+            "20-a50-redesigned-notifications",
+            "21-a50-scroll-kept-after-save",
+        )
+        if args.ui_test
+        else
+        (
+            "14-a50-notification-off-guidance",
+            "15-a50-notification-choices",
+            "16-a50-home-delete-confirmation",
+            "22-a50-redesigned-members-redacted",
+        )
+        if args.push_test == "verifyNotificationGuidanceAndChoices"
+        else ("10-a50-fcm-installation-registered",)
+        if args.push_test == "registerRealInstallation"
+        else ("12-a50-fcm-screen-off-receipt",)
+        if args.push_test == "receiveRealFCMWhileScreenOff"
+        else ("11-a50-fcm-background-receipt",)
+        if args.push_test
+        else ("13-a50-pi-connection-fcm-receipt",)
+        if args.hub_test == "observeActualHubFCM"
+        else ()
+        if args.hub_test
+        else ("08-a50-real-test-home", "09-a50-real-owner-members-redacted")
+    )
+    for name in captures:
+        result = adb.run(
+            "-s",
+            endpoint,
+            "exec-out",
+            "cat",
+            capture_root + "/" + name + ".png",
+            timeout=15,
+        )
+        assert result.returncode == 0 and result.stdout.startswith(b"\x89PNG")
+        exported = name + ("-" + args.capture_suffix if args.capture_suffix else "") + ".png"
+        (images / exported).write_bytes(result.stdout)
+        record.log(
+            "ACTUAL_REAL_ACCOUNT_UI_CAPTURE=" + exported + " EMAIL_REDACTED_BEFORE_EXPORT=TRUE"
+        )
+    run(
+        ["shell", "am", "force-stop", "com.aircon.family"],
+        "restart own family client only [server continues]",
+    )
+    run(
+        ["shell", "am", "start", "-W", "-n", "com.aircon.family/.MainActivity"],
+        "reopen original release APK [verify saved Google session and HTTPS origin]",
+    )
+    time.sleep(2)
+    run(
+        ["shell", "uiautomator", "dump", "/data/local/tmp/family-post-restart.xml"],
+        "read own client UI after restart",
+    )
+    result = adb.run(
+        "-s", endpoint, "exec-out", "cat", "/data/local/tmp/family-post-restart.xml", timeout=15
+    )
+    assert result.returncode == 0
+    tree = ET.fromstring(result.stdout)
+    texts = {
+        node.get("text") for node in tree.iter("node") if node.get("package") == "com.aircon.family"
+    }
+    assert args.home_name in texts and "새 집 만들기" in texts
+    record.log(
+        "SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST="
+        + str(args.push_test or args.hub_test or args.ui_test or "household_ui")
+    )
+    record.log("GOOGLE_TOKENS_PASSWORDS_AND_EXISTING_HOME_DATA=NOT_EXPORTED_OR_DELETED")
+
+
+if __name__ == "__main__":
+    main()

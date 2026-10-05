@@ -1,0 +1,21 @@
+[Unit]
+Description=Family smart home outgoing event relay
+After=network-online.target aircon-controller.service
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/services/aircon-central-agent/current/agent.py
+Restart=on-failure
+RestartSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.local/state/aircon-central-agent
+UMask=0077
+
+[Install]
+WantedBy=default.target

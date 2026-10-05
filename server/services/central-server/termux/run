@@ -1,0 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/sh
+set -eu
+export PREFIX=/data/data/com.termux/files/usr
+export PATH="$PREFIX/bin:$PATH"
+umask 077
+exec 2>&1
+cd "$HOME/services/aircon-central/current"
+exec "$HOME/services/aircon-central/.venv/bin/python" -m central_server

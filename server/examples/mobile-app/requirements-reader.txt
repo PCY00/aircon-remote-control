@@ -1,0 +1,4 @@
+# Install from the project root with the PC's dedicated Python environment.
+-r ../../services/central-server/requirements.txt
+pytest==8.4.2
+Pillow==12.3.0

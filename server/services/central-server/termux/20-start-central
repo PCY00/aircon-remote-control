@@ -1,0 +1,18 @@
+#!/data/data/com.termux/files/usr/bin/sh
+set -eu
+export PREFIX=/data/data/com.termux/files/usr
+export PATH="$PREFIX/bin:$PATH"
+export SVDIR="$PREFIX/var/service"
+umask 077
+termux-wake-lock
+state="$HOME/.local/state/aircon-central"
+mkdir -p "$state"
+if [ -f "$state/bootstrap.log" ]; then
+    tail -n 100 "$state/bootstrap.log" > "$state/bootstrap.log.tmp"
+    mv "$state/bootstrap.log.tmp" "$state/bootstrap.log"
+fi
+exec >> "$state/bootstrap.log" 2>&1
+date -u '+CENTRAL_BOOT=%Y-%m-%dT%H:%M:%SZ'
+service-daemon start
+# Existing down marker is respected: do not override a crash-budget stop on boot.
+echo CENTRAL_SERVICE_DAEMON_REQUESTED

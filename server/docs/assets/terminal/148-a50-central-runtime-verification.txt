@@ -1,0 +1,107 @@
+# Actual phone SSH operations; private details removed
+
+$ SSH [verified host key] python - < verified runtime probe [database integrity, checksum, health, loopback, persistence, worker]
+DATABASE_INTEGRITY=ok
+PRIVATE_PERSISTENCE_BASELINE_SAVED=TRUE
+MANAGED_SOURCE_AND_HOOK_CHECKSUMS=PASS
+LIVE=[200, {"scope": "foundation", "service": "aircon-central", "status": "ok", "uptime_seconds": 74.8, "version": "0.1.0"}]
+READY=[200, {"database": "ok", "status": "ready"}]
+CONCURRENT_READINESS_8_REQUESTS_4_CLIENTS=PASS
+LAN_INTERFACE_8001_NOT_LISTENING=PASS
+SERVER_RSS=36732 kB
+PYTHON_VERSION=3.14.6
+EXISTING_SSH_SERVICE_DOWN_MARKERS_PRESERVED=TRUE
+CONTROLLED_WORKER_SIGKILL=ONE_REQUEST
+WORKER_PID_CHANGED=TRUE
+SINGLE_CRASH_BUDGET_RECORDED=TRUE
+WORKER_AUTOMATIC_RECOVERY=PASS
+CENTRAL_RUNTIME_PROBE=PASS
+
+EXIT_CODE=0
+$ SSH [verified host key] python - < verified runtime probe [database integrity, checksum, health, loopback, persistence, worker]
+DATABASE_INTEGRITY=ok
+DATABASE_IDENTITY_PERSISTED=TRUE
+SSH_BOOT_SCRIPT_UNCHANGED=TRUE
+MANAGED_SOURCE_AND_HOOK_CHECKSUMS=PASS
+LIVE=[200, {"scope": "foundation", "service": "aircon-central", "status": "ok", "uptime_seconds": 1.1, "version": "0.1.0"}]
+READY=[200, {"database": "ok", "status": "ready"}]
+CONCURRENT_READINESS_8_REQUESTS_4_CLIENTS=PASS
+LAN_INTERFACE_8001_NOT_LISTENING=PASS
+SERVER_RSS=36736 kB
+PYTHON_VERSION=3.14.6
+EXISTING_SSH_SERVICE_DOWN_MARKERS_PRESERVED=TRUE
+CENTRAL_RUNTIME_PROBE=PASS
+
+EXIT_CODE=0
+$ adb [verified paired A50] reboot [one request]
+REBOOT_RESPONSE_TIMEOUT=10s; request not repeated
+HANDS_FREE_REBOOT_ADB_SECONDS=122.0
+$ SSH [verified host key] python - < verified runtime probe [database integrity, checksum, health, loopback, persistence, worker]
+DATABASE_INTEGRITY=ok
+DATABASE_IDENTITY_PERSISTED=TRUE
+SSH_BOOT_SCRIPT_UNCHANGED=TRUE
+MANAGED_SOURCE_AND_HOOK_CHECKSUMS=PASS
+LIVE=[200, {"scope": "foundation", "service": "aircon-central", "status": "ok", "uptime_seconds": 1.4, "version": "0.1.0"}]
+READY=[200, {"database": "ok", "status": "ready"}]
+CONCURRENT_READINESS_8_REQUESTS_4_CLIENTS=PASS
+LAN_INTERFACE_8001_NOT_LISTENING=PASS
+SERVER_RSS=36632 kB
+PYTHON_VERSION=3.14.6
+EXISTING_SSH_SERVICE_DOWN_MARKERS_PRESERVED=TRUE
+CENTRAL_RUNTIME_PROBE=PASS
+
+EXIT_CODE=0
+$ adb [verified A50] shell [home then screen off]
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 1/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 2/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 3/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 4/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 5/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 6/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 7/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] curl [phone loopback]/health/ready [screen off 8/8]
+{"database":"ok","status":"ready"}
+
+EXIT_CODE=0
+$ SSH [verified host key] python - < verified runtime probe [database integrity, checksum, health, loopback, persistence, worker]
+DATABASE_INTEGRITY=ok
+DATABASE_IDENTITY_PERSISTED=TRUE
+SSH_BOOT_SCRIPT_UNCHANGED=TRUE
+MANAGED_SOURCE_AND_HOOK_CHECKSUMS=PASS
+LIVE=[200, {"scope": "foundation", "service": "aircon-central", "status": "ok", "uptime_seconds": 130.6, "version": "0.1.0"}]
+READY=[200, {"database": "ok", "status": "ready"}]
+CONCURRENT_READINESS_8_REQUESTS_4_CLIENTS=PASS
+LAN_INTERFACE_8001_NOT_LISTENING=PASS
+SERVER_RSS=39264 kB
+PYTHON_VERSION=3.14.6
+EXISTING_SSH_SERVICE_DOWN_MARKERS_PRESERVED=TRUE
+CENTRAL_RUNTIME_PROBE=PASS
+
+EXIT_CODE=0
+$ adb [verified A50] shell [manager status]
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NO_WIRELESS_DEBUG_DIALOG;service_connected=true;inspection_count=60;last_approval=APPROVED_KNOWN_WIFI;interactive=false;last=무선 디버깅 복구 요청 완료"
+
+CENTRAL_HANDS_FREE_REBOOT_AND_SCREEN_OFF_TWO_MINUTES=PASS
