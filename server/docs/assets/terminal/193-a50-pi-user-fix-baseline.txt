@@ -1,0 +1,6 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] compare current Pi app files against local baseline [read-only]
+# Source byte snapshots retained privately; bulk payload omitted.
+
+EXIT_CODE=0

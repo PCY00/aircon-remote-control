@@ -1,9 +1,11 @@
 package com.aircon.a50manager;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -12,7 +14,12 @@ public final class MainActivity extends Activity {
     private TextView status;
     @Override public void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        setTurnScreenOn(true);
+        // Activity.setTurnScreenOn exists from API 27; minSdk 26 uses the window flag instead.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setTurnScreenOn(true);
+        } else {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        }
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         int padding = (int)(24 * getResources().getDisplayMetrics().density);
@@ -53,7 +60,8 @@ public final class MainActivity extends Activity {
     }
     @Override public void onResume() {
         super.onResume();
-        Maintenance.restore(this);
+        // This launcher Activity is exported, so opening it must not change settings: recovery
+        // runs only from the button, boot/update, the periodic job and the token-checked RECOVER.
         refresh();
     }
     private void refresh() {

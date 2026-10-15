@@ -9,15 +9,21 @@ import static org.junit.Assert.*;
 @RunWith(AndroidJUnit4.class)
 public class ApiIntegrationTest {
     @Test public void realAndroidTransportEnforcesHouseholdAuthority() throws Exception {
-        JSONObject fixture;
-        try(InputStream input=InstrumentationRegistry.getInstrumentation().getTargetContext().getAssets().open("test-fixture.json")){
+        JSONObject fixture; android.content.Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
+        try(InputStream input=context.getAssets().open("test-fixture.json")){
             ByteArrayOutputStream output=new ByteArrayOutputStream();byte[] buffer=new byte[4096];int count;
             while((count=input.read(buffer))!=-1) output.write(buffer,0,count);
             fixture=new JSONObject(output.toString("UTF-8"));
         }
-        ApiClient api=new ApiClient("http://127.0.0.1:8765",true);
+        ServerTrust.forget(context);
+        ApiClient api=new ApiClient(context,"http://127.0.0.1:8765",true);
         String owner=fixture.getString("owner_token"),other=fixture.getString("other_token"),family=fixture.getString("family_token"),guest=fixture.getString("guest_token");
         JSONArray homes=api.request(owner,"GET","/v1/me",null).getJSONArray("homes");
+        assertEquals("First contact pins the fixture server's key",64,ServerTrust.pinned(context).length());
+        ServerTrust.repin(context,"0000000000000000000000000000000000000000000000000000000000000000");
+        try { api.request(owner,"GET","/v1/me",null); fail("Token sent to a server that is not the pinned one"); }
+        catch(ServerTrust.Changed changed) { assertEquals(64,changed.fingerprint.length()); ServerTrust.repin(context,changed.fingerprint); }
+        api.request(owner,"GET","/v1/me",null);
         String home=null;
         for(int index=0;index<homes.length();index++) if(homes.getJSONObject(index).getString("name").equals("시험용 우리 집")) home=homes.getJSONObject(index).getString("id");
         assertNotNull(home);String base="/v1/homes/"+home;

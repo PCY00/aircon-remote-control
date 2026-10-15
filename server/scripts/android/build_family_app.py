@@ -13,6 +13,29 @@ from pathlib import Path
 from a50_record import PhoneSession
 
 
+def prune_stages(root: Path, keep: int = 2) -> list[Path]:
+    """Delete staging copies older than the newest ones; each held private build inputs."""
+    stages = sorted(
+        (path for path in root.glob("project-*") if path.is_dir() and not path.is_symlink()),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    for old in stages[keep:]:
+        shutil.rmtree(old, ignore_errors=True)
+    return stages[keep:]
+
+
+def scrub_stage(stage: Path) -> None:
+    """Remove private inputs and bulky intermediates; keep APK outputs and test reports."""
+    for relative in (
+        "private-build.json",
+        "local.properties",
+        "app/src/fixture/assets/test-fixture.json",
+    ):
+        (stage / relative).unlink(missing_ok=True)
+    shutil.rmtree(stage / "app/build/intermediates", ignore_errors=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tests", action="store_true")
@@ -68,6 +91,7 @@ def main():
     )
     root = Path.home() / ".codex/family-android-build"
     root.mkdir(exist_ok=True)
+    record.log("OLD_BUILD_STAGES_REMOVED=" + str(len(prune_stages(root))))
     stage = Path(tempfile.mkdtemp(prefix="project-", dir=root))
     source = Path("android/family-app")
     for path in source.rglob("*"):
@@ -131,6 +155,7 @@ def main():
         + str(result.returncode)
     )
     if result.returncode:
+        scrub_stage(stage)
         raise RuntimeError("Family APK build failed; inspect sanitized build record.")
     output = Path(
         "tmp/family-app-smoke-tests" if args.production_smoke_only else "tmp/family-app-build"
@@ -181,6 +206,8 @@ def main():
         record.log(
             "SIGNED_APK=" + name + " BYTES=" + str(apk.stat().st_size) + " SHA256=" + verified[name]
         )
+    scrub_stage(stage)
+    record.log("STAGE_PRIVATE_INPUTS_AND_INTERMEDIATES_REMOVED=TRUE")
     (output / "build.json").write_text(json.dumps(verified, indent=2))
     (
         private / ("last-smoke-build.json" if args.production_smoke_only else "last-build.json")

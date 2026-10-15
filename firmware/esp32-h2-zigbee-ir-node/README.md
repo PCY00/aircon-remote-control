@@ -37,6 +37,18 @@ existing network. This is a firmware/rejoin check, not a fresh IR test.
 
 ## Wire protocols v1 and v2
 
+The 2026-10-11 restore found a different existing partition table: the actual
+factory app began at `0x10000`. After a full private backup and explicit user
+confirmation, only that app was replaced. Readback matched the 511,168-byte
+build and all flash sectors outside the app write stayed unchanged. The H2
+booted and subsequently announced on the existing Pi network; permit-join
+was confirmed closed. Always read the installed partition table before an
+update; do not copy the older `0x20000` offset blindly. See the
+[restore record](../../docs/journal/2026-10-11-h2-firmware-restore.md).
+The existing v2 firmware already accepts the commands exposed by family APK
+0.5.1. This app update does not require another firmware flash. Physical
+responses to all commands have not been tested in this restore.
+
 - Endpoint `10`, Home Automation profile `0x0104`, private cluster `0xFF00`.
 - Client command `0x00`: six data bytes
   `[version=1, profile=1, command=1, request_id little-endian 24-bit]`.
@@ -61,9 +73,77 @@ The ZCL callback validates and queues the request; a single IR worker owns RMT
 and sends the completion result. If RMT fails, further transmissions latch off
 until reboot. Network credentials are left in NVS; startup never erases NVS.
 Fixed frames are copied from the checked-in Carrier profile. Cooling 17–20 °C
-frames were measured; 21–30 °C use the profile's inferred Gray-code rule and
-remain unverified on the appliance. `LED_TOGGLE` was captured but its physical
+frames were measured; 21–30 °C use the Coolix temperature table
+(`0 1 3 2 6 7 5 4 C D 9 8 A B`). It equals Gray code except 27 °C (`0x9`) and
+28 °C (`0x8`); the earlier Gray rule sent `0xF`/`0xE` there, and `0xE` is the
+fan-only code. 21–30 °C, especially 27/28 °C, remain unverified on the
+appliance. `ECONOMY` now sends only the eco/sleep frame `b2 4d e0 1f 03 fc`
+(once, as in the capture); the captured press also carried the remote's cool 17 °C/auto state,
+which forced 17 °C. The Pi is expected to follow with `COOL_STATE` for the
+current setpoint. `LED_TOGGLE` was captured but its physical
 effect has not yet been confirmed. No generic “power toggle” is implemented.
+
+If Zigbee initialization/rejoin or network steering fails (for example
+`0x03` no network while the Pi coordinator is still starting after a power
+cut), the node retries commissioning after 1 s, doubling to at most 60 s,
+until it succeeds. A commissioning start the stack refuses is retried the same
+way. After a leave without rejoin (for example the device was removed in
+Zigbee2MQTT), the node restarts network steering with the same backoff; it
+joins again only when the coordinator permits joining. A leave with rejoin is
+left to the stack. Retries never emit IR. The RMT TX interrupt is built
+cache-safe (`CONFIG_RMT_TX_ISR_CACHE_SAFE=y`) because every command is longer
+than the channel memory and Zigbee NVS writes can disable the flash cache.
+The build helper regenerates the staging `sdkconfig` whenever
+`sdkconfig.defaults` or `partitions.csv` changes.
+
+The private cluster's read-only `capability` attribute (`0x0000`, uint8) is
+`2` for this firmware (Coolix 27/28 °C table, eco-only `ECONOMY`, commissioning
+retry); the deployed older firmware reports `1`. The converter only declares
+the attribute, and the Pi does not read it yet. The Pi backend's new economy
+and 27/28 °C behaviour assumes capability 2 firmware, so reflash the H2
+together with that Pi deploy. Until then, 27/28 °C stay wrong on the H2 path,
+and `ECONOMY` briefly sends the old 17 °C frames before the Pi's `COOL_STATE`.
+
+## Zigbee security
+
+The node trusts the shared Zigbee network key only as far as it has to:
+
+- **Coordinator-only commands.** A private-cluster command is accepted only
+  when the ZCL header's source address (`ezb_zcl_cmd_hdr_t.src_addr`) is the
+  coordinator's short address `0x0000` in short-address mode; an extended
+  source address is first resolved through the stack's address table, and
+  group or absent addresses are refused. Zigbee2MQTT on the Pi is the
+  coordinator. Any other node, even a joined one holding the network key,
+  gets a default response with status `NOT_AUTHORIZED` (`0x7E`) and nothing
+  is queued. Rejections are logged on the first occurrence and then at most
+  once per minute. The mode is checked strictly because results are addressed
+  with this same source address and reached the Pi in the 2026-10-03 test.
+  Limitation: the NWK source address is protected only by the shared network
+  key, so a device that can forge raw NWK frames as `0x0000` would still pass;
+  the pacing below bounds what any sender can do.
+- **IR pacing.** The IR worker keeps at least 2 s between the end of one
+  transmission and the start of the next appliance-state command
+  (`POWER_OFF`, `COOL_STATE`, `MODE_*`, `ECONOMY`) and 0.5 s before a feature
+  toggle (`TURBO`, `LED_TOGGLE`, `AIRFLOW_FIX`, `SWING_TOGGLE`). A request is
+  still answered `accepted` immediately; only its `sent`/`failed` result
+  waits. The Pi sends commands one at a time and waits for `sent`, so in
+  normal use only the Pi's `ECONOMY`→`COOL_STATE` follow-up (2 s) and rapid
+  repeated clicks are delayed; a full four-deep queue of state commands
+  drains in about 7 s, inside the Pi's 18 s result budget. The wire protocol,
+  result codes, `capability` (`2`) and the converter are unchanged.
+- **Joining.** The node uses the default Trust Center link key and no
+  install code (`install_code_policy = false`), so anyone within radio range
+  during a permit-join window can obtain the network key. This is an accepted
+  risk for the home network: open permit-join only while attending the join,
+  keep the window short and close it immediately afterwards. The Pi's
+  permit-join request now targets the coordinator only, so routers do not
+  re-open the window.
+
+After an approved reflash, verify from the monitor log that the Pi's commands
+are still accepted (`from 0x0000 (mode 2)`, or mode `3` resolved through the
+address table), that a command from any other node is refused, and that two
+back-to-back state commands show a `paced: waiting` line with the second
+`sent` result about 2 s later.
 
 ## Zigbee2MQTT converter
 
@@ -99,3 +179,14 @@ appliance check for end-to-end validation.
    deployed with source/runtime SHA-256 checks and service health checks.
 3. Physical dashboard tests of cooling, mode, fan, feature, and web OFF
    commands remain pending. Do not infer appliance state from `sent` alone.
+4. 2026-10-13: the Coolix 27/28 °C table, eco-only `ECONOMY`, commissioning
+   retry (including after a leave), capability `2`, and the cache-safe RMT ISR
+   were built locally only (`0x7d1d0` bytes, 47% of the app partition free).
+   This build has not been flashed. After an approved reflash, check 27/28 °C
+   cooling, `ECONOMY` (one eco frame, then the Pi's `COOL_STATE`), and rejoin
+   after the Pi coordinator restarts.
+5. 2026-10-15: coordinator-only command acceptance and IR pacing (see
+   "Zigbee security") were built locally only (`0x7d4a0` bytes, 47% of the
+   app partition free) and passed the host policy checks; the wire protocol
+   and `capability` are unchanged. Not flashed. After an approved reflash,
+   also run the checks listed at the end of "Zigbee security".

@@ -13,6 +13,11 @@ from pathlib import Path
 
 from a50_record import PhoneSession
 
+# SHA-256 of gradle-8.13-bin.zip as published at
+# https://services.gradle.org/distributions/gradle-8.13-bin.zip.sha256 (read 2026-10-15).
+# Pinned here so the download is checked against a value the download origin cannot change.
+GRADLE_8_13_BIN_SHA256 = "20f1b1176237254a6fc204d8434196fa11a4cfb387567519c61556e8710aed78"
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -62,7 +67,8 @@ def main():
         complete = archive.find("complete")
         url = "https://dl.google.com/android/repository/" + complete.findtext("url")
         data = urllib.request.urlopen(url, timeout=120).read()
-        assert hashlib.sha1(data).hexdigest() == complete.findtext("checksum")
+        if hashlib.sha1(data).hexdigest() != complete.findtext("checksum"):
+            raise RuntimeError("Official archive checksum did not match; do not extract or run.")
         path = root / (package.replace(";", "-") + ".zip")
         path.write_bytes(data)
         stage = root / (package.replace(";", "-") + "-extract")
@@ -70,7 +76,8 @@ def main():
         with zipfile.ZipFile(path) as z:
             z.extractall(stage)
         children = [p for p in stage.iterdir() if p.is_dir()]
-        assert len(children) == 1
+        if len(children) != 1:
+            raise RuntimeError("Unexpected archive layout; inspect before using it.")
         destination.parent.mkdir(parents=True, exist_ok=True)
         children[0].rename(destination)
         record.log("OFFICIAL_DOWNLOAD_AND_REPOSITORY_CHECKSUM=PASS PACKAGE=" + package)
@@ -83,9 +90,13 @@ def main():
     gradle = root / "gradle-8.13"
     if not gradle.exists():
         url = "https://services.gradle.org/distributions/gradle-8.13-bin.zip"
-        expected = urllib.request.urlopen(url + ".sha256", timeout=30).read().decode().strip()
         data = urllib.request.urlopen(url, timeout=120).read()
-        assert hashlib.sha256(data).hexdigest() == expected
+        actual = hashlib.sha256(data).hexdigest()
+        if actual != GRADLE_8_13_BIN_SHA256:
+            raise RuntimeError(
+                "Official Gradle checksum did not match the pinned value; do not extract or run. "
+                f"expected={GRADLE_8_13_BIN_SHA256} actual={actual}"
+            )
         path = root / "gradle.zip"
         path.write_bytes(data)
         with zipfile.ZipFile(path) as z:

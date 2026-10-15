@@ -1,16 +1,15 @@
 """Critical explicit routing followed by local offline autorouting of residual nets."""
-from pathlib import Path
 import argparse
 import json
 import os
 import subprocess
 import pcbnew as p
+from hw_paths import kicad_root, route_tools
 
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\codex-revA')
+OUT=kicad_root()/'codex-revA'
 NAME='IR_ESP32H2_RevA'
 PCB=OUT/(NAME+'.kicad_pcb')
-KICAD=Path(r'C:\Users\kksp1\AppData\Local\Programs\KiCad\10.0')
-ROUTER=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\KeyRing\tmp\route_tools')
+ROUTER=route_tools()
 os.environ['KIPRJMOD']=str(OUT)
 
 def v(x,y): return p.VECTOR2I(p.FromMM(x),p.FromMM(y))

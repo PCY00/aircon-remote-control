@@ -1,0 +1,14 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] verify_central_agent.py [read-only A50 private hub binding, events and readiness]
+PROVISIONING_RECORD_FIELDS=["claim_code", "claim_expires_at", "hub_id", "hub_token"]
+PROVISIONED_HUB_ACTIVE_AND_ONE_TIME_CLAIM_CONSUMED=PASS
+CENTRAL_COUNTS={"users": 1, "homes": 2, "hubs": 1, "events": 1044, "installations": 4}
+BOUND_HOME_EVENT_KINDS=[["hub.connection_test", 1], ["sensor.climate_report", 911], ["sensor.door_changed", 132]]
+PUSH_STATES=[["accepted", 281], ["failed", 2]]
+PHONE_NOTIFICATION_CHOICES_ONLY=[[1, 0, 1, 5], [1, 0, 1, 60], [1, 0, 1, 5], [1, 0, 1, 5]]
+Traceback (most recent call last):
+  File "<stdin>", line 30, in <module>
+AssertionError: Provisioning record still holds claim_code,claim_expires_at,hub_token; keep only hub_id and created_at
+
+EXIT_CODE=1

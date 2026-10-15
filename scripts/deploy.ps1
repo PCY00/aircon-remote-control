@@ -5,10 +5,24 @@ param(
     [string]$PiUser = "air",
     [string]$RemotePath = "/home/air/aircon-controller",
     [string]$IdentityFile = (Join-Path $HOME ".ssh\airconpi"),
+    [string]$KnownHostsFile = "",
     [string[]]$Include = @()
 )
 
 $ErrorActionPreference = "Stop"
+
+function Get-DeploymentSha256([string]$LiteralPath) {
+    # Works in Windows PowerShell even when the utility module's Get-FileHash
+    # function is unavailable to a non-interactive pipeline.
+    $stream = [System.IO.File]::OpenRead($LiteralPath)
+    $algorithm = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return [System.BitConverter]::ToString($algorithm.ComputeHash($stream)).Replace("-", "").ToLowerInvariant()
+    } finally {
+        $algorithm.Dispose()
+        $stream.Dispose()
+    }
+}
 
 if ($PiHost -notmatch "^[A-Za-z0-9.-]+$") {
     throw "PiHost contains unsupported characters."
@@ -22,6 +36,9 @@ if ($RemotePath -notmatch "^/[A-Za-z0-9._/-]+$") {
 if (-not (Test-Path -LiteralPath $IdentityFile -PathType Leaf)) {
     throw "SSH identity file was not found: $IdentityFile"
 }
+if ($KnownHostsFile -and -not (Test-Path -LiteralPath $KnownHostsFile -PathType Leaf)) {
+    throw "Verified SSH host record was not found."
+}
 
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $projectPrefix = $projectRoot.TrimEnd("\") + "\"
@@ -33,7 +50,24 @@ $explicitFiles = @(
     "pyproject.toml",
     "README.md"
 )
-$excludedDirectoryNames = @("__pycache__", ".pytest_cache", ".ruff_cache")
+# AGENTS.md: never sync Git data, virtualenvs, caches, secrets, local logs,
+# temporary files, editor settings or runtime data, even inside copied folders.
+$excludedDirectoryNames = @(
+    "__pycache__", ".pytest_cache", ".ruff_cache", ".mypy_cache",
+    ".git", ".venv", "venv", ".deploy", "secrets", "logs", "runtime", "runtime_preview",
+    "tmp", "node_modules", ".vscode", ".idea"
+)
+$excludedExtensions = @(".pyc", ".pyo", ".key", ".pem", ".pfx", ".p12", ".log")
+
+function Test-ExcludedDeploymentFile([string]$RelativePath) {
+    $segments = $RelativePath.Replace("\", "/").Split("/")
+    $name = $segments[-1]
+    return (
+        ($segments | Where-Object { $_ -in $excludedDirectoryNames }) -or
+        ($name -like ".env*" -and $name -ne ".env.example") -or
+        [System.IO.Path]::GetExtension($name) -in $excludedExtensions
+    )
+}
 
 $candidateFiles = @()
 if ($Include.Count -gt 0) {
@@ -45,6 +79,9 @@ if ($Include.Count -gt 0) {
             $relativeFile -match "(^|/)\.\.($|/)"
         ) {
             throw "Include contains an unsupported relative path: $requestedPath"
+        }
+        if (Test-ExcludedDeploymentFile $relativeFile) {
+            throw "Include names a secret, log, cache or runtime file: $relativeFile"
         }
         $fullFile = Join-Path $projectRoot ($relativeFile.Replace("/", "\"))
         if (-not (Test-Path -LiteralPath $fullFile -PathType Leaf)) {
@@ -60,9 +97,7 @@ if ($Include.Count -gt 0) {
         }
 
         $candidateFiles += Get-ChildItem -LiteralPath $fullRoot -File -Recurse | Where-Object {
-            $segments = $_.FullName.Substring($projectPrefix.Length).Split("\")
-            -not ($segments | Where-Object { $_ -in $excludedDirectoryNames }) -and
-            $_.Extension -notin @(".pyc", ".pyo")
+            -not (Test-ExcludedDeploymentFile $_.FullName.Substring($projectPrefix.Length))
         }
     }
 
@@ -87,7 +122,7 @@ $files = @(
                 RelativePath = $relativePath
                 FullPath = $_.FullName
                 Bytes = $_.Length
-                Sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                Sha256 = Get-DeploymentSha256 $_.FullName
             }
         }
 )
@@ -119,6 +154,9 @@ $sshOptions = @(
     "-o", "StrictHostKeyChecking=yes"
 )
 $destination = "{0}@{1}" -f $PiUser, $PiHost
+if ($KnownHostsFile) {
+    $sshOptions += @("-o", "UserKnownHostsFile=$KnownHostsFile")
+}
 
 $remoteDirectories = @(
     $files | ForEach-Object {
@@ -146,9 +184,11 @@ foreach ($file in $files) {
     }
 }
 
-& ssh @sshOptions $destination "chmod 755 -- '$RemotePath/scripts/run_pi.sh'"
-if ($LASTEXITCODE -ne 0) {
-    throw "Failed to set the Pi run script executable bit."
+if ($files.RelativePath -contains "scripts/run_pi.sh") {
+    & ssh @sshOptions $destination "chmod 755 -- '$RemotePath/scripts/run_pi.sh'"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to set the Pi run script executable bit."
+    }
 }
 
 $relativeArguments = $files.RelativePath -join " "

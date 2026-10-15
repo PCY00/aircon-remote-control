@@ -1,0 +1,12 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - < verify_a50_tunnel.py [private state; metadata only]
+TUNNEL_MANAGED_CHECKSUMS=PASS VENDOR_SERVICE_DISABLED=TRUE
+CENTRAL_MANAGED_CHECKSUMS_DATABASE_IDENTITY_AND_SSH_BOOT_PRESERVED=PASS
+PRODUCTION_COUNTS={"homes": 2, "hubs": 1, "users": 1}
+run: /data/data/com.termux/files/usr/var/service/aircon-fixed-tunnel: (pid 12513) 79s; run: log: (pid 12508) 80s
+PRIVATE_ENDPOINT_STATUS=connected FIXED_HOSTNAME=TRUE
+PUBLIC_EDGE_READINESS_RETRY=1 STATUS=0
+PUBLIC_EDGE_READINESS_RETRY=2 STATUS=0
+PUBLIC_EDGE_READINESS_RETRY=3 STATUS=0
+PUBLIC_EDGE_READINESS_RETRY=4 STATUS=0

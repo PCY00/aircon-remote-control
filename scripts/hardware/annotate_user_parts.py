@@ -2,8 +2,9 @@
 from pathlib import Path
 import copy, json
 from kicad_sexpr import read,write,child,children,a,Atom
+from hw_paths import kicad_root
 
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
+OUT=kicad_root()/'artwork-current'
 MAPPING=Path('tmp/user-bom-audit-20260920/part-mapping.json')
 parts={r:row for row in json.loads(MAPPING.read_text(encoding='utf8')) for r in row['refs']}
 

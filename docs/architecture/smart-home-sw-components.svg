@@ -1,0 +1,397 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1690" width="1800" height="1690" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif" role="img" aria-labelledby="title desc">
+<title id="title">스마트홈 소프트웨어 아키텍처 · 컴포넌트 다이어그램</title>
+<desc id="desc">가족 앱, A50 중앙 서버, Pi 게이트웨이, ESP32-H2 IR 노드와 외부 서비스의 컴포넌트와 연결</desc>
+<defs>
+<marker id="a-local" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker>
+<marker id="s-local" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#2563eb"/></marker>
+<marker id="a-remote" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#9333ea"/></marker>
+<marker id="s-remote" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#9333ea"/></marker>
+<marker id="a-sensor" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#16a34a"/></marker>
+<marker id="s-sensor" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#16a34a"/></marker>
+<marker id="a-notify" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ea580c"/></marker>
+<marker id="s-notify" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#ea580c"/></marker>
+<marker id="a-auth" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0891b2"/></marker>
+<marker id="s-auth" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#0891b2"/></marker>
+<marker id="a-shared" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker>
+<marker id="s-shared" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#334155"/></marker>
+<marker id="a-inner" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker>
+<marker id="s-inner" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10 0L0 5L10 10z" fill="#94a3b8"/></marker>
+</defs>
+<rect width="1800" height="1690" fill="#ffffff"/>
+<text x="32" y="52" font-size="26" font-weight="bold" fill="#0f172a" text-anchor="start">스마트홈 소프트웨어 아키텍처 · 컴포넌트 다이어그램</text>
+<text x="32" y="80" font-size="14" font-weight="normal" fill="#475569" text-anchor="start">2026-10-14 로컬 코드 기준 · Pi 앱 0.7.0 · 중앙 서버·가족 앱 0.5.1 (DB 스키마 5) · H2 펌웨어 capability 2는 로컬 빌드만 하고 보드에는 아직 굽지 않음</text>
+<rect x="30" y="100" width="1080" height="200" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="46" y="124" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">가족 휴대폰 · 가족 앱 com.aircon.family 0.5.1 (Android)</text>
+<rect x="1130" y="100" width="640" height="200" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="1146" y="124" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">웹 화면 클라이언트</text>
+<rect x="30" y="326" width="1740" height="120" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="900" y="350" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">인터넷·외부 서비스</text>
+<rect x="30" y="472" width="1076" height="340" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="262" y="496" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">Galaxy A50 · Android 11 · Termux runit 서비스</text>
+<rect x="1520" y="472" width="250" height="340" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="1534" y="496" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">개발 PC (Windows) · 관리 경로</text>
+<rect x="30" y="848" width="1740" height="432" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="46" y="872" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">각 집 Raspberry Pi · Raspberry Pi OS · systemd 사용자 서비스</text>
+<rect x="606" y="1296" width="682" height="376" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="622" y="1320" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">IR 송수신 하드웨어 · 에어컨</text>
+<rect x="1304" y="1296" width="466" height="376" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="1320" y="1320" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">Zigbee 망 장치</text>
+<rect x="258" y="506" width="832" height="290" rx="8" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1076" y="524" font-size="11.5" font-weight="bold" fill="#475569" text-anchor="end">central-server · Flask + waitress · 127.0.0.1:8001</text>
+<rect x="46" y="882" width="270" height="380" rx="8" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="60" y="900" font-size="11.5" font-weight="bold" fill="#475569" text-anchor="start">aircon-central-agent (systemd)</text>
+<rect x="332" y="882" width="956" height="308" rx="8" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1274" y="1182" font-size="11.5" font-weight="bold" fill="#475569" text-anchor="end">aircon-controller · FastAPI/uvicorn :8001 · systemd</text>
+<rect x="1304" y="882" width="450" height="196" rx="8" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1318" y="900" font-size="11.5" font-weight="bold" fill="#475569" text-anchor="start">Docker compose (deploy/zigbee)</text>
+<rect x="1316" y="1390" width="442" height="266" rx="8" fill="#eef2f7" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1328" y="1408" font-size="11.5" font-weight="bold" fill="#475569" text-anchor="start">ESP32-H2 SuperMini 펌웨어 · ESP-IDF 5.5 (요청→큐→인코더→RMT)</text>
+<rect x="46" y="150" width="196" height="92" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="224" y="157" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="221" y="159.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="221" y="164.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="56" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">ApiClient</text>
+<text x="56" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">EndpointPolicy · 오류 문구</text>
+<text x="56" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">HTTPS /v1 요청 (ID 토큰)</text>
+<rect x="258" y="150" width="196" height="92" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="436" y="157" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="433" y="159.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="433" y="164.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="268" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">FamilyActivity</text>
+<text x="268" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">홈·기록·설정·에어컨 조작</text>
+<text x="268" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">AirconUi · HomeListState</text>
+<text x="268" y="222" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">CommandPoll (결과 확인)</text>
+<rect x="470" y="150" width="196" height="92" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="648" y="157" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="645" y="159.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="645" y="164.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="480" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">FirebaseSession</text>
+<text x="480" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">AuthSession</text>
+<text x="480" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Google 로그인 → Firebase</text>
+<text x="480" y="222" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">ID 토큰 갱신</text>
+<rect x="682" y="150" width="196" height="92" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="860" y="157" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="857" y="159.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="857" y="164.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="692" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">FamilyMessagingService</text>
+<text x="692" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">PushPolicy</text>
+<text x="692" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">계정·집·수신 선택 확인</text>
+<text x="692" y="222" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">→ Android 알림 표시</text>
+<rect x="894" y="150" width="196" height="92" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1072" y="157" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1069" y="159.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1069" y="164.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="904" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">PushManager</text>
+<text x="904" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">PushSyncWorker (WorkManager)</text>
+<text x="904" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">FCM 토큰·알림 선택 등록</text>
+<rect x="1146" y="150" width="196" height="92" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1156" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">휴대폰·PC 브라우저</text>
+<text x="1156" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Tailscale 앱으로 접속</text>
+<text x="1156" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">집 밖에서 대시보드 사용</text>
+<rect x="1358" y="150" width="196" height="92" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1536" y="157" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1533" y="159.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1533" y="164.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1368" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Pi 터치 화면 키오스크</text>
+<text x="1368" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Chromium 전체 화면</text>
+<text x="1368" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">aircon-kiosk.service</text>
+<text x="1368" y="222" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">127.0.0.1:8001</text>
+<rect x="1570" y="150" width="184" height="92" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1736" y="157" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1733" y="159.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1733" y="164.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1580" y="171" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">웹 화면 (SPA)</text>
+<text x="1580" y="188" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">index.html · sensors.js</text>
+<text x="1580" y="205" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">automations.js · SSE 구독</text>
+<text x="1580" y="222" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Pi :8001이 내려줌</text>
+<rect x="46" y="368" width="196" height="66" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="56" y="389" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Cloudflare Quick Tunnel</text>
+<text x="56" y="406" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">공개 HTTPS 엣지</text>
+<text x="56" y="423" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">주소가 바뀌는 시험용</text>
+<rect x="258" y="368" width="196" height="66" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="268" y="389" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Google 공개 인증서</text>
+<text x="268" y="406" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">ID 토큰 서명 확인용 키</text>
+<text x="268" y="423" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">max-age 캐시 · 만료 후 1시간 유예</text>
+<rect x="470" y="368" width="196" height="66" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="480" y="389" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Google 로그인</text>
+<text x="480" y="406" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Firebase Authentication</text>
+<text x="480" y="423" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">ID 토큰 발급</text>
+<rect x="682" y="368" width="196" height="66" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="692" y="389" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Firebase Cloud Messaging</text>
+<text x="692" y="406" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">FCM HTTP v1</text>
+<text x="692" y="423" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">휴대폰으로 푸시 전달</text>
+<rect x="1146" y="368" width="196" height="66" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1156" y="389" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Tailscale 사설망</text>
+<text x="1156" y="406" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Pi :8001 접근 경로</text>
+<text x="1156" y="423" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">공용 인터넷 직접 노출 없음</text>
+<rect x="46" y="506" width="196" height="74" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="224" y="513" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="221" y="515.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="221" y="520.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="56" y="527" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">central-tunnel</text>
+<text x="56" y="544" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">tunnel.py + cloudflared</text>
+<text x="56" y="561" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">준비 확인 후 터널 시작</text>
+<rect x="46" y="596" width="196" height="80" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<path d="M222 606v8a6 3 0 0 0 12 0v-8" fill="none" stroke="#475569" stroke-width="1.1"/><ellipse cx="228" cy="606" rx="6" ry="3" fill="none" stroke="#475569" stroke-width="1.1"/>
+<text x="56" y="617" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">central.sqlite3</text>
+<text x="56" y="634" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">DB 스키마 5</text>
+<text x="56" y="651" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">집·가족·제어·알림 작업</text>
+<rect x="46" y="692" width="196" height="104" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3 3"/>
+<rect x="224" y="699" width="11" height="13" fill="#fff" stroke="#94a3b8" stroke-width="1.1"/><rect x="221" y="701.5" width="6" height="3" fill="#fff" stroke="#94a3b8" stroke-width="1"/><rect x="221" y="706.5" width="6" height="3" fill="#fff" stroke="#94a3b8" stroke-width="1"/>
+<text x="56" y="713" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">A50 관리 앱</text>
+<text x="56" y="730" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">com.aircon.a50manager</text>
+<text x="56" y="747" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">부팅·Wi-Fi 승인</text>
+<text x="56" y="764" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">무선 디버깅·SSH 복구</text>
+<rect x="274" y="534" width="188" height="66" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="444" y="541" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="441" y="543.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="441" y="548.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="284" y="555" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">FirebaseIdentity</text>
+<text x="284" y="572" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Certificates (auth.py)</text>
+<text x="284" y="589" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">ID 토큰 서명·만료 확인</text>
+<rect x="478" y="534" width="188" height="66" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="648" y="541" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="645" y="543.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="645" y="548.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="488" y="555" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Households</text>
+<text x="488" y="572" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">집·가족 역할·초대</text>
+<text x="488" y="589" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">허브 연결·기록 저장</text>
+<rect x="682" y="534" width="188" height="66" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="852" y="541" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="849" y="543.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="849" y="548.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="692" y="555" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">PushWorker·FCMSender</text>
+<text x="692" y="572" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">전송 직전 권한 재확인</text>
+<text x="692" y="589" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">만료·재시도 후 FCM 전송</text>
+<rect x="886" y="534" width="188" height="66" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1056" y="541" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1053" y="543.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1053" y="548.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="896" y="555" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Controls (control.py)</text>
+<text x="896" y="572" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">제어 대기열 30초 만료</text>
+<text x="896" y="589" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Pi 온라인·결과 기록</text>
+<rect x="682" y="612" width="188" height="64" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="852" y="619" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="849" y="621.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="849" y="626.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="692" y="633" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">PushStore · Preferences</text>
+<text x="692" y="650" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">설치 토큰·알림 선택</text>
+<text x="692" y="667" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">집별 전송 작업 만들기</text>
+<rect x="274" y="704" width="800" height="78" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1056" y="711" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1053" y="713.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1053" y="718.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="284" y="725" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">API /v1 (api.py · web.py)</text>
+<text x="284" y="742" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">사용자 경로: Bearer ID 토큰 → FirebaseIdentity → 현재 집 역할 확인 (owner·member만 제어, viewer는 조회만)</text>
+<text x="284" y="759" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">허브 경로: 허브 키 해시 → 서버에 저장된 집 · /v1/hub/events · /v1/hub/control/status·next·result</text>
+<rect x="1534" y="506" width="222" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3 3"/>
+<text x="1544" y="524" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">server/scripts/android</text>
+<text x="1544" y="539" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">adb·ssh로 A50 서버·앱 배포</text>
+<rect x="1534" y="566" width="222" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3 3"/>
+<text x="1544" y="584" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">server/scripts/pi</text>
+<text x="1544" y="599" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Pi 연결 서비스 배포·제어 설정</text>
+<rect x="1534" y="626" width="222" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3 3"/>
+<text x="1544" y="644" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">scripts/deploy.ps1</text>
+<text x="1544" y="659" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Pi 앱 단방향 배포 (기본 미리보기)</text>
+<rect x="1534" y="686" width="222" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3 3"/>
+<text x="1544" y="704" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">esp32_h2_firmware.ps1</text>
+<text x="1544" y="719" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">ESP-IDF 빌드 · 굽기는 별도 승인</text>
+<rect x="1534" y="746" width="222" height="52" rx="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="3 3"/>
+<text x="1544" y="764" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Gradle · 블로그 도구</text>
+<text x="1544" y="779" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">APK 서명 빌드 · 사진 메타데이터 검사</text>
+<rect x="60" y="912" width="242" height="56" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="284" y="919" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="281" y="921.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="281" y="926.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="70" y="930" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">LocalController</text>
+<text x="70" y="945" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">→ Pi API /api/v1/devices</text>
+<text x="70" y="960" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">명령 대기 20초 · 4xx는 실패</text>
+<rect x="60" y="980" width="242" height="56" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="284" y="987" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="281" y="989.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="281" y="994.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="70" y="998" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">ControlChannel</text>
+<text x="70" y="1013" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">상태·다음 명령·결과 보고</text>
+<text x="70" y="1028" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">/v1/hub/control/*</text>
+<rect x="60" y="1048" width="242" height="56" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="284" y="1055" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="281" y="1057.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="281" y="1062.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="70" y="1066" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Sender</text>
+<text x="70" y="1081" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">새 기록 전송</text>
+<text x="70" y="1096" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">POST /v1/hub/events</text>
+<rect x="60" y="1116" width="242" height="56" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<path d="M282 1126v8a6 3 0 0 0 12 0v-8" fill="none" stroke="#475569" stroke-width="1.1"/><ellipse cx="288" cy="1126" rx="6" ry="3" fill="none" stroke="#475569" stroke-width="1.1"/>
+<text x="70" y="1134" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">outbox.sqlite3 (Store)</text>
+<text x="70" y="1149" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">전송 대기·진행 위치</text>
+<text x="70" y="1164" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">제어 실행 기록</text>
+<rect x="60" y="1184" width="242" height="56" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="284" y="1191" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="281" y="1193.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="281" y="1198.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="70" y="1202" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">원본 기록 읽기</text>
+<text x="70" y="1217" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">sensors·automations DB</text>
+<text x="70" y="1232" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">읽기 전용, 원본 수정 없음</text>
+<rect x="346" y="918" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="544" y="925" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="541" y="927.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="541" y="932.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="356" y="939" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">CaptureService</text>
+<text x="356" y="956" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">IrCtlReceiver · CaptureStore</text>
+<text x="356" y="973" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">IR 학습 녹화 (/dev/lirc1)</text>
+<rect x="582" y="918" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="780" y="925" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="777" y="927.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="777" y="932.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="592" y="939" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">EventHub</text>
+<text x="592" y="956" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">SSE 이벤트 방송</text>
+<text x="592" y="973" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">기기·센서·자동화 변경</text>
+<rect x="818" y="918" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1016" y="925" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1013" y="927.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1013" y="932.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="828" y="939" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">DeviceService</text>
+<text x="828" y="956" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">명령 실행 · 기기별 잠금</text>
+<text x="828" y="973" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">H2 연결이면 Zigbee, 아니면 GPIO</text>
+<rect x="1054" y="918" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1252" y="925" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1249" y="927.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1249" y="932.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1064" y="939" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">REST·SSE API (main.py)</text>
+<text x="1064" y="956" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">/api/v1/devices·sensors</text>
+<text x="1064" y="973" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">/zigbee · /ir · /events</text>
+<rect x="346" y="1002" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<path d="M542 1012v8a6 3 0 0 0 12 0v-8" fill="none" stroke="#475569" stroke-width="1.1"/><ellipse cx="548" cy="1012" rx="6" ry="3" fill="none" stroke="#475569" stroke-width="1.1"/>
+<text x="356" y="1023" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">device_profiles</text>
+<text x="356" y="1040" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Carrier CS-A061GS</text>
+<text x="356" y="1057" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">commands.json · Coolix 온도표</text>
+<rect x="582" y="1002" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="780" y="1009" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="777" y="1011.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="777" y="1016.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="592" y="1023" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">DeviceCommandResolver</text>
+<text x="592" y="1040" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">DeviceProfileCatalog</text>
+<text x="592" y="1057" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">프레임 생성·경제운전 재구성</text>
+<rect x="818" y="1002" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<path d="M1014 1012v8a6 3 0 0 0 12 0v-8" fill="none" stroke="#475569" stroke-width="1.1"/><ellipse cx="1020" cy="1012" rx="6" ry="3" fill="none" stroke="#475569" stroke-width="1.1"/>
+<text x="828" y="1023" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">RegisteredDeviceStore</text>
+<text x="828" y="1040" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">기기 JSON</text>
+<text x="828" y="1057" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">last_desired_state (요청값)</text>
+<rect x="1054" y="1002" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1252" y="1009" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1249" y="1011.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1249" y="1016.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1064" y="1023" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">PahoSensorBridge</text>
+<text x="1064" y="1040" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">MQTT 구독 · H2 요청/결과</text>
+<text x="1064" y="1057" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Zigbee 가입 허용 관리</text>
+<rect x="582" y="1086" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="780" y="1093" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="777" y="1095.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="777" y="1100.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="592" y="1107" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">AutomationService</text>
+<text x="592" y="1124" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">문 열림 + 냉방 경고</text>
+<text x="592" y="1141" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">automations.sqlite3</text>
+<rect x="818" y="1086" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1016" y="1093" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1013" y="1095.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1013" y="1100.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="828" y="1107" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">IrCtlTransport</text>
+<text x="828" y="1124" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">ir-ctl 원시 송신</text>
+<text x="828" y="1141" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">/dev/lirc0 (gpio-ir-tx)</text>
+<rect x="1054" y="1086" width="216" height="70" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1252" y="1093" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1249" y="1095.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1249" y="1100.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1064" y="1107" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">SensorService</text>
+<text x="1064" y="1124" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">SensorStore</text>
+<text x="1064" y="1141" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">sensors.sqlite3 · 문 기록</text>
+<rect x="1320" y="912" width="418" height="56" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1720" y="919" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1717" y="921.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1717" y="926.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1330" y="930" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Mosquitto</text>
+<text x="1330" y="945" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">로컬 MQTT 브로커 · zigbee2mqtt/# 주제</text>
+<rect x="1320" y="986" width="418" height="80" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1720" y="993" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1717" y="995.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1717" y="1000.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1330" y="1007" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Zigbee2MQTT 2.x</text>
+<text x="1330" y="1024" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">외부 변환기 aircon-h2-ir.mjs</text>
+<text x="1330" y="1041" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">airconIr 클러스터 0xFF00 · send/sendV2 → ir_result</text>
+<rect x="1320" y="1100" width="418" height="50" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+<text x="1330" y="1118" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">ZBDongle-P 코디네이터 (USB 하드웨어)</text>
+<text x="1330" y="1133" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">Zigbee2MQTT 컨테이너가 사용 · 망 관리·가입 허용</text>
+<rect x="622" y="1336" width="180" height="74" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+<text x="632" y="1357" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">실제 리모컨</text>
+<text x="632" y="1374" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">IR 학습 원본 신호</text>
+<text x="632" y="1391" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">remote 16214-15597</text>
+<rect x="818" y="1336" width="216" height="74" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+<text x="828" y="1357" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Pi GPIO IR LED·수신기</text>
+<text x="828" y="1374" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">송신 /dev/lirc0 (gpio-ir-tx)</text>
+<text x="828" y="1391" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">수신 /dev/lirc1 (GPIO17)</text>
+<rect x="1054" y="1336" width="216" height="74" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+<text x="1064" y="1357" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Carrier CS-A061GS 에어컨</text>
+<text x="1064" y="1374" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">IR 수신 (Coolix 48비트)</text>
+<text x="1064" y="1391" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">실제 상태는 읽지 못함</text>
+<rect x="1320" y="1330" width="434" height="48" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1330" y="1348" font-size="13" font-weight="bold" fill="#0f172a" text-anchor="start">Zigbee 문·온습도 센서</text>
+<text x="1330" y="1363" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">상태 보고 → Zigbee2MQTT</text>
+<rect x="1328" y="1418" width="418" height="40" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1728" y="1425" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1725" y="1427.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1725" y="1432.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1338" y="1433" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">ZCL airconIr 0xFF00 · 엔드포인트 10</text>
+<text x="1338" y="1448" font-size="10.5" font-weight="normal" fill="#475569" text-anchor="start">요청 확인 · 중복 요청 처리 · ir_result 응답</text>
+<rect x="1328" y="1464" width="418" height="40" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1728" y="1471" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1725" y="1473.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1725" y="1478.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1338" y="1479" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">IR 작업 큐</text>
+<text x="1338" y="1494" font-size="10.5" font-weight="normal" fill="#475569" text-anchor="start">송신 태스크가 하나씩 처리 · RMT 오류 시 송신 중지</text>
+<rect x="1328" y="1510" width="418" height="40" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1728" y="1517" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1725" y="1519.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1725" y="1524.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1338" y="1525" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">Carrier 프레임 인코더 (carrier_profile.h)</text>
+<text x="1338" y="1540" font-size="10.5" font-weight="normal" fill="#475569" text-anchor="start">Coolix 온도표 · 경제운전 신호 1회</text>
+<rect x="1328" y="1556" width="418" height="40" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1728" y="1563" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1725" y="1565.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1725" y="1570.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1338" y="1571" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">RMT IR 송신 (ir_tx.c)</text>
+<text x="1338" y="1586" font-size="10.5" font-weight="normal" fill="#475569" text-anchor="start">38 kHz 반송파 · 캐시 안전 ISR</text>
+<rect x="1328" y="1602" width="418" height="40" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="1728" y="1609" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="1725" y="1611.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="1725" y="1616.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="1338" y="1617" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">접속 재시도 · capability 2</text>
+<text x="1338" y="1632" font-size="10.5" font-weight="normal" fill="#475569" text-anchor="start">1→60초 재접속 · 로컬 빌드만, 보드에는 아직 굽지 않음</text>
+<path d="M258 196 L244 196" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)"/>
+<path d="M454 196 L468 196" fill="none" stroke="#0891b2" stroke-width="2" marker-end="url(#a-auth)"/>
+<path d="M992 150 L992 140 L144 140 L144 148" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)"/>
+<text x="700" y="136" font-size="10.5" font-weight="bold" fill="#334155" text-anchor="middle" stroke="#ffffff" stroke-width="4" paint-order="stroke">설치 등록·알림 선택</text>
+<path d="M144 242 L144 366" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)" marker-start="url(#s-shared)"/>
+<text x="150" y="300" font-size="10.5" font-weight="bold" fill="#334155" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">HTTPS /v1 · ID 토큰</text>
+<path d="M144 434 L144 504" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)" marker-start="url(#s-shared)"/>
+<text x="150" y="462" font-size="10.5" font-weight="bold" fill="#334155" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">터널 (A50이 먼저 연결)</text>
+<path d="M568 242 L568 366" fill="none" stroke="#0891b2" stroke-width="2" marker-end="url(#a-auth)" marker-start="url(#s-auth)"/>
+<text x="574" y="300" font-size="10.5" font-weight="bold" fill="#0891b2" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">Google 로그인</text>
+<path d="M776 366 L776 244" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#a-notify)"/>
+<text x="782" y="300" font-size="10.5" font-weight="bold" fill="#ea580c" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">푸시</text>
+<path d="M440 532 L440 436" fill="none" stroke="#0891b2" stroke-width="2" marker-end="url(#a-auth)"/>
+<text x="446" y="462" font-size="10.5" font-weight="bold" fill="#0891b2" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">공개 키 조회</text>
+<path d="M776 532 L776 436" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#a-notify)"/>
+<text x="782" y="462" font-size="10.5" font-weight="bold" fill="#ea580c" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">FCM HTTP v1</text>
+<path d="M244 545 L250 545 L250 743 L272 743" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)"/>
+<path d="M368 702 L368 602" fill="none" stroke="#0891b2" stroke-width="2" marker-end="url(#a-auth)"/>
+<path d="M572 702 L572 602" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)"/>
+<path d="M666 585 L674 585 L674 644 L680 644" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#a-notify)"/>
+<path d="M776 612 L776 602" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#a-notify)"/>
+<path d="M776 702 L776 678" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)"/>
+<path d="M980 702 L980 602" fill="none" stroke="#9333ea" stroke-width="2" marker-end="url(#a-remote)"/>
+<text x="986" y="662" font-size="10.5" font-weight="bold" fill="#9333ea" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">명령 등록·조회</text>
+<path d="M1244 242 L1244 366" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<text x="1250" y="300" font-size="10.5" font-weight="bold" fill="#2563eb" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">Tailscale</text>
+<path d="M1200 434 L1200 916" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<text x="1206" y="462" font-size="10.5" font-weight="bold" fill="#2563eb" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">HTTP :8001</text>
+<path d="M1456 242 L1456 830 L1240 830 L1240 916" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<text x="1462" y="300" font-size="10.5" font-weight="bold" fill="#2563eb" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">127.0.0.1:8001</text>
+<path d="M60 1008 L22 1008 L22 412 L44 412" fill="none" stroke="#9333ea" stroke-width="2" marker-end="url(#a-remote)" marker-start="url(#s-remote)"/>
+<path d="M60 1076 L14 1076 L14 394 L44 394" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#a-notify)"/>
+<path d="M280 980 L280 970" fill="none" stroke="#9333ea" stroke-width="2" marker-end="url(#a-remote)"/>
+<path d="M280 1116 L280 1106" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#a-notify)"/>
+<path d="M280 1184 L280 1174" fill="none" stroke="#ea580c" stroke-width="2" marker-end="url(#a-notify)"/>
+<path d="M302 940 L324 940 L324 902 L1150 902 L1150 916" fill="none" stroke="#9333ea" stroke-width="2" marker-end="url(#a-remote)"/>
+<text x="590" y="897" font-size="10.5" font-weight="bold" fill="#9333ea" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">POST /api/v1/devices/{id}/commands</text>
+<path d="M690 1156 L690 1212 L304 1212" fill="none" stroke="#ea580c" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a-notify)"/>
+<text x="430" y="1207" font-size="10.5" font-weight="bold" fill="#ea580c" text-anchor="middle" stroke="#ffffff" stroke-width="4" paint-order="stroke">읽기 전용 SQLite</text>
+<path d="M1054 953 L1036 953" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<path d="M818 973 L808 973 L808 1037 L800 1037" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a-inner)"/>
+<path d="M582 1037 L564 1037" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a-inner)"/>
+<path d="M926 988 L926 1000" fill="none" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#a-inner)"/>
+<path d="M1034 968 L1044 968 L1044 1037 L1052 1037" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<path d="M1044 1037 L1044 1121 L1036 1121" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<path d="M1162 1072 L1162 1084" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#a-sensor)"/>
+<path d="M1270 1022 L1294 1022 L1294 940 L1318 940" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)" marker-start="url(#s-shared)"/>
+<text x="1298" y="984" font-size="10.5" font-weight="bold" fill="#334155" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">MQTT</text>
+<path d="M1529 968 L1529 984" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)" marker-start="url(#s-shared)"/>
+<path d="M1529 1066 L1529 1098" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#a-shared)" marker-start="url(#s-shared)"/>
+<path d="M926 1156 L926 1334" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<text x="932" y="1290" font-size="10.5" font-weight="bold" fill="#2563eb" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">ir-ctl</text>
+<path d="M1450 1328 L1450 1152" fill="none" stroke="#16a34a" stroke-width="2" marker-end="url(#a-sensor)"/>
+<text x="1456" y="1290" font-size="10.5" font-weight="bold" fill="#16a34a" text-anchor="start" stroke="#ffffff" stroke-width="4" paint-order="stroke">Zigbee 보고</text>
+<path d="M1738 1125 L1784 1125 L1784 1438 L1748 1438" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)" marker-start="url(#s-local)"/>
+<text x="1778" y="1290" font-size="10.5" font-weight="bold" fill="#2563eb" text-anchor="end" stroke="#ffffff" stroke-width="4" paint-order="stroke">Zigbee sendV2 → ir_result</text>
+<path d="M1034 1373 L1052 1373" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<text x="1043" y="1328" font-size="10.5" font-weight="bold" fill="#2563eb" text-anchor="middle" stroke="#ffffff" stroke-width="4" paint-order="stroke">적외선</text>
+<path d="M802 1373 L816 1373" fill="none" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#a-inner)"/>
+<path d="M1328 1576 L1296 1576 L1296 1373 L1272 1373" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#a-local)"/>
+<text x="1286" y="1500" font-size="10.5" font-weight="bold" fill="#2563eb" text-anchor="end" stroke="#ffffff" stroke-width="4" paint-order="stroke">H2 적외선 38 kHz</text>
+<text x="36" y="836" font-size="10.5" font-weight="bold" fill="#9333ea" text-anchor="start">② ④ Pi 연결 서비스 → 엣지 → A50: 허브 키 HTTPS (Pi가 먼저 요청)</text>
+<text x="622" y="1446" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">• 학습: 리모컨 → IR 수신기 → CaptureService</text>
+<text x="622" y="1466" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">• 송신: Pi GPIO 또는 H2 중 기기 등록에 따라 한 경로</text>
+<text x="622" y="1486" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">• 결과 확인은 사람이 에어컨을 보고 한다</text>
+<rect x="30" y="1296" width="560" height="376" rx="12" fill="#ffffff" stroke="#94a3b8" stroke-width="1.6"/>
+<text x="46" y="1320" font-size="15" font-weight="bold" fill="#0f172a" text-anchor="start">읽는 법</text>
+<path d="M46 1344 L86 1344" stroke="#2563eb" stroke-width="2.2" marker-end="url(#a-local)"/>
+<text x="96" y="1348" font-size="11.5" font-weight="normal" fill="#0f172a" text-anchor="start">① 집 안 에어컨 제어: 웹 화면 → Pi API → H2(Zigbee) 또는 Pi GPIO → 적외선</text>
+<path d="M46 1366 L86 1366" stroke="#9333ea" stroke-width="2.2" marker-end="url(#a-remote)"/>
+<text x="96" y="1370" font-size="11.5" font-weight="normal" fill="#0f172a" text-anchor="start">② 가족 앱 원격 제어: 앱 → A50 Controls(30초) → Pi 연결 서비스가 가져가 실행</text>
+<path d="M46 1388 L86 1388" stroke="#16a34a" stroke-width="2.2" marker-end="url(#a-sensor)"/>
+<text x="96" y="1392" font-size="11.5" font-weight="normal" fill="#0f172a" text-anchor="start">③ 센서: Zigbee 보고 → Zigbee2MQTT → MQTT → SensorService</text>
+<path d="M46 1410 L86 1410" stroke="#ea580c" stroke-width="2.2" marker-end="url(#a-notify)"/>
+<text x="96" y="1414" font-size="11.5" font-weight="normal" fill="#0f172a" text-anchor="start">④ 가족 알림: Pi 기록 → 연결 서비스 → A50 → FCM → 앱 알림</text>
+<path d="M46 1432 L86 1432" stroke="#0891b2" stroke-width="2.2" marker-end="url(#a-auth)"/>
+<text x="96" y="1436" font-size="11.5" font-weight="normal" fill="#0f172a" text-anchor="start">⑤ 로그인·인증: Google ID 토큰 발급 → A50이 공개 키로 확인</text>
+<path d="M46 1454 L86 1454" stroke="#334155" stroke-width="2.2" marker-end="url(#a-shared)"/>
+<text x="96" y="1458" font-size="11.5" font-weight="normal" fill="#0f172a" text-anchor="start">공통 경로: HTTPS·MQTT처럼 여러 흐름이 함께 지나가는 연결</text>
+<path d="M46 1476 L86 1476" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="5 4" marker-end="url(#a-inner)"/>
+<text x="96" y="1480" font-size="11.5" font-weight="normal" fill="#0f172a" text-anchor="start">내부 호출·데이터 사용 (점선은 읽기 전용·학습 신호)</text>
+<rect x="46" y="1506" width="124" height="34" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<rect x="152" y="1513" width="11" height="13" fill="#fff" stroke="#475569" stroke-width="1.1"/><rect x="149" y="1515.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/><rect x="149" y="1520.5" width="6" height="3" fill="#fff" stroke="#475569" stroke-width="1"/>
+<text x="56" y="1521" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">우리 코드</text>
+<rect x="180" y="1506" width="124" height="34" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="190" y="1521" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">외부 서비스</text>
+<rect x="314" y="1506" width="124" height="34" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.4"/>
+<path d="M418 1516v8a6 3 0 0 0 12 0v-8" fill="none" stroke="#475569" stroke-width="1.1"/><ellipse cx="424" cy="1516" rx="6" ry="3" fill="none" stroke="#475569" stroke-width="1.1"/>
+<text x="324" y="1521" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">데이터 저장소</text>
+<rect x="448" y="1506" width="124" height="34" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="1.4"/>
+<text x="458" y="1521" font-size="12" font-weight="bold" fill="#0f172a" text-anchor="start">하드웨어</text>
+<text x="46" y="1564" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">• 보냈는지 모르는 명령(시간 초과·연결 끊김)은 다시 보내지 않고 &#x27;알 수 없음&#x27;으로 남긴다.</text>
+<text x="46" y="1584" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">• IR은 단방향이라 에어컨의 실제 상태는 읽지 못하고 마지막 요청값만 저장한다.</text>
+<text x="46" y="1604" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">• 경제운전은 냉방 중일 때만 보낸다: 경제운전 신호 1회 + 현재 온도·자동풍 상태 2회.</text>
+<text x="46" y="1624" font-size="11" font-weight="normal" fill="#475569" text-anchor="start">• 한 집에는 활성 Pi(허브) 한 대만 연결한다. Pi는 집 ID를 고르지 않고 허브 키로만 인증한다.</text>
+<text x="46" y="1650" font-size="10.5" font-weight="normal" fill="#94a3b8" text-anchor="start">생성: scripts/render_sw_component_diagram.py</text>
+</svg>

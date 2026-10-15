@@ -13,15 +13,16 @@ import uuid
 from pathlib import Path
 from kicad_sexpr import Atom, a, child, children, read, walk, write
 from portable_models import normalize_library_models
+from hw_paths import kicad_install, kicad_root, vendor_footprints
 
 WORK = Path(__file__).resolve().parents[2]
-SOURCE = Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2')
+SOURCE = kicad_root()
 OUT = SOURCE / 'codex-revA'
 NAME = 'IR_ESP32H2_RevA'
-KICAD = Path(r'C:\Users\kksp1\AppData\Local\Programs\KiCad\10.0')
+KICAD = kicad_install()
 LIB = KICAD / 'share/kicad'
 CUSTOM = SOURCE.parents[1] / 'lib/cypark.pretty'
-VENDOR = Path(r'C:\Users\kksp1\OneDrive\문서\KiCad\10.0\3rdparty\footprints\com_github_espressif_kicad-libraries\Espressif.pretty')
+VENDOR = vendor_footprints()
 AUDIT = WORK / 'tmp/schematic-audit-20260919'
 OUT.mkdir(exist_ok=True)
 (OUT / 'IRH2.pretty').mkdir(exist_ok=True)

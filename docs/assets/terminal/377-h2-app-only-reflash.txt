@@ -1,0 +1,343 @@
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after hard_reset flash_id
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Manufacturer: c8
+
+Device: 4016
+
+Detected flash size: 4MB
+
+Hard resetting via RTS pin...
+EXIT_CODE=0
+CONNECTED_CHIP=ESP32-H2 FLASH_SIZE=4MB
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after hard_reset flash_id
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Manufacturer: c8
+
+Device: 4016
+
+Detected flash size: 4MB
+
+Hard resetting via RTS pin...
+EXIT_CODE=0
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after no_reset read_flash 0 0x400000 [PRIVATE_BUILD_OR_BACKUP]
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Configuring flash size...
+
+4194304 (100 %)
+
+Read 4194304 bytes at 0x00000000 in 20.6 seconds (1625.3 kbit/s)...
+
+Staying in bootloader.
+EXIT_CODE=0
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after hard_reset flash_id
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Manufacturer: c8
+
+Device: 4016
+
+Detected flash size: 4MB
+
+Hard resetting via RTS pin...
+EXIT_CODE=0
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after no_reset read_flash 0 0x400000 [PRIVATE_BUILD_OR_BACKUP]
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Configuring flash size...
+
+Read 4194304 bytes at 0x00000000 in 20.4 seconds (1645.7 kbit/s)...
+
+Staying in bootloader.
+EXIT_CODE=0
+FULL_FLASH_PRIVATE_BACKUP=PASS BYTES=4194304 INSTALLED_PARTITION_TABLE_RETAINED=TRUE
+LOCAL_SOURCE_MATCH=PASS APP_OFFSET=0x10000 APP_BYTES=511168
+APP_SHA256=56f2c3131efceb0578c41e30325e069f2e2b52eecf4bec5edc6716d75bf99170
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after no_reset write_flash 0x10000 [PRIVATE_BUILD_OR_BACKUP]
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Configuring flash size...
+
+Flash will be erased from 0x00010000 to 0x0008cfff...
+
+Compressed 511168 bytes to 292536...
+
+Wrote 511168 bytes (292536 compressed) at 0x00010000 in 2.8 seconds (effective 1485.2 kbit/s)...
+
+Hash of data verified.
+
+Leaving...
+
+Staying in bootloader.
+EXIT_CODE=0
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after no_reset read_flash 0 0x400000 [PRIVATE_BUILD_OR_BACKUP]
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Configuring flash size...
+
+Read 4194304 bytes at 0x00000000 in 20.5 seconds (1637.2 kbit/s)...
+
+Staying in bootloader.
+EXIT_CODE=0
+APP_READBACK_EXACT_MATCH=PASS OUTSIDE_APP_BYTES_UNCHANGED=PASS
+$ python -m esptool --chip esp32h2 --port [USB_PORT] --baud 460800 --after hard_reset run
+esptool.py v4.12.0
+
+Serial port COM6
+
+Connecting...
+
+Chip is ESP32-H2 (revision v1.2)
+
+Features: BLE, IEEE802.15.4
+
+Crystal is 32MHz
+
+USB mode: USB-Serial/JTAG
+
+MAC: [REDACTED]
+
+BASE MAC: [REDACTED]
+
+MAC_EXT: ff:fe
+
+Uploading stub...
+
+Running stub...
+
+Stub running...
+
+Changing baud rate to 460800
+
+Changed.
+
+Hard resetting via RTS pin...
+EXIT_CODE=0
+H2_APP_ONLY_REFLASH=PASS NO_IR_COMMAND_SENT=TRUE
+BOOT_LOG_BEGIN
+I (157) cpu_start: Unicore app
+I (165) cpu_start: Pro cpu start user code
+I (166) cpu_start: cpu freq: 96000000 Hz
+I (166) app_init: Application information:
+I (167) app_init: Project name:     aircon_h2_zigbee_ir_node
+I (167) app_init: App version:      1
+I (168) app_init: Compile time:     Oct  3 2026 22:59:07
+I (168) app_init: ELF file SHA256:  21be5be2d...
+I (169) app_init: ESP-IDF:          v5.5.4
+I (169) efuse_init: Min chip rev:     v0.0
+I (170) efuse_init: Max chip rev:     v1.99
+I (170) efuse_init: Chip rev:         v1.2
+I (171) heap_init: Initializing. RAM available for dynamic allocation:
+I (171) heap_init: At 40814090 len 000392F0 (228 KiB): RAM
+I (172) heap_init: At 4084D380 len 00002B60 (10 KiB): RAM
+I (172) heap_init: At 50000000 len 00000FE8 (3 KiB): RTCRAM
+I (174) spi_flash: detected chip: gd
+I (174) spi_flash: flash io: dio
+I (175) sleep_gpio: Configure to isolate all GPIO pins in sleep state
+I (176) sleep_gpio: Enable automatic switching of GPIO sleep configuration
+I (177) main_task: Started on CPU0
+I (177) main_task: Calling app_main()
+I (187) phy: phy_version: 323,5, a8ef10c, Aug  1 2025, 17:46:10
+I (197) phy: libbtbb version: 4515421, Aug  1 2025, 17:46:22
+I (207) aircon_h2_zigbee: GPIO5 IR ready; waiting for Zigbee; no automatic IR on boot
+I (207) main_task: Returned from app_main()
+W (377) aircon_h2_zigbee: Zigbee initialization failed: 0x03; reboot to retry
+BOOT_LOG_END

@@ -261,6 +261,126 @@ test('a stale state snapshot still accepts newer display metadata without revert
   assert.equal(result.metadata.display_name, 'new');
 });
 
+test('a scheduled tick with lower latency than the previous one still refreshes climate', () => {
+  // Previous refresh finished 180 ms after its tick; this one only took 120 ms.
+  const context = policyContext({}, kst('20:00:00.180').getTime());
+  const tick = kst('20:05:00.120');
+  assert.equal(context.climateRefreshAllowed(true, tick), false, 'Unscheduled reconnects keep the interval guard');
+  assert.equal(context.climateRefreshAllowed(true, tick, true), true);
+  assert.equal(context.climateRefreshAllowed(true, kst('12:00:00'), true), false, 'Pause hours still apply');
+  context.settings.enabled = false;
+  assert.equal(context.climateRefreshAllowed(true, kst('20:10:00'), true), false, 'Disabled refresh still applies');
+});
+
+test('the interval timer marks its refreshes as scheduled', () => {
+  assert.match(extractFunction(sensorSource, 'scheduleAutoRefresh'), /refreshSensors\(\{ automatic: true, scheduled: true \}\)/);
+  assert.match(extractFunction(sensorSource, 'refreshSensors'), /climateRefreshAllowed\(automatic, new Date\(\), scheduled\)/);
+});
+
+function joinRuntime(apiCall) {
+  const element = () => ({ textContent: '', dataset: {}, hidden: false, disabled: false, value: '120' });
+  const elements = new Map();
+  const timers = new Set();
+  let nextTimer = 0;
+  const context = vm.createContext({
+    apiCall, elements, timers,
+    joinStatus: null, joinRequestInFlight: false, joinCountdownTimer: null, joinPollTimer: null, joinDeadlineMs: 0,
+    zigbeeDevices: [], managerDialog: { open: true }, announcer: { textContent: '' },
+    renderZigbeeDevices() {}, refreshSensors: async () => {},
+    root: { querySelector: (selector) => { if (!elements.has(selector)) elements.set(selector, element()); return elements.get(selector); } },
+    window: {
+      setInterval: () => { nextTimer += 1; timers.add(nextTimer); return nextTimer; },
+      clearInterval: (id) => timers.delete(id)
+    }
+  });
+  vm.runInContext(['stopJoinTimers', 'renderJoinStatus', 'startJoinTimers', 'joinRemainingSeconds', 'refreshJoinPanel', 'openJoin', 'closeJoin']
+    .map((name) => extractFunction(sensorSource, name)).join('\n'), context);
+  return context;
+}
+
+test('closing the sensor manager while permit-join POST is pending sends DELETE after it resolves', async () => {
+  const post = deferred();
+  const requests = [];
+  const context = joinRuntime((url, options = {}) => {
+    requests.push(`${options.method || 'GET'} ${url}`);
+    if (options.method === 'POST') return post.promise;
+    return Promise.resolve({ supported: true, permit_join: false, remaining_seconds: 0, max_duration_seconds: 120 });
+  });
+  const opening = context.openJoin();
+  await context.closeJoin({ silent: true });
+  context.managerDialog.open = false;
+  post.resolve({ supported: true, permit_join: true, remaining_seconds: 120, max_duration_seconds: 120 });
+  await opening;
+  assert.deepEqual(requests, ['POST /api/v1/zigbee/join', 'DELETE /api/v1/zigbee/join']);
+  assert.equal(context.joinStatus.permit_join, false);
+  assert.equal(context.timers.size, 0);
+});
+
+test('a failed permit-join close is retried once', async () => {
+  let deletes = 0;
+  const context = joinRuntime(async (url, options = {}) => {
+    if (options.method !== 'DELETE') throw new Error(`unexpected ${url}`);
+    deletes += 1;
+    if (deletes === 1) throw new Error('temporary');
+    return { supported: true, permit_join: false, remaining_seconds: 0, max_duration_seconds: 120 };
+  });
+  context.joinStatus = { supported: true, permit_join: true };
+  await context.closeJoin({ silent: true });
+  assert.equal(deletes, 2);
+  assert.equal(context.joinStatus.permit_join, false);
+});
+
+test('millisecond permit_join_end from Zigbee2MQTT cannot show more than the allowed window', async () => {
+  const context = joinRuntime(async (url) => url === '/api/v1/zigbee/devices'
+    ? { items: [] }
+    : { supported: true, permit_join: true, remaining_seconds: 1_757_000_000_000, max_duration_seconds: 120 });
+  await context.refreshJoinPanel({ silent: true });
+  assert.ok(context.joinDeadlineMs - Date.now() <= 120_000);
+  assert.match(context.elements.get('[data-zigbee-join-status]').textContent, /(119|120)초 남음/);
+});
+
+test('sensor editor preserves a saved room that is not a local tab', () => {
+  const option = () => ({ value: '', textContent: '' });
+  const roomSelect = { options: [], value: '', replaceChildren() { this.options = []; }, append(node) { this.options.push(node); } };
+  const context = vm.createContext({
+    sensors: [{ device_id: 'door-test', kind: 'door_contact', metadata: { display_name: '현관문', room: '현관', icon: 'door-open' } }],
+    ALLOWED_ICONS: new Set(['door-open', 'activity']),
+    editorForm: { hidden: true, elements: { device_id: {}, display_name: { focus() {} }, room: roomSelect, icon: {} } },
+    document: { createElement: option },
+    root: {
+      querySelectorAll: () => [{ textContent: '거실' }, { textContent: '침실' }],
+      querySelector: () => ({ textContent: '' })
+    }
+  });
+  vm.runInContext(['defaultMetadata', 'sensorMetadata', 'roomNames', 'openSensorEditor']
+    .map((name) => extractFunction(sensorSource, name)).join('\n'), context);
+  context.openSensorEditor('door-test');
+  assert.deepEqual(roomSelect.options.map((item) => item.value), ['공간 미지정', '거실', '침실', '현관']);
+  assert.equal(roomSelect.value, '현관');
+});
+
+test('automation event during an in-flight refresh triggers one follow-up refresh', async () => {
+  const pending = [];
+  const context = vm.createContext({
+    loading: false, refreshQueued: false, rules: [], events: [],
+    apiCall: () => { const request = deferred(); pending.push(request); return request.promise; },
+    renderRules() {}, renderEvents() {}, count: { textContent: '' }, list: { replaceChildren() {}, append() {} },
+    document: { createElement: () => ({}) }
+  });
+  vm.runInContext(extractFunction(automationSource, 'refresh'), context);
+  const first = context.refresh();
+  context.refresh();
+  context.refresh();
+  assert.equal(pending.length, 2, 'Only the first GET pair runs while loading');
+  pending.splice(0).forEach((request) => request.resolve({ items: [] }));
+  await first;
+  assert.equal(pending.length, 2, 'Queued events coalesce into exactly one follow-up refresh');
+  pending.splice(0).forEach((request) => request.resolve({ items: [] }));
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(pending.length, 0);
+  assert.equal(context.loading, false);
+});
+
 test('editing invalid pause times clears custom validity so the corrected form can submit', () => {
   let error = '시작과 종료 시각은 다르게 설정해 주세요.';
   const context = vm.createContext({

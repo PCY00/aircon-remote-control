@@ -1,0 +1,11 @@
+# Actual test reports and APK checksum; private paths omitted
+
+$ read Gradle testProductionDebugUnitTest XML reports
+EndpointPolicyTest TESTS=2 FAILURES=0 ERRORS=0 SKIPPED=0
+HomeListStateTest TESTS=4 FAILURES=0 ERRORS=0 SKIPPED=0
+PushPolicyTest TESTS=2 FAILURES=0 ERRORS=0 SKIPPED=0
+UNIT_TESTS_TOTAL=8
+
+$ compare signed release APK with its delivered Desktop copy
+RELEASE_SHA256=792c575b9fbef3f5af3f8faa1ceafbfd37af09a569a7a32b62cc016fc294208b
+DESKTOP_COPY_HASH=PASS

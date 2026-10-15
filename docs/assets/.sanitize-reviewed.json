@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "description": "Unsupported media reviewed by hand for scripts/sanitize_blog_images.py. Paths are relative to this folder; an entry only applies while the file has the recorded SHA-256.",
+  "files": {
+    "hardware/esp32-h2-supermini-ir-gpio5-camera-test.mp4": {
+      "sha256": "9fbe92a05eb2d45cf2c809de9c7b7f2ab244b8a4eaa489a7524492e4bd2c8df4",
+      "reason": "ffmpeg re-encode: moov/udta holds only the encoder tag (Lavf61.7.100); mvhd/tkhd/mdhd creation time 0; no GPS, device model, XMP or uuid boxes",
+      "reviewed": "2026-10-13"
+    }
+  }
+}

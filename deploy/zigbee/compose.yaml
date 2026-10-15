@@ -11,6 +11,7 @@ services:
       - "127.0.0.1:1883:1883"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/acl.conf:/mosquitto/config/acl.conf:ro
       - ${ZIGBEE_RUNTIME_DIR}/mosquitto/passwords:/mosquitto/config/passwords:ro
       - ${ZIGBEE_RUNTIME_DIR}/mosquitto/data:/mosquitto/data
     networks:

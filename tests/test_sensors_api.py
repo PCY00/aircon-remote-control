@@ -1,6 +1,8 @@
 import json
+import sqlite3
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.ir.mock import MockReceiver
@@ -163,3 +165,80 @@ def test_zigbee_join_api_is_bounded_and_uses_bridge(tmp_path: Path) -> None:
     assert devices.json()["items"][0]["friendly_name"] == "sensor_door_01"
     assert closed.json()["permit_join"] is False
     assert too_long.status_code == 422
+
+
+def test_delete_sensor_removes_state_history_and_metadata(tmp_path: Path) -> None:
+    app = create_app(make_settings(tmp_path), MockReceiver())
+    service = app.state.sensor_service
+    service.ingest_mqtt("zigbee2mqtt/0x00124b0029a1b2c3", b'{"contact":true}')
+    service.ingest_mqtt("zigbee2mqtt/0x00124b0029a1b2c3", b'{"contact":false}')
+    service.ingest_mqtt("zigbee2mqtt/sensor_door_01", b'{"contact":true}')
+
+    with TestClient(app) as client:
+        assert client.get("/api/v1/automations").json()["items"][0]["condition"][
+            "open_doors"
+        ][0]["device_id"] == "0x00124b0029a1b2c3"
+        deleted = client.delete("/api/v1/sensors/0x00124b0029a1b2c3")
+        missing = client.get("/api/v1/sensors/0x00124b0029a1b2c3")
+        missing_events = client.get("/api/v1/sensors/0x00124b0029a1b2c3/events")
+        again = client.delete("/api/v1/sensors/0x00124b0029a1b2c3")
+        remaining = client.get("/api/v1/sensors").json()["items"]
+        rule = client.get("/api/v1/automations").json()["items"][0]
+
+    assert deleted.status_code == 204
+    assert deleted.content == b""
+    assert missing.status_code == 404
+    assert missing_events.status_code == 404
+    assert again.status_code == 404
+    assert again.json()["detail"] == "sensor not found"
+    assert [item["device_id"] for item in remaining] == ["sensor_door_01"]
+    assert rule["condition"]["open_doors"] == []
+
+    # A sensor that reports again starts fresh with default metadata and no history.
+    service.ingest_mqtt("zigbee2mqtt/0x00124b0029a1b2c3", b'{"contact":true}')
+    assert service.list_events("0x00124b0029a1b2c3") == []
+    assert service.get("0x00124b0029a1b2c3")["metadata"]["customized"] is False
+
+
+def test_delete_sensor_returns_204_when_automation_evaluation_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    app = create_app(make_settings(tmp_path), MockReceiver())
+    app.state.sensor_service.ingest_mqtt("zigbee2mqtt/0x00124b0029a1b2c3", b'{"contact":false}')
+
+    def locked(**_: object) -> dict[str, object]:
+        raise sqlite3.OperationalError("database is locked")
+
+    with TestClient(app) as client:
+        monkeypatch.setattr(app.state.automation_service, "evaluate", locked)
+        deleted = client.delete("/api/v1/sensors/0x00124b0029a1b2c3")
+        missing = client.get("/api/v1/sensors/0x00124b0029a1b2c3")
+
+    # The delete is already committed, so a retry would only see 404.
+    assert deleted.status_code == 204
+    assert missing.status_code == 404
+
+
+def test_zigbee_join_reopen_is_refused_during_cooldown_unless_closed_first(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    bridge = LifecycleBridge()
+    app = create_app(make_settings(tmp_path), MockReceiver(), sensor_bridge=bridge)
+
+    with TestClient(app) as client, caplog.at_level("INFO", logger="app.main"):
+        opened = client.post("/api/v1/zigbee/join", json={"duration_seconds": 60})
+        reopened = client.post("/api/v1/zigbee/join", json={"duration_seconds": 60})
+        closed = client.delete("/api/v1/zigbee/join")
+        opened_again = client.post("/api/v1/zigbee/join", json={"duration_seconds": 30})
+
+    assert opened.status_code == 200
+    assert reopened.status_code == 429
+    assert int(reopened.headers["retry-after"]) >= 1
+    assert reopened.json()["detail"].startswith("permit join was opened recently")
+    assert closed.status_code == 200
+    assert opened_again.status_code == 200
+    # Open/close are audited with the requesting client address.
+    messages = [record.getMessage() for record in caplog.records]
+    assert any("permit_join opened for 60 s" in m and "testclient" in m for m in messages)
+    assert any("permit_join closed by testclient" in m for m in messages)
+    assert any("refused during cooldown" in m for m in messages)

@@ -149,14 +149,21 @@ class CaptureService:
         finally:
             record.completed_at = _now()
             try:
-                record.files = self._store.save(record.id, record.to_dict(), raw)
-            except OSError as exc:
+                try:
+                    record.files = self._store.save(record.id, record.to_dict(), raw)
+                except IrParseError:
+                    # Receiver output that does not tokenize (e.g. "# overflow") keeps
+                    # only the metadata so the failure stays visible.
+                    record.files = self._store.save(record.id, record.to_dict(), None)
+            except Exception as exc:
                 record.status = "failed"
                 record.error = f"failed to persist capture: {exc}"
-            async with self._lock:
-                if self._active_id == record.id:
-                    self._active_id = None
-                self._tasks.pop(record.id, None)
+            finally:
+                # Always release the receiver, or every later capture returns 409.
+                async with self._lock:
+                    if self._active_id == record.id:
+                        self._active_id = None
+                    self._tasks.pop(record.id, None)
 
     async def cancel(self, capture_id: str) -> dict[str, Any]:
         record = self._records.get(capture_id)

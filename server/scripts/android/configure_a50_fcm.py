@@ -72,11 +72,16 @@ def main():
     project = json.loads(Path(".deploy/family-app/google-services.json").read_text())[
         "project_info"
     ]["project_id"]
-    assert info.get("type") == "service_account" and info.get("project_id") == project
-    assert info.get("client_email") == "a50-fcm-sender@" + project + ".iam.gserviceaccount.com"
-    assert info.get("token_uri") == "https://oauth2.googleapis.com/token"
+    if (
+        info.get("type") != "service_account"
+        or info.get("project_id") != project
+        or info.get("client_email") != "a50-fcm-sender@" + project + ".iam.gserviceaccount.com"
+        or info.get("token_uri") != "https://oauth2.googleapis.com/token"
+    ):
+        raise RuntimeError("Not the dedicated FCM sender account; nothing sent to the phone.")
     key = load_pem_private_key(info["private_key"].encode(), None)
-    assert isinstance(key, RSAPrivateKey) and key.key_size >= 2048
+    if not isinstance(key, RSAPrivateKey) or key.key_size < 2048:
+        raise RuntimeError("Service account key is not RSA-2048+; nothing sent to the phone.")
     encoded = base64.b64encode(json.dumps(info).encode()).decode()
     script = "PAYLOAD=" + repr(encoded) + "\nAPPLY=" + repr(args.apply) + "\n" + REMOTE
     record = PhoneSession("fcm-credential-" + ("apply" if args.apply else "preview"))

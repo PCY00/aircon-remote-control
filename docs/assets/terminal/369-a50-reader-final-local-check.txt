@@ -1,0 +1,29 @@
+# Actual executed commands and output; private details removed
+
+$ python -m ruff check scripts/reader scripts/android/prepare_manager_tools.py scripts/pi/pi_session.py scripts/pi/link_central_agent.py tests/test_reader_setup.py
+All checks passed!
+
+EXIT_CODE=0
+$ python scripts/reader/make_reader_bundle.py --check-only
+CHAPTER_FLOW=9/9 COMMAND_REFERENCES_PRESENT=49
+BUNDLE_PRIVATE_VALUES_FOUND=0 PRIVATE_METADATA_COUNT=0 IMAGE_COUNT=17
+BUNDLE_SOURCE_FILES=177
+
+EXIT_CODE=0
+$ python scripts/sanitize_blog_images.py docs/assets/
+IMAGE_COUNT=453
+PRIVATE_METADATA_COUNT=0
+
+EXIT_CODE=0
+$ git -c core.safecrlf=false diff --check
+
+EXIT_CODE=0
+$ python scripts/reader/make_reader_bundle.py
+CHAPTER_FLOW=9/9 COMMAND_REFERENCES_PRESENT=49
+BUNDLE_PRIVATE_VALUES_FOUND=0 PRIVATE_METADATA_COUNT=0 IMAGE_COUNT=17
+READER_BUNDLE_FILES=179 BYTES=3137528
+READER_BUNDLE_SHA256=b5d13ae4958d3e0c3f2546a57bdacc1ce9389fe71fbed62101be0f4a8ed97cc0 PUBLISHED=False
+
+EXIT_CODE=0
+FRESH_INSTALL_AND_TEST_RECORD=368-a50-reader-fresh-folder-fixed.txt
+REMOTE_COMMANDS_THIS_EDIT=0 PUBLIC_UPLOAD_THIS_EDIT=False

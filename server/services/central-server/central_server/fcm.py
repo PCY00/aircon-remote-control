@@ -36,6 +36,10 @@ class FCMSender:
         ttl = max(0, min(300, int(recipient["expires_at"] - time.time())))
         if not ttl:
             return "rejected", 0
+        alert_category = recipient.get("alert_category", "other")
+        level = recipient.get("level", "alert")
+        # Periodic reports may wait for the phone's next wake-up unless chosen as urgent.
+        priority = "NORMAL" if alert_category == "report" and level != "urgent" else "HIGH"
         message = {
             "token": recipient["token"],
             "data": {
@@ -43,10 +47,13 @@ class FCMSender:
                 "binding": recipient["binding"],
                 "recipient": recipient["subject"],
                 "kind": recipient["kind"],
+                # Old app builds read only the legacy category and drop values they do not know.
                 "category": recipient.get("category", "other"),
+                "alert_category": alert_category,
+                "level": level,
             },
             "android": {
-                "priority": "NORMAL" if recipient.get("category") == "climate" else "HIGH",
+                "priority": priority,
                 "ttl": str(ttl) + "s",
             },
         }

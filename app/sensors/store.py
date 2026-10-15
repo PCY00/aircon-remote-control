@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -10,6 +11,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from app.sensors.models import SensorUpdate
+
+LOGGER = logging.getLogger(__name__)
+# A door toggled every few seconds for a day is ~20k rows; the API shows at
+# most 200, so keep a bounded recent history per sensor.
+DOOR_EVENT_HISTORY_LIMIT = 2000
 
 
 class SensorNotFoundError(LookupError):
@@ -25,9 +31,12 @@ def _timestamp(value: datetime) -> str:
 class SensorStore:
     """Persist last-known state, display metadata, and door transition events."""
 
-    def __init__(self, data_dir: Path) -> None:
+    def __init__(
+        self, data_dir: Path, *, max_door_events: int = DOOR_EVENT_HISTORY_LIMIT
+    ) -> None:
         self.path = data_dir / "sensors" / "sensors.sqlite3"
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._max_door_events = max_door_events
         self._initialize()
 
     @contextmanager
@@ -199,10 +208,22 @@ class SensorStore:
             ).fetchone()
             previous = self._state_from_row(previous_row) if previous_row is not None else None
             previous_source = previous.get("source_timestamp") if previous else None
+            previous_received = previous.get("last_received_at") if previous else None
+            # Z2M's last_seen uses this host's clock. If the clock itself stepped back
+            # (e.g. power cut before NTP), apply reports in receipt order instead.
+            clock_regressed = isinstance(previous_received, str) and (
+                update.received_at < datetime.fromisoformat(previous_received)
+            )
+            if clock_regressed:
+                LOGGER.warning(
+                    "host clock moved backwards; applying %s report in receipt order",
+                    update.device_id,
+                )
             if (
                 update.source_timestamp is not None
                 and isinstance(previous_source, str)
                 and update.source_timestamp < datetime.fromisoformat(previous_source)
+                and not clock_regressed
             ):
                 # Replayed or delayed reports must not roll back the current
                 # state or invent another door transition. Record their receipt
@@ -310,6 +331,19 @@ class SensorStore:
                     ),
                 )
                 event_id = cursor.lastrowid
+                # Drop the oldest transitions beyond the per-sensor history cap.
+                connection.execute(
+                    """
+                    DELETE FROM door_events
+                    WHERE device_id = ? AND id NOT IN (
+                        SELECT id FROM door_events
+                        WHERE device_id = ?
+                        ORDER BY occurred_at DESC, id DESC
+                        LIMIT ?
+                    )
+                    """,
+                    (update.device_id, update.device_id, self._max_door_events),
+                )
 
             row = connection.execute(
                 self._state_query("WHERE sensor_states.device_id = ?"),
@@ -353,6 +387,18 @@ class SensorStore:
                 (device_id, display_name, room, icon, timestamp),
             )
         return self.get(device_id)
+
+    def delete(self, device_id: str) -> None:
+        """Forget a renamed or removed sensor's state, door history, and metadata."""
+
+        with self._connect() as connection:
+            connection.execute("DELETE FROM door_events WHERE device_id = ?", (device_id,))
+            deleted = connection.execute(
+                "DELETE FROM sensor_states WHERE device_id = ?", (device_id,)
+            ).rowcount
+            connection.execute("DELETE FROM sensor_metadata WHERE device_id = ?", (device_id,))
+        if not deleted:
+            raise SensorNotFoundError(device_id)
 
     def list_door_events(self, device_id: str, limit: int = 50) -> list[dict[str, object]]:
         self.get(device_id)

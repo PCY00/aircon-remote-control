@@ -1,0 +1,10 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only schema, existing registrations and Pi heartbeat
+SCHEMA=5
+DATABASE_INTEGRITY=ok
+ACTIVE_HOME_AND_MEMBER_COUNTS=[1, 1]
+CONTROL_HEARTBEAT_ROWS=1
+ACTIVE_CONTROL_DEVICE_COUNT=1
+
+EXIT_CODE=0

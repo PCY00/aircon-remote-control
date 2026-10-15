@@ -1,0 +1,11 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] verify installed files and LIRC roles; back up databases and stop own Pi web service
+LIRC_lirc0_RECEIVE=False_SEND=True
+LIRC_lirc1_RECEIVE=True_SEND=False
+PREWRITE_BASELINE_AND_SERVICE_MATCH=PASS
+Traceback (most recent call last):
+  File "<stdin>", line 34, in <module>
+sqlite3.DatabaseError: file is not a database
+
+EXIT_CODE=1

@@ -1,0 +1,31 @@
+# A50 central 0.6.0 after deployment — actual checks; private values removed
+
+$ ssh [verified A50] read-only check of the central database
+SCHEMA 6
+homes 2
+hubs 1
+memberships 2
+events 1036
+installations 4
+server_identity 1
+control hub last_seen [7.0]
+600 central.sqlite3
+{"scope":"households","service":"aircon-central","status":"ok","uptime_seconds":12.5,"version":"0.6.0"}
+
+$ ssh [verified A50] python -m central_server.admin identity
+SERVER_IDENTITY_FINGERPRINT=[REDACTED_FINGERPRINT]
+
+$ python - [PC] HTTPS checks through https://roomrelay.top (User-Agent: FamilySmartHome-ConnectivityCheck/0.1)
+ready 200 b'{"database":"ok","status":"ready"}\n'
+me without token 401 b'{"error":"invalid_credentials"}\n'
+me bad token 401 b'{"error":"invalid_credentials"}\n'
+identity 200 cache no-store
+host field: roomrelay.top | expected roomrelay.top -> True
+signature: VALID | fingerprint matches server admin: True
+clock skew s: 0.2
+bad nonce 400 b'{"error":"invalid_body"}\n'
+
+$ python - [PC] same request with Android-style and default Python User-Agents
+200 Dalvik/2.1.0 (Linux; U; Android 11; SM-A
+200 Dalvik/2.1.0 (Linux; U; Android 14; Pixe
+TimeoutError  Python-urllib/3.12   # Cloudflare does not answer the default Python client; the Pi agent sends its own name

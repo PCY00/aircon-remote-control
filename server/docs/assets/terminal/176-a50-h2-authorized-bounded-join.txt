@@ -1,0 +1,5 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] user-authorized Zigbee join, 120s maximum; close in finally
+PERMIT_JOIN_OPEN=TRUE MAXIMUM_SECONDS=120
+H2_NORMAL_REBOOT_EXIT=2

@@ -18,7 +18,8 @@ def main():
     root = Path("tmp/family-app-build")
     apk = root / "family-release.apk"
     expected = json.loads((root / "build.json").read_text())["family-release.apk"]
-    assert hashlib.sha256(apk.read_bytes()).hexdigest() == expected
+    if hashlib.sha256(apk.read_bytes()).hexdigest() != expected:
+        raise RuntimeError("APK changed since build; no phone action taken.")
     tools = json.loads(Path(".deploy/family-app/tools.json").read_text())
     signing = json.loads(Path(".deploy/family-app/signing.json").read_text())
     output = subprocess.run(
@@ -39,7 +40,18 @@ def main():
         for line in output.splitlines()
         if "certificate SHA-256 digest:" in line
     )
-    assert fingerprint.lower() == signing["sha256"].replace(":", "").lower()
+    if fingerprint.lower() != signing["sha256"].replace(":", "").lower():
+        raise RuntimeError("APK signing certificate differs; no phone action taken.")
+    badging = subprocess.run(
+        [str(Path(tools["sdk"]) / "build-tools/36.0.0/aapt2.exe"), "dump", "badging", str(apk)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=True,
+    ).stdout
+    if "application-debuggable" in badging:
+        raise RuntimeError("APK is debuggable; run-as could read app data. No phone action taken.")
     if not args.apply:
         print(
             "PLAN=verified_same_certificate_release; install_-r; "
@@ -58,16 +70,19 @@ def main():
         + "\nEXIT_CODE="
         + str(result.returncode)
     )
-    assert result.returncode == 0 and b"Success" in result.stdout
+    if result.returncode or b"Success" not in result.stdout:
+        raise RuntimeError("APK update was not accepted; inspect before retrying.")
     installed = adb.run("-s", endpoint, "shell", "pm", "path", "com.aircon.family", timeout=15)
     paths = [
         s.removeprefix("package:")
         for s in installed.stdout.decode().splitlines()
         if s.startswith("package:")
     ]
-    assert installed.returncode == 0 and len(paths) == 1
+    if installed.returncode or len(paths) != 1:
+        raise RuntimeError("Installed APK path unavailable; inspect before retrying.")
     actual = adb.run("-s", endpoint, "exec-out", "sha256sum", paths[0], timeout=20)
-    assert actual.returncode == 0 and actual.stdout.decode().split()[0] == expected
+    if actual.returncode or actual.stdout.decode().split()[:1] != [expected]:
+        raise RuntimeError("Installed APK differs from the verified local release.")
     record.log("INSTALLED_PRODUCTION_APK_EQUALS_LOCAL_VERIFIED_RELEASE=PASS DATA_NOT_CLEARED=TRUE")
     for command, label in [
         (("shell", "input", "keyevent", "224"), "wake for own app test"),
@@ -80,7 +95,8 @@ def main():
         record.log(
             "$ adb [verified A50] " + label + "\n" + done.stdout.decode() + done.stderr.decode()
         )
-        assert done.returncode == 0
+        if done.returncode:
+            raise RuntimeError("Phone step failed; later steps were not run.")
 
 
 if __name__ == "__main__":

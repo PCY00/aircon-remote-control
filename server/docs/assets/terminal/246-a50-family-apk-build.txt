@@ -1,0 +1,235 @@
+# Actual executed commands and output; private details removed
+
+OLD_BUILD_STAGES_REMOVED=17
+$ Gradle 8.13 testProductionDebugUnitTest assembleProductionDebug assembleProductionRelease assembleFixtureDebug assembleFixtureDebugAndroidTest [ASCII staging, private configuration]
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preProductionDebugBuild UP-TO-DATE
+> Task :app:generateProductionDebugBuildConfig
+> Task :app:javaPreCompileProductionDebug
+> Task :app:checkProductionDebugAarMetadata
+> Task :app:processProductionDebugNavigationResources
+> Task :app:generateProductionDebugResValues
+> Task :app:compileProductionDebugNavigationResources
+> Task :app:mapProductionDebugSourceSetPaths
+> Task :app:generateProductionDebugResources
+> Task :app:packageProductionDebugResources
+> Task :app:parseProductionDebugLocalResources
+> Task :app:createProductionDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksProductionDebug
+> Task :app:mergeProductionDebugResources
+> Task :app:processProductionDebugMainManifest
+> Task :app:processProductionDebugManifest
+> Task :app:preProductionDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileProductionDebugUnitTest
+> Task :app:processProductionDebugManifestForPackage
+> Task :app:processProductionDebugJavaRes NO-SOURCE
+> Task :app:processProductionDebugUnitTestJavaRes NO-SOURCE
+> Task :app:mergeProductionDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeProductionDebugShaders
+> Task :app:compileProductionDebugShaders NO-SOURCE
+> Task :app:generateProductionDebugAssets UP-TO-DATE
+> Task :app:mergeProductionDebugAssets
+> Task :app:compressProductionDebugAssets
+> Task :app:checkProductionDebugDuplicateClasses
+> Task :app:desugarProductionDebugFileDependencies
+> Task :app:processProductionDebugResources
+
+> Task :app:compileProductionDebugJavaWithJavac
+
+> Task :app:bundleProductionDebugClassesToRuntimeJar
+> Task :app:mergeExtDexProductionDebug
+> Task :app:bundleProductionDebugClassesToCompileJar
+> Task :app:mergeLibDexProductionDebug
+> Task :app:compileProductionDebugUnitTestJavaWithJavac
+> Task :app:testProductionDebugUnitTest
+> Task :app:dexBuilderProductionDebug
+> Task :app:mergeProductionDebugGlobalSynthetics
+> Task :app:mergeProjectDexProductionDebug
+> Task :app:mergeProductionDebugJniLibFolders
+> Task :app:mergeProductionDebugNativeLibs
+
+> Task :app:stripProductionDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:validateSigningProductionDebug
+> Task :app:writeProductionDebugAppMetadata
+> Task :app:writeProductionDebugSigningConfigVersions
+> Task :app:preProductionReleaseBuild UP-TO-DATE
+> Task :app:mergeProductionReleaseJniLibFolders
+> Task :app:mergeProductionReleaseNativeLibs
+
+> Task :app:stripProductionReleaseDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:extractProductionReleaseNativeSymbolTables
+> Task :app:mergeProductionReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:checkProductionReleaseDuplicateClasses
+> Task :app:generateProductionReleaseBuildConfig
+> Task :app:javaPreCompileProductionRelease
+> Task :app:checkProductionReleaseAarMetadata
+> Task :app:processProductionReleaseNavigationResources
+> Task :app:compileProductionReleaseNavigationResources
+> Task :app:generateProductionReleaseResValues
+> Task :app:mapProductionReleaseSourceSetPaths
+> Task :app:generateProductionReleaseResources
+> Task :app:mergeProductionDebugJavaResource
+> Task :app:mergeProductionReleaseResources
+> Task :app:packageProductionReleaseResources
+> Task :app:parseProductionReleaseLocalResources
+> Task :app:packageProductionDebug
+> Task :app:createProductionDebugApkListingFileRedirect
+> Task :app:assembleProductionDebug
+> Task :app:createProductionReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksProductionRelease
+> Task :app:processProductionReleaseMainManifest
+> Task :app:processProductionReleaseManifest
+> Task :app:desugarProductionReleaseFileDependencies
+> Task :app:mergeProductionReleaseStartupProfile
+> Task :app:processProductionReleaseManifestForPackage
+> Task :app:mergeExtDexProductionRelease
+> Task :app:mergeProductionReleaseArtProfile
+> Task :app:mergeProductionReleaseShaders
+> Task :app:compileProductionReleaseShaders NO-SOURCE
+> Task :app:generateProductionReleaseAssets UP-TO-DATE
+> Task :app:mergeProductionReleaseAssets
+> Task :app:compressProductionReleaseAssets
+> Task :app:extractProductionReleaseVersionControlInfo
+> Task :app:extractProguardFiles
+> Task :app:processProductionReleaseJavaRes NO-SOURCE
+> Task :app:processProductionReleaseResources
+
+> Task :app:compileProductionReleaseJavaWithJavac
+
+> Task :app:mergeProductionReleaseJavaResource
+> Task :app:dexBuilderProductionRelease
+> Task :app:mergeProductionReleaseGlobalSynthetics
+> Task :app:mergeDexProductionRelease
+> Task :app:generateProductionReleaseLintVitalReportModel
+> Task :app:compileProductionReleaseArtProfile
+> Task :app:optimizeProductionReleaseResources
+> Task :app:collectProductionReleaseDependencies
+> Task :app:sdkProductionReleaseDependencyData
+> Task :app:validateSigningProductionRelease
+> Task :app:writeProductionReleaseAppMetadata
+> Task :app:writeProductionReleaseSigningConfigVersions
+> Task :app:preFixtureDebugBuild UP-TO-DATE
+> Task :app:mergeFixtureDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateFixtureDebugBuildConfig
+> Task :app:javaPreCompileFixtureDebug
+> Task :app:checkFixtureDebugAarMetadata
+> Task :app:processFixtureDebugNavigationResources
+> Task :app:compileFixtureDebugNavigationResources
+> Task :app:generateFixtureDebugResValues
+> Task :app:mapFixtureDebugSourceSetPaths
+> Task :app:generateFixtureDebugResources
+> Task :app:mergeFixtureDebugResources
+> Task :app:packageFixtureDebugResources
+> Task :app:parseFixtureDebugLocalResources
+> Task :app:createFixtureDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksFixtureDebug
+> Task :app:processFixtureDebugMainManifest
+> Task :app:processFixtureDebugManifest
+> Task :app:processFixtureDebugManifestForPackage
+> Task :app:processFixtureDebugResources
+
+> Task :app:compileFixtureDebugJavaWithJavac
+
+> Task :app:mergeFixtureDebugShaders
+> Task :app:compileFixtureDebugShaders NO-SOURCE
+> Task :app:generateFixtureDebugAssets UP-TO-DATE
+> Task :app:mergeFixtureDebugAssets
+> Task :app:compressFixtureDebugAssets
+> Task :app:checkFixtureDebugDuplicateClasses
+> Task :app:desugarFixtureDebugFileDependencies
+> Task :app:mergeExtDexFixtureDebug
+> Task :app:lintVitalAnalyzeProductionRelease
+> Task :app:dexBuilderFixtureDebug
+> Task :app:lintVitalReportProductionRelease
+> Task :app:lintVitalProductionRelease
+> Task :app:mergeFixtureDebugGlobalSynthetics
+> Task :app:processFixtureDebugJavaRes NO-SOURCE
+> Task :app:packageProductionRelease
+> Task :app:createProductionReleaseApkListingFileRedirect
+> Task :app:assembleProductionRelease
+> Task :app:mergeLibDexFixtureDebug
+> Task :app:mergeProjectDexFixtureDebug
+> Task :app:mergeFixtureDebugJniLibFolders
+> Task :app:mergeFixtureDebugNativeLibs
+
+> Task :app:stripFixtureDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libdatastore_shared_counter.so. Run with --info option to learn more.
+
+> Task :app:validateSigningFixtureDebug
+> Task :app:writeFixtureDebugAppMetadata
+> Task :app:writeFixtureDebugSigningConfigVersions
+> Task :app:bundleFixtureDebugClassesToCompileJar
+> Task :app:preFixtureDebugAndroidTestBuild SKIPPED
+> Task :app:processFixtureDebugAndroidTestManifest
+> Task :app:generateFixtureDebugAndroidTestBuildConfig
+> Task :app:javaPreCompileFixtureDebugAndroidTest
+> Task :app:checkFixtureDebugAndroidTestAarMetadata
+> Task :app:processFixtureDebugAndroidTestNavigationResources
+> Task :app:compileFixtureDebugAndroidTestNavigationResources
+> Task :app:generateFixtureDebugAndroidTestResValues
+> Task :app:mapFixtureDebugAndroidTestSourceSetPaths
+> Task :app:generateFixtureDebugAndroidTestResources
+> Task :app:mergeFixtureDebugAndroidTestResources
+> Task :app:processFixtureDebugAndroidTestResources
+> Task :app:mergeFixtureDebugJavaResource
+
+> Task :app:compileFixtureDebugAndroidTestJavaWithJavac
+
+> Task :app:mergeFixtureDebugAndroidTestShaders
+> Task :app:compileFixtureDebugAndroidTestShaders NO-SOURCE
+> Task :app:generateFixtureDebugAndroidTestAssets UP-TO-DATE
+> Task :app:mergeFixtureDebugAndroidTestAssets
+> Task :app:compressFixtureDebugAndroidTestAssets
+> Task :app:checkFixtureDebugAndroidTestDuplicateClasses
+> Task :app:packageFixtureDebug
+> Task :app:createFixtureDebugApkListingFileRedirect
+> Task :app:assembleFixtureDebug
+> Task :app:desugarFixtureDebugAndroidTestFileDependencies
+> Task :app:mergeExtDexFixtureDebugAndroidTest
+> Task :app:dexBuilderFixtureDebugAndroidTest
+> Task :app:processFixtureDebugAndroidTestJavaRes NO-SOURCE
+> Task :app:mergeFixtureDebugAndroidTestGlobalSynthetics
+> Task :app:mergeLibDexFixtureDebugAndroidTest
+> Task :app:mergeProjectDexFixtureDebugAndroidTest
+> Task :app:mergeFixtureDebugAndroidTestJniLibFolders
+> Task :app:mergeFixtureDebugAndroidTestNativeLibs NO-SOURCE
+> Task :app:stripFixtureDebugAndroidTestDebugSymbols NO-SOURCE
+> Task :app:validateSigningFixtureDebugAndroidTest
+> Task :app:mergeFixtureDebugAndroidTestJavaResource
+> Task :app:writeFixtureDebugAndroidTestSigningConfigVersions
+> Task :app:packageFixtureDebugAndroidTest
+> Task :app:createFixtureDebugAndroidTestApkListingFileRedirect
+> Task :app:assembleFixtureDebugAndroidTest
+
+[Incubating] Problems report is available at: file:///[REDACTED_BUILD_CONFIG]/.codex/family-android-build/project-e2lu2x8j/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 21s
+157 actionable tasks: 157 executed
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-e2lu2x8j\app\src\androidTest\java\com\aircon\family\FamilyUiTest.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+EXIT_CODE=0
+SIGNED_APK=family-debug.apk BYTES=5548750 SHA256=9f98df9f71f1b393a1968be0e2e30f56f6dd3b67fcc909ac2d75ea4ad5515fe2
+SIGNED_APK=family-release.apk BYTES=4422709 SHA256=c5b2b5f51baebc883be6a7459ba8c8d320ef52aa05596bc7e3615b726155d7fb
+SIGNED_APK=family-fixture.apk BYTES=5550532 SHA256=4466d3a4aa0fc2a36904ea9b846345477a41c2d761e68d4f039f0ef2b9043739
+SIGNED_APK=family-test.apk BYTES=583057 SHA256=3491f2d731232ca3bc1bc47be1f4d1063d68d44207e6298e3b9a71c80daf532a
+STAGE_PRIVATE_INPUTS_AND_INTERMEDIATES_REMOVED=TRUE
+FAMILY_APK_BUILD=PASS

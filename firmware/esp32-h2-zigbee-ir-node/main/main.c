@@ -3,18 +3,25 @@
 
 #include "esp_check.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include "esp_zigbee.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
 
+#include "command_policy.h"
+#include "commissioning_retry.h"
 #include "ir_protocol.h"
 #include "ir_tx.h"
 
 #define ZIGBEE_STORAGE_PARTITION "nvs"
 #define REQUEST_QUEUE_LENGTH 4U
 #define REQUEST_HISTORY_LENGTH 8U
+
+/* command_policy.h mirrors the SDK address modes so the source check is host-testable. */
+_Static_assert(AIRCON_ADDR_MODE_SHORT == EZB_ADDR_MODE_SHORT, "SDK address mode changed");
+_Static_assert(AIRCON_ADDR_MODE_EXT == EZB_ADDR_MODE_EXT, "SDK address mode changed");
 
 /* ZCL strings use a byte length prefix. Keep these in sync with the
  * Zigbee2MQTT converter's fingerprint. No manufacturer code is claimed.
@@ -32,7 +39,11 @@ static QueueHandle_t ir_queue;
 static uint32_t request_history[REQUEST_HISTORY_LENGTH];
 static unsigned request_history_used;
 static unsigned request_history_next;
-static uint8_t capability = 1;
+/* 2: Coolix 27/28 C table, eco-only ECONOMY, commissioning retry (was 1). */
+static uint8_t capability = 2;
+static esp_timer_handle_t commissioning_timer;
+static ezb_bdb_comm_mode_mask_t commissioning_mode;
+static uint32_t commissioning_next_delay_ms = COMMISSIONING_RETRY_MIN_MS;
 
 static bool request_seen(uint32_t request_id)
 {
@@ -100,6 +111,49 @@ static ezb_zcl_status_t send_default_error(const ezb_zcl_cmd_hdr_t *header,
                ? EZB_ZCL_STATUS_SUCCESS : EZB_ZCL_STATUS_FAIL;
 }
 
+static uint32_t uptime_ms(void)
+{
+    return (uint32_t)(esp_timer_get_time() / 1000);
+}
+
+/* Only the coordinator (Zigbee2MQTT on the Pi, short address 0x0000) may
+ * command IR. Results are addressed with this same src_addr and reach the
+ * Pi, so the stack fills a routable short or extended mode; an extended
+ * address is resolved through the address table. Anything else is rejected.
+ */
+static bool source_is_coordinator(const ezb_address_t *source)
+{
+    ezb_addr_mode_t mode = source->addr_mode;
+    ezb_shortaddr_t short_addr = source->u.short_addr;
+    if (mode == EZB_ADDR_MODE_EXT) {
+        if (ezb_address_short_by_extended(&source->u.extended_addr, &short_addr) != EZB_ERR_NONE) {
+            return false;
+        }
+        mode = EZB_ADDR_MODE_SHORT;
+    }
+    return aircon_source_is_coordinator(mode, short_addr);
+}
+
+/* Zigbee task only. Logs the first rejection, then at most once per minute. */
+static void log_rejected_source(const ezb_zcl_cmd_hdr_t *header)
+{
+    static bool logged;
+    static uint32_t last_log_ms;
+    static uint32_t suppressed;
+    const uint32_t now_ms = uptime_ms();
+    if (!aircon_reject_log_due(logged, last_log_ms, now_ms)) {
+        ++suppressed;
+        return;
+    }
+    ESP_LOGW(TAG, "Rejected IR command 0x%02x from non-coordinator source (mode %u, 0x%04x); "
+             "%lu more rejected since the last log",
+             header->cmd_id, (unsigned)header->src_addr.addr_mode,
+             (unsigned)header->src_addr.u.short_addr, (unsigned long)suppressed);
+    logged = true;
+    last_log_ms = now_ms;
+    suppressed = 0;
+}
+
 static ezb_zcl_status_t aircon_command_handler(const ezb_zcl_cmd_hdr_t *header,
                                                 const uint8_t *payload,
                                                 uint16_t payload_length)
@@ -113,6 +167,10 @@ static ezb_zcl_status_t aircon_command_handler(const ezb_zcl_cmd_hdr_t *header,
         EZB_ZCL_CMD_FC_IS_TO_CLI_DIRECTION(header->fc) ||
         EZB_ZCL_CMD_FC_IS_MANUF_SPEC(header->fc)) {
         return send_default_error(header, EZB_ZCL_STATUS_UNSUP_CMD);
+    }
+    if (!source_is_coordinator(&header->src_addr)) {
+        log_rejected_source(header);
+        return send_default_error(header, EZB_ZCL_STATUS_NOT_AUTHORIZED);
     }
     aircon_request_t request;
     if (!aircon_decode_request(payload, payload_length, &request) ||
@@ -132,8 +190,9 @@ static ezb_zcl_status_t aircon_command_handler(const ezb_zcl_cmd_hdr_t *header,
                    ? EZB_ZCL_STATUS_SUCCESS : EZB_ZCL_STATUS_FAIL;
     }
     remember_request(request.request_id);
-    ESP_LOGI(TAG, "IR request accepted: id=%lu command=%u", (unsigned long)request.request_id,
-             request.command_id);
+    ESP_LOGI(TAG, "IR request accepted: id=%lu command=%u from 0x%04x (mode %u)",
+             (unsigned long)request.request_id, request.command_id,
+             (unsigned)header->src_addr.u.short_addr, (unsigned)header->src_addr.addr_mode);
     return send_result(header, &request, AIRCON_RESULT_ACCEPTED) == EZB_ERR_NONE
                ? EZB_ZCL_STATUS_SUCCESS : EZB_ZCL_STATUS_FAIL;
 }
@@ -204,32 +263,89 @@ static esp_err_t register_aircon_endpoint(void)
     return ezb_af_device_desc_register(device);
 }
 
+/* Called with the Zigbee lock held (signal handler or retry timer). Retries
+ * restart commissioning only; they never emit IR.
+ */
+static void schedule_commissioning(ezb_bdb_comm_mode_mask_t mode)
+{
+    commissioning_mode = mode;
+    const uint32_t delay_ms = commissioning_retry_delay_ms(&commissioning_next_delay_ms);
+    (void)esp_timer_stop(commissioning_timer);
+    const esp_err_t result = esp_timer_start_once(commissioning_timer, (uint64_t)delay_ms * 1000U);
+    if (result == ESP_OK) {
+        ESP_LOGW(TAG, "Retrying Zigbee commissioning 0x%02x in %lu ms", mode,
+                 (unsigned long)delay_ms);
+    } else {
+        ESP_LOGE(TAG, "Could not schedule Zigbee retry: %s", esp_err_to_name(result));
+    }
+}
+
+/* Called with the Zigbee lock held. If the stack refuses to start, no BDB
+ * signal follows, so schedule the retry here.
+ */
+static void start_commissioning(ezb_bdb_comm_mode_mask_t mode)
+{
+    const ezb_err_t result = ezb_bdb_start_top_level_commissioning(mode);
+    if (result != EZB_ERR_NONE) {
+        ESP_LOGW(TAG, "Zigbee commissioning 0x%02x did not start: 0x%x", mode, result);
+        schedule_commissioning(mode);
+    }
+}
+
+/* esp_timer task context; takes the Zigbee lock as in the SDK examples. */
+static void commissioning_retry(void *unused)
+{
+    (void)unused;
+    esp_zigbee_lock_acquire(portMAX_DELAY);
+    start_commissioning(commissioning_mode);
+    esp_zigbee_lock_release();
+}
+
 static bool zigbee_signal_handler(const ezb_app_signal_t *signal)
 {
     const ezb_app_signal_type_t type = ezb_app_signal_get_type(signal);
     switch (type) {
     case EZB_ZDO_SIGNAL_SKIP_STARTUP:
-        ezb_bdb_start_top_level_commissioning(EZB_BDB_MODE_INITIALIZATION);
+        start_commissioning(EZB_BDB_MODE_INITIALIZATION);
         break;
     case EZB_BDB_SIGNAL_DEVICE_FIRST_START:
     case EZB_BDB_SIGNAL_DEVICE_REBOOT: {
         const ezb_bdb_comm_status_t status = *(ezb_bdb_comm_status_t *)ezb_app_signal_get_params(signal);
         if (status == EZB_BDB_STATUS_SUCCESS && ezb_bdb_is_factory_new()) {
+            commissioning_next_delay_ms = COMMISSIONING_RETRY_MIN_MS;
             ESP_LOGI(TAG, "First start; requesting Zigbee network steering");
-            ezb_bdb_start_top_level_commissioning(EZB_BDB_MODE_NETWORK_STEERING);
+            start_commissioning(EZB_BDB_MODE_NETWORK_STEERING);
         } else if (status == EZB_BDB_STATUS_SUCCESS) {
+            commissioning_next_delay_ms = COMMISSIONING_RETRY_MIN_MS;
             ESP_LOGI(TAG, "Rejoined existing Zigbee network");
         } else {
-            ESP_LOGW(TAG, "Zigbee initialization failed: 0x%02x; reboot to retry", status);
+            ESP_LOGW(TAG, "Zigbee initialization failed: 0x%02x", status);
+            schedule_commissioning(EZB_BDB_MODE_INITIALIZATION);
         }
         break;
     }
     case EZB_BDB_SIGNAL_STEERING: {
         const ezb_bdb_comm_status_t status = *(ezb_bdb_comm_status_t *)ezb_app_signal_get_params(signal);
         if (status == EZB_BDB_STATUS_SUCCESS) {
+            commissioning_next_delay_ms = COMMISSIONING_RETRY_MIN_MS;
             ESP_LOGI(TAG, "Zigbee joined; IR remains idle until a valid command arrives");
         } else {
-            ESP_LOGW(TAG, "Zigbee join failed: 0x%02x; reboot to retry", status);
+            ESP_LOGW(TAG, "Zigbee join failed: 0x%02x", status);
+            schedule_commissioning(EZB_BDB_MODE_NETWORK_STEERING);
+        }
+        break;
+    }
+    case EZB_ZDO_SIGNAL_LEAVE: {
+        const ezb_zdo_signal_leave_params_t *leave = ezb_app_signal_get_params(signal);
+        if (leave != NULL && leave->leave_type == EZB_ZDO_LEAVE_TYPE_REJOIN) {
+            ESP_LOGI(TAG, "Left Zigbee network with rejoin; the stack rejoins");
+        } else {
+            /* Leave without rejoin (e.g. removed in Zigbee2MQTT): steer again
+             * with backoff; joining needs the coordinator to permit it.
+             */
+            commissioning_next_delay_ms = COMMISSIONING_RETRY_MIN_MS;
+            ESP_LOGW(TAG, "Left Zigbee network without rejoin");
+            schedule_commissioning(EZB_BDB_MODE_NETWORK_STEERING);
         }
         break;
     }
@@ -243,8 +359,29 @@ static void ir_worker(void *unused)
 {
     (void)unused;
     ir_job_t job;
+    bool have_last_tx = false;
+    uint32_t last_tx_ms = 0;
     while (xQueueReceive(ir_queue, &job, portMAX_DELAY) == pdTRUE) {
+        /* Pace transmissions (2 s before appliance-state commands, 0.5 s
+         * before feature toggles) so a burst of accepted requests cannot cycle
+         * the air conditioner. The request was already reported accepted; its
+         * sent/failed result follows after the wait. The loop guards against
+         * tick rounding.
+         */
+        uint32_t wait_ms = ir_pacing_delay_ms(have_last_tx, last_tx_ms, job.request.command_id,
+                                              uptime_ms());
+        if (wait_ms > 0U) {
+            ESP_LOGI(TAG, "IR request id=%lu paced: waiting %lu ms",
+                     (unsigned long)job.request.request_id, (unsigned long)wait_ms);
+        }
+        while (wait_ms > 0U) {
+            vTaskDelay(pdMS_TO_TICKS(wait_ms) + 1U);
+            wait_ms = ir_pacing_delay_ms(have_last_tx, last_tx_ms, job.request.command_id,
+                                         uptime_ms());
+        }
         const esp_err_t result = aircon_ir_send(&job.request);
+        have_last_tx = true;
+        last_tx_ms = uptime_ms();
         const aircon_result_t status = result == ESP_OK ? AIRCON_RESULT_SENT : AIRCON_RESULT_FAILED;
         ESP_LOGI(TAG, "IR request id=%lu TX %s (appliance state not measured)",
                  (unsigned long)job.request.request_id, result == ESP_OK ? "complete" : "failed");
@@ -272,6 +409,11 @@ static void zigbee_task(void *unused)
             .radio_config = {.radio_mode = ESP_ZIGBEE_RADIO_MODE_NATIVE},
         },
     };
+    const esp_timer_create_args_t retry_timer = {
+        .callback = commissioning_retry,
+        .name = "zb_retry",
+    };
+    ESP_ERROR_CHECK(esp_timer_create(&retry_timer, &commissioning_timer));
     ESP_ERROR_CHECK(esp_zigbee_init(&config));
     ESP_ERROR_CHECK(ezb_app_signal_add_handler(zigbee_signal_handler));
     ESP_ERROR_CHECK(register_aircon_endpoint());

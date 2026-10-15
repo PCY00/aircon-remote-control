@@ -1,0 +1,3 @@
+# Actual executed commands and output; private details removed
+
+{"type": "HTTPError", "frames": [{"file": "<stdin>", "line": 3}, {"file": "<string>", "line": 30}, {"file": "request.py", "line": 495}, {"file": "request.py", "line": 604}, {"file": "request.py", "line": 533}, {"file": "request.py", "line": 466}, {"file": "request.py", "line": 613}]}

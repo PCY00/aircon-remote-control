@@ -40,11 +40,11 @@ static inline bool carrier_command_frames(const aircon_request_t *request,
     static const uint8_t led_toggle[FRAME_BYTE_COUNT] = {0xB5, 0x4A, 0xF5, 0x0A, 0xA5, 0x5A};
     static const uint8_t airflow_fix[FRAME_BYTE_COUNT] = {0xB2, 0x4D, 0x0F, 0xF0, 0xE0, 0x1F};
     static const uint8_t swing_toggle[FRAME_BYTE_COUNT] = {0xB2, 0x4D, 0x6B, 0x94, 0xE0, 0x1F};
-    static const uint8_t economy[3][FRAME_BYTE_COUNT] = {
-        {0xB2, 0x4D, 0xE0, 0x1F, 0x03, 0xFC},
-        {0xB2, 0x4D, 0xBF, 0x40, 0x00, 0xFF},
-        {0xB2, 0x4D, 0xBF, 0x40, 0x00, 0xFF},
-    };
+    /* Only the eco/sleep command, sent once as in economy-press-01. The captured press
+     * also carried the remote's cool 17 C/auto state; the Pi follows with COOL_STATE
+     * for the current setpoint.
+     */
+    static const uint8_t economy[FRAME_BYTE_COUNT] = {0xB2, 0x4D, 0xE0, 0x1F, 0x03, 0xFC};
 
     const uint8_t *fixed = NULL;
     uint8_t count = FRAME_REPEAT_COUNT;
@@ -57,21 +57,23 @@ static inline bool carrier_command_frames(const aircon_request_t *request,
     case AIRCON_COMMAND_LED_TOGGLE: fixed = led_toggle; break;
     case AIRCON_COMMAND_AIRFLOW_FIX: fixed = airflow_fix; count = 1U; break;
     case AIRCON_COMMAND_SWING_TOGGLE: fixed = swing_toggle; break;
-    case AIRCON_COMMAND_ECONOMY:
-        memcpy(frames, economy, sizeof(economy));
-        *frame_count = 3U;
-        return true;
+    case AIRCON_COMMAND_ECONOMY: fixed = economy; count = 1U; break;
     case AIRCON_COMMAND_COOL_STATE: {
         static const uint8_t fans[4][2] = {
             {0xBF, 0x40}, {0x9F, 0x60}, {0x5F, 0xA0}, {0x3F, 0xC0},
+        };
+        /* Coolix temperature codes for 17..30 C. Not plain Gray code: 27 C is 0x9
+         * and 28 C is 0x8; 0xE is the fan-only (no temperature) code.
+         */
+        static const uint8_t temperature_codes[14] = {
+            0x0, 0x1, 0x3, 0x2, 0x6, 0x7, 0x5, 0x4, 0xC, 0xD, 0x9, 0x8, 0xA, 0xB,
         };
         if (request->temperature_c < 17U || request->temperature_c > 30U ||
             request->fan > AIRCON_FAN_HIGH) {
             return false;
         }
-        const uint8_t offset = request->temperature_c - 17U;
-        const uint8_t gray = offset ^ (offset >> 1U);
-        const uint8_t temperature_byte = gray << 4U;
+        const uint8_t temperature_byte =
+            (uint8_t)(temperature_codes[request->temperature_c - 17U] << 4U);
         for (uint8_t i = 0; i < FRAME_REPEAT_COUNT; ++i) {
             frames[i][0] = 0xB2;
             frames[i][1] = 0x4D;

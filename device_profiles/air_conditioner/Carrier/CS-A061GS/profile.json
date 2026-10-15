@@ -49,7 +49,8 @@
   },
   "limitations": [
     "IR carrier frequency is based on the module seller specification and has not been measured.",
-    "Generated cooling temperatures from 21 to 30 degrees follow a verified Gray-code rule but have not been captured individually.",
+    "Cooling temperature codes were measured at 17 to 20 degrees. 21 to 30 degrees follow the Coolix temperature table and have not been captured individually; 27 and 28 degrees, where the table differs from plain Gray code, are not yet confirmed on the real air conditioner.",
+    "Economy sends the captured eco frame and then the current cooling setpoint with fan auto, so it is accepted only while the air conditioner is known to be cooling.",
     "IR is one-way, so the stored state is the requested state rather than confirmed appliance state.",
     "The ir-ctl sender is implemented, but the selected transistor circuit and physical appliance response still require Step 4 verification."
   ]

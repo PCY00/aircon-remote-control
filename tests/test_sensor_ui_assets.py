@@ -30,8 +30,8 @@ def test_display_controls_are_product_settings_not_design_toolbar() -> None:
     assert "smart-home.view-mode.v1" in html
     assert "width: min(100%, 1920px)" in html
     assert "min-height: min(100dvh, 1080px)" in html
-    assert 'src="/static/sensors.js?v=20260912-1"' in html
-    assert 'src="/static/automations.js?v=20260908-1"' in html
+    assert 'src="/static/sensors.js?v=20261013-1"' in html
+    assert 'src="/static/automations.js?v=20261013-1"' in html
 
 
 def test_sensor_refresh_patches_existing_nodes_and_limits_history_requests() -> None:

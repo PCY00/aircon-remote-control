@@ -1,0 +1,12 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only recent H2 Zigbee event summary and closed join window
+TARGET_H2_RECENT_ANNOUNCE_LOG_COUNT=1
+TARGET_H2_RECENT_JOIN_LOG_COUNT=0
+TARGET_H2_RECENT_INTERVIEW_LOG_COUNT=0
+TARGET_H2_RECENT_RADIO_ERROR_LOG_COUNT=0
+PERMIT_JOIN=False
+H2_SUPPORTED=True
+READ_ONLY=TRUE IR_COMMANDS_SENT=0
+
+EXIT_CODE=0

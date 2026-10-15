@@ -15,9 +15,11 @@ def main():
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--source-dir", type=Path, default=Path("services/pi-central-agent"),
+                        help="Locally prepared release directory; defaults to canonical source")
     args = parser.parse_args()
     files = {
-        name: (Path("services/pi-central-agent") / name).read_bytes().replace(b"\r\n", b"\n")
+        name: (args.source_dir / name).read_bytes().replace(b"\r\n", b"\n")
         for name in ("agent.py", "aircon-central-agent.service")
     }
     checksum = hashlib.sha256()

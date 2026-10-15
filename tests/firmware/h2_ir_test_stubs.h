@@ -7,7 +7,7 @@
 /* Host-side API doubles. Never linked into an ESP-IDF firmware build. */
 typedef int esp_err_t;
 enum { ESP_OK = 0, ESP_FAIL = -1, ESP_ERR_TIMEOUT = 1, ESP_ERR_INVALID_STATE = 2 };
-enum { GPIO_NUM_8 = 8, GPIO_MODE_OUTPUT = 1, RMT_CLK_SRC_DEFAULT = 0 };
+enum { GPIO_NUM_5 = 5, GPIO_NUM_8 = 8, GPIO_MODE_OUTPUT = 1, RMT_CLK_SRC_DEFAULT = 0 };
 typedef void *rmt_channel_handle_t;
 typedef void *rmt_encoder_handle_t;
 typedef unsigned TickType_t;

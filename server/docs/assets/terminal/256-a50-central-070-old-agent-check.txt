@@ -1,0 +1,7 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - [read-only heartbeat and event age]
+HEARTBEAT_AGE_SECONDS=0
+LATEST_EVENT_AGE_SECONDS=392
+
+EXIT_CODE=0

@@ -1,0 +1,10 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] close previously authorized joining window and read closed state
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+  File "/home/[REDACTED]/aircon-controller/scripts/test_h2_zigbee_power_off.py", line 81, in check_gateway
+    raise RuntimeError("Zigbee permit-join must be closed")
+RuntimeError: Zigbee permit-join must be closed
+
+EXIT_CODE=1

@@ -9,7 +9,26 @@ import threading
 import time
 
 from central_server.households import APIError, Households, identifier, token_digest
-from central_server.preferences import category, permits, read
+from central_server.preferences import (
+    LEGACY,
+    PUSHED,
+    alert_category,
+    category,
+    level,
+    levels,
+    read,
+)
+
+INSTALLATION_ROWS_PER_USER = 50
+PENDING_JOBS_PER_HOME = 500
+
+
+def discard_installations(conn, ids):
+    for installation in ids:
+        conn.execute("DELETE FROM notification_levels WHERE installation_id=?", (installation,))
+        conn.execute("DELETE FROM notification_preferences WHERE installation_id=?", (installation,))
+        conn.execute("DELETE FROM push_jobs WHERE installation_id=?", (installation,))
+        conn.execute("DELETE FROM installations WHERE id=?", (installation,))
 
 
 def enqueue(conn, home, now, *, event=None, installation=None, user=None, expires_at=None):
@@ -26,7 +45,7 @@ def enqueue(conn, home, now, *, event=None, installation=None, user=None, expire
         if event is not None
         else None
     )
-    selected = category(event_kind["kind"]) if event_kind else "other"
+    selected = alert_category(event_kind["kind"] if event_kind else None)
     query = (
         "SELECT i.id,i.binding,i.user_id FROM installations i "
         "JOIN users u ON u.id=i.user_id "
@@ -42,9 +61,9 @@ def enqueue(conn, home, now, *, event=None, installation=None, user=None, expire
     rows = conn.execute(query, params).fetchall()
     queued = 0
     for row in rows:
-        if not permits(conn, row["id"], row["user_id"], selected):
-            continue
-        if selected == "climate":
+        if level(conn, row["id"], row["user_id"], selected) not in PUSHED:
+            continue  # quiet and off stay in the home's history only
+        if selected == "report":
             preference = conn.execute(
                 "SELECT * FROM notification_preferences WHERE installation_id=? AND user_id=?",
                 (row["id"], row["user_id"]),
@@ -67,38 +86,108 @@ def enqueue(conn, home, now, *, event=None, installation=None, user=None, expire
             (message, *row, now),
         )
         queued += 1
+    if queued:
+        # Bound unsent work per home: the oldest pending jobs make room for the newest.
+        excess = conn.execute(
+            "SELECT j.message_id,j.installation_id FROM push_jobs j "
+            "JOIN push_messages p ON p.id=j.message_id WHERE p.home_id=? AND j.state='pending' "
+            "ORDER BY p.created_at DESC,j.rowid DESC LIMIT -1 OFFSET ?",
+            (home, PENDING_JOBS_PER_HOME),
+        ).fetchall()
+        for job in excess:
+            conn.execute(
+                "DELETE FROM push_jobs WHERE message_id=? AND installation_id=?", tuple(job)
+            )
+        if excess:
+            logging.warning("PUSH_QUEUE_CAPPED dropped=%d", len(excess))  # no home or device ids
     return message, queued
 
 
 class PushStore(Households):
+    @staticmethod
+    def proven(conn, user, installation, secret):
+        row = conn.execute(
+            "SELECT * FROM installations WHERE id=? AND user_id=? AND active=1",
+            (installation, user),
+        ).fetchone()
+        if not row or not secrets.compare_digest(
+            row["secret_digest"], token_digest("installation", secret)
+        ):
+            raise APIError("not_found", 404)
+
+    @staticmethod
+    def save_switches(conn, installation, user, door, climate, warning, interval):
+        conn.execute(
+            "INSERT INTO notification_preferences(installation_id,user_id,door,climate,"
+            "warning,climate_interval_minutes) "
+            "VALUES (?,?,?,?,?,?) ON CONFLICT(installation_id) DO UPDATE SET "
+            "last_climate_at=CASE WHEN notification_preferences.user_id=excluded.user_id "
+            "THEN notification_preferences.last_climate_at ELSE 0 END,"
+            "user_id=excluded.user_id,door=excluded.door,climate=excluded.climate,warning=excluded.warning,"
+            "climate_interval_minutes=excluded.climate_interval_minutes",
+            (installation, user, int(door), int(climate), int(warning), interval),
+        )
+
+    @staticmethod
+    def save_levels(conn, installation, user, chosen):
+        # A previous account's rows on this phone must not mix with the current account's choices.
+        conn.execute(
+            "DELETE FROM notification_levels WHERE installation_id=? AND user_id!=?",
+            (installation, user),
+        )
+        for name, value in chosen.items():
+            conn.execute(
+                "INSERT INTO notification_levels VALUES (?,?,?,?) "
+                "ON CONFLICT(installation_id,category) DO UPDATE SET "
+                "user_id=excluded.user_id,level=excluded.level",
+                (installation, user, name, value),
+            )
+
     def set_preferences(self, user, installation, secret, options):
         with self.transaction(write=True) as conn:
-            row = conn.execute(
-                "SELECT * FROM installations WHERE id=? AND user_id=? AND active=1",
-                (installation, user),
-            ).fetchone()
-            if not row or not secrets.compare_digest(
-                row["secret_digest"], token_digest("installation", secret)
-            ):
-                raise APIError("not_found", 404)
-            conn.execute(
-                "INSERT INTO notification_preferences(installation_id,user_id,door,climate,"
-                "warning,climate_interval_minutes) "
-                "VALUES (?,?,?,?,?,?) ON CONFLICT(installation_id) DO UPDATE SET "
-                "last_climate_at=CASE WHEN notification_preferences.user_id=excluded.user_id "
-                "THEN notification_preferences.last_climate_at ELSE 0 END,"
-                "user_id=excluded.user_id,door=excluded.door,climate=excluded.climate,warning=excluded.warning,"
-                "climate_interval_minutes=excluded.climate_interval_minutes",
-                (
-                    installation,
-                    user,
-                    int(options["door"]),
-                    int(options["climate"]),
-                    int(options["warning"]),
-                    options["climate_interval_minutes"],
-                ),
+            self.proven(conn, user, installation, secret)
+            self.save_switches(
+                conn,
+                installation,
+                user,
+                options["door"],
+                options["climate"],
+                options["warning"],
+                options["climate_interval_minutes"],
+            )
+            # Old app builds always send all three switches: a switch keeps a level of the same
+            # meaning (on: urgent/alert, off: quiet/off) so one toggle cannot rewrite the others.
+            current = levels(conn, installation, user)
+            self.save_levels(
+                conn,
+                installation,
+                user,
+                {
+                    name: current[name]
+                    if (current[name] in PUSHED) == options[switch]
+                    else ("alert" if options[switch] else "off")
+                    for switch, name in LEGACY.items()
+                },
             )
             return {"status": "saved", "preferences": read(conn, installation, user)}
+
+    def set_levels(self, user, installation, secret, chosen, interval):
+        with self.transaction(write=True) as conn:
+            self.proven(conn, user, installation, secret)
+            self.save_levels(conn, installation, user, chosen)
+            # Keep the legacy switches meaning the same for old builds reading them back.
+            self.save_switches(
+                conn,
+                installation,
+                user,
+                *(chosen[LEGACY[switch]] in PUSHED for switch in ("door", "climate", "warning")),
+                interval,
+            )
+            return {
+                "status": "saved",
+                "levels": levels(conn, installation, user),
+                "report_interval_minutes": interval,
+            }
 
     def register(self, user, installation, secret, token):
         digest = token_digest("installation", secret)
@@ -112,6 +201,34 @@ class PushStore(Households):
                 "SELECT COUNT(*) FROM installations WHERE user_id=? AND active=1", (user,)
             ).fetchone()[0] >= 10:
                 raise APIError("installation_limit", 409)
+            if not old:
+                # Bound rows per account: signed-out registrations make room for a new phone.
+                total = conn.execute(
+                    "SELECT COUNT(*) FROM installations WHERE user_id=?", (user,)
+                ).fetchone()[0]
+                if total >= INSTALLATION_ROWS_PER_USER:
+                    stale = conn.execute(
+                        "SELECT id FROM installations WHERE user_id=? AND active=0 "
+                        "ORDER BY updated_at LIMIT ?",
+                        (user, total - INSTALLATION_ROWS_PER_USER + 1),
+                    ).fetchall()
+                    discard_installations(conn, [row["id"] for row in stale])
+                    if total - len(stale) >= INSTALLATION_ROWS_PER_USER:
+                        raise APIError("quota_exceeded", 429)
+            # A token moves here only from the same account, a signed-out row or a holder silent
+            # for 30 days; a stranger's registration cannot silence a live phone's notifications.
+            holder = conn.execute(
+                "SELECT user_id,active,updated_at FROM installations WHERE token=? AND id!=?",
+                (token, installation),
+            ).fetchone()
+            if (holder and holder["user_id"] != user and holder["active"]
+                    and holder["updated_at"] >= self.clock() - 30 * 86400):
+                raise APIError("installation_conflict", 409)
+            conn.execute(
+                "UPDATE installations SET token=NULL,active=0,binding=?,updated_at=? "
+                "WHERE token=? AND id!=?",
+                (identifier(), self.clock(), token, installation),
+            )
             binding = (
                 old["binding"]
                 if old and old["user_id"] == user and old["token"] == token and old["active"]
@@ -163,6 +280,8 @@ class PushStore(Households):
             message, count = enqueue(conn, home, self.clock(), installation=installation, user=user)
             return {"message_id": message, "queued": count, "status": "queued"}
 
+    last_home = None  # the home served by the previous claim yields to every other home
+
     def claim(self):
         now = self.clock()
         with self.transaction(write=True) as conn:
@@ -173,19 +292,21 @@ class PushStore(Households):
                 (now,),
             )
             row = conn.execute(
-                "SELECT message_id,installation_id FROM push_jobs WHERE "
-                "(state='pending' AND due_at<=?) OR (state='sending' AND lease_until<=?) "
-                "ORDER BY due_at LIMIT 1",
-                (now, now),
+                "SELECT j.message_id,j.installation_id,p.home_id FROM push_jobs j "
+                "JOIN push_messages p ON p.id=j.message_id WHERE "
+                "(j.state='pending' AND j.due_at<=?) OR (j.state='sending' AND j.lease_until<=?) "
+                "ORDER BY p.home_id=?,j.due_at LIMIT 1",
+                (now, now, self.last_home or ""),
             ).fetchone()
             if not row:
                 return None
+            self.last_home = row["home_id"]
             conn.execute(
                 "UPDATE push_jobs SET state='sending',lease_until=?,attempts=attempts+1 "
                 "WHERE message_id=? AND installation_id=?",
-                (now + 60, *row),
+                (now + 60, row[0], row[1]),
             )
-            return tuple(row)
+            return (row[0], row[1])
 
     def authorized(self, job):
         # Re-read immediately before I/O, including membership and binding rotation.
@@ -203,8 +324,10 @@ class PushStore(Households):
                 "AND j.binding=i.binding AND j.user_id=i.user_id AND p.expires_at>?",
                 (*job, self.clock()),
             ).fetchone()
-            selected = category(row["event_kind"]) if row else "other"
-            allowed = row is not None and permits(conn, job[1], row["user_id"], selected)
+            kind = row["event_kind"] if row else None
+            selected = alert_category(kind)
+            chosen = level(conn, job[1], row["user_id"], selected) if row else None
+            allowed = chosen in PUSHED
             if not allowed:
                 conn.execute(
                     "UPDATE push_jobs SET state='cancelled',last_error='authority_changed' "
@@ -225,7 +348,7 @@ class PushStore(Households):
                         "home_id",
                     )
                 }
-                | {"category": selected}
+                | {"category": category(kind), "alert_category": selected, "level": chosen}
                 if allowed
                 else None
             )
@@ -237,6 +360,8 @@ class PushStore(Households):
                 "SELECT attempts,binding FROM push_jobs WHERE message_id=? AND installation_id=?",
                 job,
             ).fetchone()
+            if not row:
+                return  # pruned with its event or installation while the send was in flight
             if result == "accepted":
                 state, error, due = "accepted", None, now
             elif result == "unregistered":
@@ -258,13 +383,19 @@ class PushStore(Households):
             )
 
     def prune(self):
-        # Keep bounded diagnostics. Never delete household/event records.
+        # Keep bounded diagnostics. Never delete household records; events are capped per home.
         with self.transaction(write=True) as conn:
             cutoff = self.clock() - 14 * 86400
             conn.execute(
                 "UPDATE installations SET active=0,token=NULL WHERE active=1 AND updated_at<?",
                 (self.clock() - 90 * 86400,),
             )
+            stale = conn.execute(
+                "SELECT id FROM installations WHERE active=0 AND updated_at<?",
+                (self.clock() - 30 * 86400,),
+            ).fetchall()
+            discard_installations(conn, [row["id"] for row in stale])
+            conn.execute("DELETE FROM invitations WHERE expires_at<?", (self.clock() - 30 * 86400,))
             conn.execute(
                 "DELETE FROM push_jobs WHERE message_id IN "
                 "(SELECT id FROM push_messages WHERE expires_at<?)",

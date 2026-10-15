@@ -1,4 +1,4 @@
-"""Small loopback-only health API, with no family data or control routes."""
+"""Loopback service health and household APIs exposed through the existing HTTPS tunnel."""
 
 from __future__ import annotations
 
@@ -21,12 +21,12 @@ main{max-width:540px;margin:12vh auto;padding:32px;background:white;border-radiu
 .state{padding:18px;background:{{ '#e7f5ec' if healthy else '#fff2dd' }};border-radius:14px}
 p{line-height:1.7}footer{margin-top:32px;color:#61728a;font-size:13px}
 @media(max-width:600px){main{margin:40px 16px;padding:24px}}</style>
-<main><div class="label">SMART HOME · A50</div><h1>중앙 서버 준비</h1>
+<main><div class="label">SMART HOME · A50</div><h1>스마트홈 중앙 서버</h1>
 <div class="state">{{ '● 정상 동작 중' if healthy else '● 저장소 확인 필요' }}</div>
 <p>서버 실행 환경{{ '과 저장소가 준비됐습니다.' if healthy else '은 실행 중입니다.' }}</p>
 <p>{{ '집 등록과 가족 권한 API가 준비됐습니다.' if auth_ready else 'Google 로그인 설정을 기다리고 있습니다. 가족 데이터 접근은 잠겨 있습니다.' }}</p>
-<p>휴대폰 앱과 알림 전송은 다음 단계에서 연결합니다.</p>
-<footer>준비 단계 · 버전 {{ version }}</footer></main></html>'''
+<p>가족 앱에서 집의 알림과 기록을 확인하고, 연결된 에어컨의 전원·온도·풍량·운전 모드를 조작할 수 있습니다.</p>
+<footer>시험 운영 · 버전 {{ version }}</footer></main></html>'''
 
 
 def create_app(database: Path, *, identity_verifier=None, push_sender_ready=False) -> Flask:

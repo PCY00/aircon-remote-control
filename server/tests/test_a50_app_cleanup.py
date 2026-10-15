@@ -67,3 +67,18 @@ def test_self_named_shared_identity_requires_actual_singleton_membership():
         cleanup.active_package_state(
             other, "com.google.android.youtube", verified_singleton_uid=True
         )
+
+
+def test_missing_ssh_client_reports_unavailable_fallback(tmp_path, monkeypatch):
+    binary = str(tmp_path / "missing-client" / "ssh.exe")
+    monkeypatch.setattr(
+        cleanup, "ssh_command", lambda connection, command=None: [binary, command]
+    )
+    with pytest.raises(RuntimeError, match="Independent SSH fallback is unavailable"):
+        cleanup.ssh_fallback_check(tmp_path / "connection.json")
+
+
+def test_incomplete_ssh_details_report_unavailable_fallback(tmp_path):
+    (tmp_path / "connection.json").write_text("{}")
+    with pytest.raises(RuntimeError, match="Independent SSH fallback is unavailable"):
+        cleanup.ssh_fallback_check(tmp_path / "connection.json")

@@ -1,0 +1,11 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only runtime; Android ps parent lookup replaces unavailable proc children file
+FIXED_HOSTNAME_AFTER_SERVICE_RESTART=PASS SUPERVISOR_PID_CHANGED=TRUE
+PRIVATE_CREDENTIAL_OWNER_ONLY=PASS TOKEN_NOT_IN_PROCESS_ARGS=PASS
+aircon-fixed-tunnel=running
+aircon-public-tunnel=running
+aircon-central=running
+PHYSICAL_COMMANDS_SENT=0 FULL_ANDROID_REBOOT_NOT_TESTED=TRUE
+
+EXIT_CODE=0

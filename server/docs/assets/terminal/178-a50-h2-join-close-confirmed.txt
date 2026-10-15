@@ -1,0 +1,6 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] close authorized joining window and confirm closed state
+PERMIT_JOIN_CLOSED_CONFIRMED=TRUE
+
+EXIT_CODE=0

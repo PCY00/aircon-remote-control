@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 from a50_adb import A50ADB
+from a50_ssh import ssh_command
 
 APPS = {
     "com.google.android.youtube": "YouTube",
@@ -81,6 +82,17 @@ def restore_command(package: str, state: dict) -> str:
     return f"pm {verb} --user 0 {package}"
 
 
+def ssh_fallback_check(connection: Path) -> subprocess.CompletedProcess[bytes]:
+    try:
+        # ssh is the direct child so the timeout kill reaches it and releases the pipes.
+        return subprocess.run(
+            ssh_command(connection, "echo SSH_CLEANUP_OK"), capture_output=True, timeout=20
+        )
+    except (OSError, ValueError, KeyError, TypeError):
+        # Incomplete local details or no usable ssh client.
+        raise RuntimeError("Independent SSH fallback is unavailable; stop cleanup.") from None
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description=__doc__)
@@ -126,11 +138,8 @@ def main() -> int:
             raise RuntimeError("Protected app not enabled; stop cleanup and inspect.")
 
     def ssh_check() -> None:
-        response = subprocess.run(
-            [sys.executable, str(Path(__file__).with_name("a50_ssh.py")), "echo SSH_CLEANUP_OK"],
-            capture_output=True, timeout=20,
-        )
-        log("$ a50_ssh.py 'echo SSH_CLEANUP_OK'\n" + client.redact(
+        response = ssh_fallback_check(Path(".deploy/a50/connection.json"))
+        log("$ ssh [verified host key] 'echo SSH_CLEANUP_OK'\n" + client.redact(
             (response.stdout + response.stderr).decode("utf-8", errors="replace"))
             + "EXIT_CODE=" + str(response.returncode))
         if response.returncode or b"SSH_CLEANUP_OK" not in response.stdout:

@@ -1,0 +1,12 @@
+# Actual executed commands and output; private details removed
+
+LOCAL_TUNNEL_RELEASE=fixed-184eca7f45ac9e9d
+$ SSH [verified host key] python - < deploy_a50_tunnel.py [checked manifest; apply]
+run: /data/data/com.termux/files/usr/var/service/aircon-fixed-tunnel: (pid 12513) 2s; run: log: (pid 12508) 3s
+PLAN=separate_fixed_tunnel ORIGIN=loopback:8001 ROUTER_CHANGES=none
+SOURCE_FILES=5
+ORIGINAL_CENTRAL_SOURCE_DATABASE_AND_SSH_HOOK=preserved
+TUNNEL_SOURCE_AND_HOOK_SHA256_MATCH=PASS
+FIXED_HOSTNAME=TRUE OTHER_TUNNEL_SERVICE=preserved
+
+EXIT_CODE=0

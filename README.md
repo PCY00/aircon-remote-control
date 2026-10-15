@@ -14,7 +14,26 @@
 
 [![스마트홈 전체 연결: Pi 제어와 A50 가족 알림의 두 경로](docs/architecture/smart-home-overview.svg)](docs/architecture/smart-home-overview.svg)
 
-**현재 가족 APK는 기록·알림용이다.** 에어컨 조작은 Tailscale로 접속하는 Pi 웹 대시보드에서 한다. 가족 앱의 HTTPS 통로와 Pi 제어 경로는 별개다. FCM 전송 접수도 휴대폰에 알림이 표시됐다는 뜻은 아니다.
+### 휴대폰과 집 안 기기가 이어지는 경로
+
+가족 앱은 도메인 주소로 Cloudflare에 접속하고, Cloudflare는 A50의 중앙 API에 요청을 전달한다. A50이 집별 권한을 확인하면 해당 집의 Pi가 대기 중인 명령을 가져가 실행한다. 휴대폰 알림은 A50 → FCM → 앱으로 따로 전달된다. 도메인 구매처 Spaceship은 등록·갱신을 맡는다.
+
+[![가족 앱부터 도메인·Cloudflare·A50·Pi·에어컨까지의 연결](server/docs/architecture/connection-flow.svg)](server/docs/architecture/connection-flow.svg)
+
+[연결을 쉬운 말로 읽기](server/docs/connection-flow.md) · [블로그용 PNG](server/docs/architecture/connection-flow.png). 그림 상단에 고정 주소의 실제 연결 상태를 표시했다.
+
+**가족 APK 0.6.1에서는 기록·알림과 에어컨 조작을 사용할 수 있다.** 0.6.1은 어두운 화면과 원형 온도 다이얼로 다시 디자인하고, 홈을 공간별 기기 타일과 ‘지금 확인할 것’ 중심으로 바꿨다. 기기는 Pi가 보내는 기기 목록(이름·공간·종류·기능 블록·상태)으로 그리므로 전등 같은 새 기기도 같은 화면 규칙으로 들어온다. 알림은 안전·보안·기기·환경·정기 보고·자동화·가족 일곱 종류마다 긴급·알림·조용히·끔을 고른다([결정 0019](docs/decisions/0019-capability-inventory-and-alert-levels.md)). 0.6.0부터 앱은 처음 연결한 서버의 지문을 기억하고, 주소가 바뀌어도 같은 서버임을 서명으로 확인한 뒤에만 로그인 토큰을 보낸다. 앱의 명령은 A50에서 집별 권한을 확인한 뒤 해당 Pi가 받아 기존 에어컨 API로 실행한다. 냉방 17–30°C·바람 자동/약/중/강, 자동·제습·송풍, 풍향 고정·스윙·절전·터보·표시등과 전원 끄기를 지원하며 조회 전용 계정은 조작하지 못한다. 기존 Tailscale Pi 웹 대시보드도 유지한다. IR 송신 완료는 실제 전원 상태를 읽은 값이 아니며, FCM 전송 접수도 휴대폰에 알림이 표시됐다는 뜻은 아니다.
+
+```mermaid
+flowchart LR
+    A[가족 앱 · Google 로그인] -->|명령 요청| B[A50 · 현재 집과 가족 권한 확인]
+    B --> C[30초 만료 명령 대기열]
+    D[해당 집 Pi · 전용 허브 키] -->|HTTPS로 자기 집 명령 조회| C
+    D -->|허용된 에어컨 명령| E[기존 Pi 에어컨 API]
+    E --> F[Zigbee · H2 · IR 송신]
+    D -->|송신 결과 보고| B
+    B -->|앱에서 결과 조회| A
+```
 
 [A0 벡터 SVG 원본](docs/architecture/smart-home-components-a0.svg) · [A0 인쇄용 PDF](docs/architecture/smart-home-components-a0.pdf) · [컴포넌트 역할·코드 위치·데이터 흐름](docs/architecture/README.md)
 
@@ -283,6 +302,6 @@ systemctl --user status aircon-controller.service --no-pager
 
 ## 10. 선택: Galaxy A50 가족 앱과 외부 알림까지 확장하기
 
-위 1~9단계만으로 Pi 대시보드와 Tailscale을 통한 에어컨 제어를 구성할 수 있다. 남는 Galaxy A50을 가족 계정·외부 알림 서버로 쓰려면 별도 [A50 서버·가족 앱 설치 가이드](server/README.md)로 이어간다. 이 앱은 현재 **문·온습도·경고 기록과 알림용**이며, 에어컨 제어는 Pi 웹 대시보드에서 한다. A50 확장은 시험 단계이므로 처음 설치하는 사람은 먼저 위의 기본 구성을 끝낸다.
+위 1~9단계만으로 Pi 대시보드와 Tailscale을 통한 에어컨 제어를 구성할 수 있다. 남는 Galaxy A50을 가족 계정·외부 알림 서버로 쓰려면 별도 [A50 서버·가족 앱 설치 가이드](server/README.md)로 이어간다. 가족 앱 0.5.2에서는 **문·온습도·경고 기록과 알림, 에어컨 온도·바람·모드·풍향·부가 기능·전원 끄기**를 지원한다. 앱 제어를 사용하려면 중앙 서버와 Pi 연결 서비스도 함께 업데이트하고 [제어 연결 절차](server/docs/aircon-app-control.md)를 따라야 한다. A50 확장은 시험 단계이므로 처음 설치하는 사람은 먼저 위의 기본 구성을 끝낸다.
 
 직접 진행한 과정은 [A50 스마트홈 알림 글 모음](server/docs/blog/mobile-app/README.md)에 정리했다. [시작 안내](server/docs/blog/mobile-app/00-reader-start.md)에 PC 준비와 내려받는 방법을 적었다. 블로그를 따라 할 때는 [서버 코드](server/)를 열고 **main → Code → Download ZIP**으로 현재 코드를 받은 뒤 저장소의 `server` 폴더를 사용한다. 블로그에 별도 코드 ZIP을 첨부할 필요는 없다.

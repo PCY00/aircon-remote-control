@@ -1,0 +1,10 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only Zigbee inventory and live announcement observation
+ZIGBEE_BRIDGE_ONLINE=True
+PERMIT_JOIN=False
+EXISTING_SUPPORTED_H2_COUNT=1 INTERVIEW=SUCCESSFUL
+EXISTING_H2_LIVE_EVENT_OBSERVED=False
+READ_ONLY_OBSERVATION=TRUE IR_COMMANDS_SENT=0
+
+EXIT_CODE=0

@@ -20,6 +20,10 @@ class InvalidUploadError(ValueError):
     """Raised when a model request contains an unsupported or oversized file."""
 
 
+class StorageQuotaExceededError(RuntimeError):
+    """Raised when storing a model request would exceed the upload storage quota."""
+
+
 @dataclass(frozen=True)
 class UploadPayload:
     """A validated-in-memory upload passed from the HTTP layer."""
@@ -164,9 +168,22 @@ class DeviceRequestStore:
 
     _IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
-    def __init__(self, data_dir: Path, max_upload_bytes: int) -> None:
+    def __init__(
+        self,
+        data_dir: Path,
+        max_upload_bytes: int,
+        quota_bytes: int = 200 * 1024 * 1024,
+    ) -> None:
         self._root = data_dir / "device_requests"
         self._max_upload_bytes = max_upload_bytes
+        self._quota_bytes = quota_bytes
+
+    def usage_bytes(self) -> int:
+        """Bytes currently stored under device_requests (photos, manuals, metadata)."""
+
+        if not self._root.exists():
+            return 0
+        return sum(path.stat().st_size for path in self._root.rglob("*") if path.is_file())
 
     def _validate_file(
         self, upload: UploadPayload, *, kind: str, extensions: set[str]
@@ -230,6 +247,14 @@ class DeviceRequestStore:
             if manual is not None
             else None
         )
+        incoming = sum(
+            len(upload.data) for upload in (product_photo, remote_photo, manual)
+            if upload is not None
+        )
+        if self.usage_bytes() + incoming > self._quota_bytes:
+            raise StorageQuotaExceededError(
+                f"device request storage quota of {self._quota_bytes} bytes is exhausted"
+            )
 
         files: dict[str, str] = {}
         product_path = directory / "photos" / f"product-{request_id}{product_suffix}"

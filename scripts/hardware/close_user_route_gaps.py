@@ -1,7 +1,7 @@
 """Explicitly close the two remaining connections from native DRC, once."""
-from pathlib import Path
 import pcbnew as p
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
+from hw_paths import kicad_root
+OUT=kicad_root()/'artwork-current'
 b=p.LoadBoard(str(OUT/'IR_ESP32H2.kicad_pcb'))
 def v(x,y):return p.VECTOR2I(p.FromMM(x),p.FromMM(y))
 def trace(net,points,layer=p.F_Cu):

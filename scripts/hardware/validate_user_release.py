@@ -1,11 +1,11 @@
 """Read-only checks of original preservation and the actual generated CAD/CAM."""
-from pathlib import Path
 import csv,hashlib,json,sys
 import pcbnew as p
 from export_user_jlc import (parse_schematic,parse_pcb,parse_mapping,check_sources,
                            parse_positions,check_positions,build_rows,validate_output_text,self_test)
 from kicad_sexpr import read,children,child,walk
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
+from hw_paths import kicad_root
+OUT=kicad_root()/'artwork-current'
 ORIGINAL=OUT.parent
 BACKUP=ORIGINAL.parent/'IR_ESP32H2-snapshots/user-design-20260920-022829'
 MAPPING=OUT/'manufacturing/assembly/part-selection.json'

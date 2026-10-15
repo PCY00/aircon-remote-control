@@ -1,0 +1,7 @@
+# Actual failed test output; traceback excerpt with private paths removed
+$ .venv/Scripts/python.exe -m pytest -q
+FAILED tests/test_reader_ops_tools.py::test_deploy_preview_excludes_secrets_logs_and_runtime_files
+ForEach-Object: The term 'Get-FileHash' is not recognized as the name of a cmdlet, function, script file, or operable program.
+1 failed, 177 passed in 24.48s
+
+# A focused retry reproduced this same error before the deployment script was changed.

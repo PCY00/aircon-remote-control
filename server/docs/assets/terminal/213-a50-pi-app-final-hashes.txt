@@ -1,0 +1,8 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] compare final Pi app and installed service with local sources [read-only]
+PI_FINAL_SOURCE_AND_INSTALLED_UNIT_MATCH=PASS FILES=18
+PI_STOP_TIMEOUT=20s
+PHYSICAL_COMMANDS_SENT=0
+
+EXIT_CODE=0

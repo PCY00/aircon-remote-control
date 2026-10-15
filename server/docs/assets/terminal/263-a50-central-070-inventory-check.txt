@@ -1,0 +1,10 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - [read-only inventory rows, names omitted]
+INVENTORY_AGE_SECONDS=33
+DEVICE_COUNT=3
+DEVICE type=air_conditioner room=거실 caps=["power", "setpoint", "mode", "fan", "actions"] state_keys=['inferred', 'power'] controllable=1
+DEVICE type=door_sensor room=공간 미지정 caps=["contact", "battery"] state_keys=['battery_low', 'battery_percent', 'contact'] controllable=0
+DEVICE type=climate_sensor room=공간 미지정 caps=["temperature", "humidity", "battery"] state_keys=['battery_percent', 'humidity_percent', 'temperature_c'] controllable=0
+
+EXIT_CODE=0

@@ -4,10 +4,10 @@ Manufacturer dimensions: Yenji SMD1206 p5, Murata DFE201612E land drawing.
 BNstar has no recommended land; retain generic toe length, widen to 2 mm.
 No component centres/orientations, tracks, or net assignments are changed.
 """
-from pathlib import Path
 from kicad_sexpr import read,write,child,children
+from hw_paths import kicad_root
 
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
+OUT=kicad_root()/'artwork-current'
 lands={
  'F1':('Fuse_BNstar_1206_050C',1.4,1.25,2.0),
  'F2':('Fuse_Yenji_SMD1206P100TF',1.5,1.0,1.9),

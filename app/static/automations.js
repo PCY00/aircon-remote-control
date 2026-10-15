@@ -13,6 +13,7 @@
   let rules = [];
   let events = [];
   let loading = false;
+  let refreshQueued = false;
 
   async function apiCall(path, options = {}) {
     const response = await fetch(path, {
@@ -171,7 +172,12 @@
   }
 
   async function refresh() {
-    if (loading) return;
+    // An automation event during an in-flight GET may describe a newer state than
+    // that response, so coalesce it into one follow-up refresh instead of dropping it.
+    if (loading) {
+      refreshQueued = true;
+      return;
+    }
     loading = true;
     try {
       const [rulePayload, eventPayload] = await Promise.all([
@@ -191,6 +197,10 @@
       list.append(message);
     } finally {
       loading = false;
+      if (refreshQueued) {
+        refreshQueued = false;
+        refresh();
+      }
     }
   }
 

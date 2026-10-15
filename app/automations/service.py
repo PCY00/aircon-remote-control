@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Callable
+from contextlib import suppress
 from datetime import UTC, datetime
 from threading import RLock
 
@@ -11,6 +13,8 @@ from app.automations.store import DOOR_OPEN_AIRCON_RULE_ID, AutomationStore
 from app.devices.service import DeviceService
 from app.events import EventHub
 from app.sensors.service import SensorService
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _utc_now() -> datetime:
@@ -39,6 +43,7 @@ class AutomationService:
         events: EventHub,
         clock: Callable[[], datetime] = _utc_now,
         poll_seconds: float = 5.0,
+        known_sensor_ids: Callable[[], set[str] | None] | None = None,
     ) -> None:
         self._store = store
         self._sensors = sensors
@@ -46,11 +51,16 @@ class AutomationService:
         self._events = events
         self._clock = clock
         self._poll_seconds = poll_seconds
+        # Returns the Zigbee2MQTT device names, or None when that list is unknown.
+        self._known_sensor_ids = known_sensor_ids
         self._lock = RLock()
         self._task: asyncio.Task[None] | None = None
         self._stop_event: asyncio.Event | None = None
 
     def _snapshot(self) -> dict[str, object]:
+        # Rows of renamed or removed sensors stay in SQLite; ignore them while the
+        # bridge's device list is known so a stale "open" cannot keep warning.
+        known = self._known_sensor_ids() if self._known_sensor_ids is not None else None
         open_doors = [
             {
                 "device_id": sensor["device_id"],
@@ -60,6 +70,7 @@ class AutomationService:
             for sensor in self._sensors.list()
             if sensor.get("kind") == "door_contact"
             and (sensor.get("state") or {}).get("door_state") == "open"
+            and (known is None or sensor["device_id"] in known)
         ]
         active_aircons = []
         for device in self._devices.list():
@@ -183,7 +194,11 @@ class AutomationService:
     async def _run(self) -> None:
         assert self._stop_event is not None
         while not self._stop_event.is_set():
-            await asyncio.to_thread(self.evaluate)
+            try:
+                await asyncio.to_thread(self.evaluate)
+            except Exception:
+                # A transient SQLite error must not end the delayed-warning timer.
+                LOGGER.exception("automation evaluation failed")
             try:
                 await asyncio.wait_for(
                     self._stop_event.wait(), timeout=self._poll_seconds
@@ -201,6 +216,7 @@ class AutomationService:
         if self._task is None or self._stop_event is None:
             return
         self._stop_event.set()
-        await self._task
+        with suppress(Exception):
+            await self._task
         self._task = None
         self._stop_event = None

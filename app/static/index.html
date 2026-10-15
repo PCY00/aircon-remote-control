@@ -783,6 +783,14 @@
       gap: 7px;
     }
 
+    #room-first-design-studio .feature-note {
+      margin: 10px 2px 0;
+      color: var(--studio-muted);
+      font-size: .86em;
+    }
+
+    #room-first-design-studio [data-locked="true"] { opacity: .42; }
+
     #room-first-design-studio.desktop-preview .device-detail {
       max-width: 720px;
       margin: 0 auto;
@@ -1402,10 +1410,11 @@
         <h3>추가 기능</h3>
         <div class="feature-grid">
           <button type="button" class="feature-toggle" data-aircon-feature="swing" aria-pressed="true"><i data-lucide="move-vertical" aria-hidden="true"></i><span>풍향 움직임</span></button>
-          <button type="button" class="feature-toggle" data-aircon-feature="economy" aria-pressed="false"><i data-lucide="leaf" aria-hidden="true"></i><span>경제운전</span></button>
+          <button type="button" class="feature-toggle" data-aircon-feature="economy" aria-describedby="economy-note"><i data-lucide="leaf" aria-hidden="true"></i><span>경제운전</span></button>
           <button type="button" class="feature-toggle" data-aircon-feature="turbo" aria-pressed="false"><i data-lucide="gauge" aria-hidden="true"></i><span>쾌속냉방</span></button>
           <button type="button" class="feature-toggle" data-aircon-feature="led" aria-pressed="true"><i data-lucide="lightbulb" aria-hidden="true"></i><span>에어컨 LED</span></button>
         </div>
+        <p class="feature-note" id="economy-note" data-economy-note>경제운전은 냉방 중에만 쓸 수 있어요. 지금 희망 온도로 다시 보내고 풍량은 자동으로 바뀌어요.</p>
       </section>
     </section>
 
@@ -1721,6 +1730,7 @@
       const fanToApi = { '자동': 'auto', '약풍': 'low', '중풍': 'medium', '강풍': 'high' };
       const fanFromApi = { auto: '자동', low: '약풍', medium: '중풍', high: '강풍' };
       const VIEW_MODE_KEY = 'smart-home.view-mode.v1';
+      const HOME_LAYOUT_KEY = 'smart-home.home-layout.v1';
       const VIEW_MODES = new Set(['auto', 'mobile', 'desktop']);
       const desktopMedia = window.matchMedia('(min-width: 900px)');
       let supportedProfiles = [];
@@ -1807,6 +1817,9 @@
         detailStatus.dataset.state = state;
       };
 
+      const apiDetailMessages = {
+        'economy requires the air conditioner to be cooling': '경제운전은 냉방 중일 때만 보낼 수 있어요.',
+      };
       const apiCall = async (path, options = {}) => {
         const request = { ...options };
         const isForm = request.body instanceof FormData;
@@ -1816,7 +1829,7 @@
         const payload = contentType.includes('application/json') ? await response.json() : null;
         if (!response.ok) {
           const detail = payload?.detail;
-          throw new Error(typeof detail === 'string' ? detail : 'API 요청을 처리하지 못했어요.');
+          throw new Error(typeof detail === 'string' ? (apiDetailMessages[detail] || detail) : 'API 요청을 처리하지 못했어요.');
         }
         return payload;
       };
@@ -1964,10 +1977,29 @@
         status.textContent = count ? count + '개 동작' : '설정 필요';
       };
 
-      const applySceneAction = async (deviceName, config) => {
-        if (!config || config.action === 'keep') return;
-        const tile = [...root.querySelectorAll('.device-grid .device-tile')].find((item) => item.querySelector('strong').textContent.trim() === deviceName);
-        if (!tile) return;
+      // 등록 기기는 표시 이름이 아니라 서버 기기 ID로 장면 동작을 저장한다. ID가 없는 예시 기기만 이름을 쓴다.
+      const sceneDeviceKey = (tile) => tile.dataset.deviceId ? 'device:' + tile.dataset.deviceId : tile.querySelector('strong').textContent.trim();
+
+      const findSceneTile = (deviceKey) => {
+        const tiles = [...root.querySelectorAll('.device-grid .device-tile')].filter((item) => item.dataset.deviceKind !== 'sensor');
+        return tiles.find((item) => sceneDeviceKey(item) === deviceKey)
+          || (deviceKey.startsWith('device:') ? undefined : tiles.find((item) => item.querySelector('strong').textContent.trim() === deviceKey));
+      };
+
+      // 기본 에어컨 카드가 서버 기기와 연결되면 이름으로 저장된 장면 동작을 그 기기 ID로 옮긴다.
+      const migrateSceneDeviceKey = (fromKey, toKey) => {
+        if (!fromKey || fromKey === toKey) return;
+        sceneConfigs.forEach(({ actions }) => {
+          if (!Object.hasOwn(actions, fromKey)) return;
+          if (!Object.hasOwn(actions, toKey)) actions[toKey] = actions[fromKey];
+          delete actions[fromKey];
+        });
+      };
+
+      const applySceneAction = async (deviceKey, config) => {
+        if (!config || config.action === 'keep') return true;
+        const tile = findSceneTile(deviceKey);
+        if (!tile) return false;
 
         if (tile.dataset.deviceKind === 'aircon') {
           await changeAirconState((state) => ({
@@ -1978,7 +2010,7 @@
               fan: config.fan || state.fan
             } : {})
           }), { tile });
-          return;
+          return true;
         }
 
         const enabled = config.action === 'on';
@@ -1987,6 +2019,7 @@
         if (!enabled) status.textContent = '꺼짐';
         else if ((tile.dataset.deviceCapabilities || '').includes('brightness')) status.textContent = '켜짐 · 밝기 ' + Number(config.brightness || 70) + '%';
         else status.textContent = '켜짐';
+        return true;
       };
 
       const runScene = (button) => {
@@ -2004,12 +2037,14 @@
         announcer.textContent = name + ' 장면 실행 중';
         window.setTimeout(async () => {
           try {
-            for (const [deviceName, action] of Object.entries(config.actions)) {
-              await applySceneAction(deviceName, action);
+            let missing = 0;
+            for (const [deviceKey, action] of Object.entries(config.actions)) {
+              if (!(await applySceneAction(deviceKey, action))) missing += 1;
             }
             renderDevicesView(currentInventoryRoom);
-            status.textContent = '완료';
-            announcer.textContent = name + ' 장면 실행 완료';
+            status.textContent = missing ? '일부 기기 없음' : '완료';
+            announcer.textContent = missing ? `${name} 장면 실행 · 기기 ${missing}개를 찾지 못함` : name + ' 장면 실행 완료';
+            if (missing) setApiStatus(`${name} 장면의 기기 ${missing}개를 찾지 못했어요. 장면 설정을 확인해 주세요.`, 'error');
           } catch (error) {
             status.textContent = '실패';
             setApiStatus(error.message, 'error');
@@ -2043,10 +2078,24 @@
         });
       };
 
-      const newAirconState = () => ({ power: false, temperature: 24, mode: '냉방', fan: '강풍', swing: true, economy: false, turbo: false, led: true });
+      const newAirconState = () => ({ power: false, temperature: 24, mode: '냉방', fan: '강풍', swing: true, turbo: false, led: true });
       const airconStates = new Map();
       const pendingDeviceCommands = new Set();
+      const deviceRecordTimes = new Map();
       const isH2Tile = (tile) => tile?.dataset.irTransport === 'h2_ir';
+      // SSE, 재연결 동기화, 명령 응답이 순서 없이 도착해도 더 오래된 기기 기록이 최신 상태를 덮지 않게 한다.
+      const deviceRecordTime = (record) => Date.parse(record?.updated_at || record?.last_command?.recorded_at || record?.created_at || '') || 0;
+      const isOutdatedRecord = (record) => deviceRecordTime(record) < (deviceRecordTimes.get(record?.id) || 0);
+      const rememberDeviceRecord = (record) => {
+        if (!record?.id) return;
+        deviceRecordTimes.set(record.id, Math.max(deviceRecordTimes.get(record.id) || 0, deviceRecordTime(record)));
+      };
+      // 이 화면의 명령을 보내는 동안 도착한 다른 화면의 기록은 버리지 않고, 응답을 반영한 뒤 더 새 것이면 적용한다.
+      const skippedDeviceRecords = new Map();
+      const rememberSkippedRecord = (record) => {
+        const previous = skippedDeviceRecords.get(record.id);
+        if (!previous || deviceRecordTime(record) >= deviceRecordTime(previous)) skippedDeviceRecords.set(record.id, record);
+      };
       let airconState = newAirconState();
       let activeAirconTile = null;
       let detailReturnView = 'home';
@@ -2080,7 +2129,8 @@
             }
           : { action: 'set_state', power: false };
         const result = await apiCall(`/api/v1/devices/${encodeURIComponent(deviceId)}/commands`, { method: 'POST', body: JSON.stringify(payload) });
-        applyApiState(result.device.last_desired_state, state);
+        if (!isOutdatedRecord(result.device)) applyApiState(result.device.last_desired_state, state);
+        rememberDeviceRecord(result.device);
         renderAirconState(tile, state);
         const mock = result.transmission.hardware_output === false;
         setApiStatus(mock ? 'Mock IR 기록 완료 · 실제 송신 없음' : (isH2Tile(tile) ? 'H2 IR 송신 완료 · 실제 에어컨 상태는 직접 확인해 주세요' : 'IR 명령 전송 완료'));
@@ -2110,13 +2160,22 @@
         Object.assign(state, nextChanges);
         renderAirconState(tile, state);
         try {
-          if (commandId) await executeAirconCommand(commandId, tile);
-          else await sendAirconState(tile, state);
+          if (commandId) {
+            // 경제운전처럼 실행 명령도 서버가 기록한 실제 요청 상태(온도·풍량·전원)를 바꿀 수 있다.
+            const result = await executeAirconCommand(commandId, tile);
+            if (!isOutdatedRecord(result?.device)) applyApiState(result?.device?.last_desired_state, state);
+            rememberDeviceRecord(result?.device);
+          } else await sendAirconState(tile, state);
         } catch (error) {
           Object.assign(state, previous);
+          // 거절(예: 냉방이 아닐 때 경제운전)이나 응답 유실 뒤에는 서버에 기록된 상태로 다시 맞춘다.
+          resyncAircons().catch(() => {});
           throw error;
         } finally {
           pendingDeviceCommands.delete(deviceId);
+          const skipped = skippedDeviceRecords.get(deviceId);
+          skippedDeviceRecords.delete(deviceId);
+          if (skipped) upsertAirconTile(skipped);
           renderAirconState(tile, state);
         }
       };
@@ -2135,8 +2194,10 @@
         const hero = root.querySelector('[data-aircon-hero]');
         const powerButton = root.querySelector('[data-aircon-power]');
         const h2 = isH2Tile(activeAirconTile);
-        const summaryParts = [airconState.mode, airconState.fan, airconState.swing ? '풍향 움직임' : '풍향 고정'];
-        if (airconState.economy) summaryParts.push('경제운전');
+        // 자동·제습·송풍은 캡처된 모드 신호(17°C·강풍)만 보내므로 온도·풍량을 바꿀 수 없다.
+        const cooling = airconState.mode === '냉방';
+        const economyReady = cooling && airconState.power;
+        const summaryParts = [airconState.mode, cooling ? airconState.fan : '온도·풍량 고정', airconState.swing ? '풍향 움직임' : '풍향 고정'];
         if (airconState.turbo) summaryParts.push('쾌속냉방');
         hero.classList.toggle('is-off', !h2 && !airconState.power);
         powerButton.hidden = false;
@@ -2151,10 +2212,20 @@
         root.querySelector('[data-aircon-feature="swing"] span').textContent = airconState.swing ? '풍향 움직임' : '풍향 고정';
         root.querySelectorAll('[data-aircon-mode] button').forEach((button) => button.setAttribute('aria-pressed', String(button.textContent.trim() === airconState.mode)));
         root.querySelectorAll('[data-aircon-fan] button').forEach((button) => button.setAttribute('aria-pressed', String(button.textContent.trim() === airconState.fan)));
-        root.querySelectorAll('[data-aircon-feature]').forEach((button) => button.setAttribute('aria-pressed', String(airconState[button.dataset.airconFeature])));
+        root.querySelectorAll('[data-aircon-feature]:not([data-aircon-feature="economy"])').forEach((button) => button.setAttribute('aria-pressed', String(airconState[button.dataset.airconFeature])));
         root.querySelectorAll('[data-aircon-power], [data-temp-down], [data-temp-up], [data-aircon-mode] button, [data-aircon-fan] button, [data-aircon-feature]').forEach((button) => {
           button.disabled = !activeDeviceId || pendingDeviceCommands.has(activeDeviceId);
         });
+        root.querySelectorAll('[data-temp-down], [data-temp-up], [data-aircon-fan] button').forEach((button) => {
+          button.dataset.locked = String(!cooling);
+          if (!cooling) button.disabled = true;
+        });
+        const economyButton = root.querySelector('[data-aircon-feature="economy"]');
+        economyButton.dataset.locked = String(!economyReady);
+        if (!economyReady) economyButton.disabled = true;
+        root.querySelector('[data-economy-note]').textContent = economyReady
+          ? '경제운전은 지금 희망 온도로 다시 보내고 풍량을 자동으로 바꿔요.'
+          : '경제운전은 냉방 중에만 쓸 수 있어요. 먼저 냉방으로 켜 주세요.';
         root.querySelector('[data-h2-power-off]').disabled = !activeDeviceId || pendingDeviceCommands.has(activeDeviceId);
         if (activeAirconTile) {
           activeAirconTile.setAttribute('aria-pressed', h2 ? 'false' : String(airconState.power));
@@ -2210,16 +2281,26 @@
 
       const upsertAirconTile = (record) => {
         const tiles = [...root.querySelectorAll('.device-grid .device-tile[data-device-kind="aircon"]')];
-        let tile = tiles.find((item) => item.dataset.deviceId === record.id)
-          || tiles.find((item) => !item.dataset.deviceId);
+        const known = tiles.find((item) => item.dataset.deviceId === record.id);
+        if (known && isOutdatedRecord(record)) return known;
+        let tile = known || tiles.find((item) => !item.dataset.deviceId);
         if (!tile) {
           tile = document.createElement('button');
           tile.type = 'button';
           tile.className = 'device-tile';
           tile.append(document.createElement('strong'), document.createElement('small'));
           root.querySelector('.device-grid').append(tile);
+        } else if (!tile.dataset.deviceId) {
+          migrateSceneDeviceKey(tile.querySelector('strong').textContent.trim(), 'device:' + record.id);
         }
-        tile.dataset.room = record.room;
+        rememberDeviceRecord(record);
+        // 이름·공간·아이콘과 공간 탭은 처음 연결할 때만 서버 값으로 정한다. 이후 이 화면에서 바꾼
+        // 공간 이름·삭제를 SSE나 재동기화가 되돌리지 않도록, 연결된 카드는 상태와 송신 경로만 갱신한다.
+        if (!known) {
+          tile.dataset.room = record.room;
+          tile.querySelector('strong').textContent = record.name;
+          replaceElementIcon(tile, record.icon || 'snowflake');
+        }
         tile.dataset.deviceKind = 'aircon';
         tile.dataset.deviceCapabilities = record.zigbee_binding?.type === 'h2_ir'
           ? 'power' : 'power,mode,temperature,fan';
@@ -2227,14 +2308,12 @@
         tile.dataset.profileId = record.profile_id;
         tile.dataset.irTransport = record.zigbee_binding?.type === 'h2_ir' ? 'h2_ir' : 'ir';
         tile.dataset.h2FriendlyName = record.zigbee_binding?.friendly_name || '';
-        tile.querySelector('strong').textContent = record.name;
-        replaceElementIcon(tile, record.icon || 'snowflake');
         const state = airconStates.get(record.id) || newAirconState();
         applyApiState(record.last_desired_state, state);
         airconStates.set(record.id, state);
         renderAirconState(tile, state);
         attachDeviceBehavior(tile);
-        if (record.room && record.room !== '전체' && !getNames('room').includes(record.room)) {
+        if (!known && record.room && record.room !== '전체' && !getNames('room').includes(record.room)) {
           const room = document.createElement('button');
           room.type = 'button';
           room.dataset.roomTab = '';
@@ -2265,6 +2344,15 @@
         }
         refreshIcons();
         updateCounts();
+      };
+
+      // 다른 휴대폰·중앙 서버 명령이나 SSE 재연결 뒤에는 서버 기록으로 카드 상태를 다시 맞춘다.
+      const resyncAircons = async () => {
+        if (!supportedProfiles.length) return;
+        const response = await apiCall('/api/v1/devices');
+        const items = Array.isArray(response?.items) ? response.items : [];
+        items.filter((record) => pendingDeviceCommands.has(record.id)).forEach(rememberSkippedRecord);
+        restoreRegisteredAircons(items.filter((record) => !pendingDeviceCommands.has(record.id)));
       };
 
       const getNames = (kind) => {
@@ -2357,7 +2445,7 @@
         const deviceName = tile.querySelector('strong').textContent.trim();
         const row = document.createElement('section');
         row.className = 'scene-action-row';
-        row.dataset.sceneDevice = deviceName;
+        row.dataset.sceneDevice = sceneDeviceKey(tile);
         row.dataset.sceneDeviceKind = tile.dataset.deviceKind;
         row.dataset.sceneCapabilities = tile.dataset.deviceCapabilities || 'power';
         row.dataset.sceneH2 = String(isH2Tile(tile));
@@ -2383,11 +2471,18 @@
         options.className = 'scene-device-options';
         options.hidden = saved.action !== 'on';
         if (tile.dataset.deviceKind === 'aircon') {
-          options.append(
-            createSceneSelect('운전 모드', ['자동', '냉방', '제습', '송풍'].map((value) => ({ value, label: value })), saved.mode || '냉방', 'sceneMode'),
-            createSceneSelect('희망 온도', Array.from({ length: 14 }, (_, index) => ({ value: String(index + 17), label: (index + 17) + '°C' })), String(saved.temperature || 24), 'sceneTemperature'),
-            createSceneSelect('풍량', ['자동', '약풍', '중풍', '강풍'].map((value) => ({ value, label: value })), saved.fan || '강풍', 'sceneFan')
-          );
+          const modeField = createSceneSelect('운전 모드', ['자동', '냉방', '제습', '송풍'].map((value) => ({ value, label: value })), saved.mode || '냉방', 'sceneMode');
+          const temperatureField = createSceneSelect('희망 온도', Array.from({ length: 14 }, (_, index) => ({ value: String(index + 17), label: (index + 17) + '°C' })), String(saved.temperature || 24), 'sceneTemperature');
+          const fanField = createSceneSelect('풍량', ['자동', '약풍', '중풍', '강풍'].map((value) => ({ value, label: value })), saved.fan || '강풍', 'sceneFan');
+          // 냉방이 아닌 모드는 캡처된 모드 신호만 보내므로 온도·풍량 선택을 숨긴다.
+          const syncCoolingFields = () => {
+            const cooling = modeField.querySelector('select').value === '냉방';
+            temperatureField.hidden = !cooling;
+            fanField.hidden = !cooling;
+          };
+          modeField.querySelector('select').addEventListener('change', syncCoolingFields);
+          syncCoolingFields();
+          options.append(modeField, temperatureField, fanField);
         } else if ((tile.dataset.deviceCapabilities || '').includes('brightness')) {
           options.append(createSceneSelect('밝기', [30, 50, 70, 100].map((value) => ({ value: String(value), label: value + '%' })), String(saved.brightness || 70), 'sceneBrightness'));
         }
@@ -2418,8 +2513,8 @@
         [...root.querySelectorAll('.device-grid .device-tile')]
           .filter((tile) => tile.dataset.deviceKind !== 'sensor')
           .forEach((tile) => {
-            const deviceName = tile.querySelector('strong').textContent.trim();
-            list.append(renderSceneActionRow(tile, actions[deviceName] || { action: 'keep' }));
+            const deviceKey = sceneDeviceKey(tile);
+            list.append(renderSceneActionRow(tile, (Object.hasOwn(actions, deviceKey) && actions[deviceKey]) || { action: 'keep' }));
           });
         sceneEditor.showModal();
       };
@@ -2431,6 +2526,26 @@
       };
 
       root.querySelector('[data-close-scene-editor]').addEventListener('click', returnToSceneManager);
+
+      // 화면에 없는 기기(예: API 재시도 중이라 아직 ID로 연결되지 않은 에어컨)의 저장된 동작은 지우지 않고,
+      // 편집기에 보이는 기기 행만 덮어쓴다.
+      const collectSceneActions = (originalName) => {
+        const actions = { ...(sceneConfigs.get(originalName)?.actions || {}) };
+        root.querySelectorAll('[data-scene-device]').forEach((row) => {
+          const action = row.querySelector('[data-scene-action-choice]').value;
+          const config = { action };
+          if (action === 'on' && row.dataset.sceneDeviceKind === 'aircon') {
+            config.mode = row.querySelector('[data-scene-mode]').value;
+            if (config.mode === '냉방') {
+              config.temperature = Number(row.querySelector('[data-scene-temperature]').value);
+              config.fan = row.querySelector('[data-scene-fan]').value;
+            }
+          }
+          if (action === 'on' && row.querySelector('[data-scene-brightness]')) config.brightness = Number(row.querySelector('[data-scene-brightness]').value);
+          actions[row.dataset.sceneDevice] = config;
+        });
+        return actions;
+      };
 
       root.querySelector('[data-save-scene-editor]').addEventListener('click', () => {
         const nextName = root.querySelector('[data-scene-editor-name]').value.trim();
@@ -2444,20 +2559,8 @@
           return;
         }
 
-        const actions = {};
-        root.querySelectorAll('[data-scene-device]').forEach((row) => {
-          const action = row.querySelector('[data-scene-action-choice]').value;
-          const config = { action };
-          if (action === 'on' && row.dataset.sceneDeviceKind === 'aircon') {
-            config.mode = row.querySelector('[data-scene-mode]').value;
-            config.temperature = Number(row.querySelector('[data-scene-temperature]').value);
-            config.fan = row.querySelector('[data-scene-fan]').value;
-          }
-          if (action === 'on' && row.querySelector('[data-scene-brightness]')) config.brightness = Number(row.querySelector('[data-scene-brightness]').value);
-          actions[row.dataset.sceneDevice] = config;
-        });
-
-        const card = [...root.querySelectorAll('[data-scene-card]')].find((item) => item.dataset.name === sceneEditorState.originalName);
+        const actions = collectSceneActions(sceneEditorState.originalName);
+        const card =[...root.querySelectorAll('[data-scene-card]')].find((item) => item.dataset.name === sceneEditorState.originalName);
         if (nextName !== sceneEditorState.originalName) {
           sceneConfigs.delete(sceneEditorState.originalName);
           card.dataset.name = nextName;
@@ -2467,6 +2570,7 @@
         sceneConfigs.set(nextName, { icon: sceneEditorState.icon, actions });
         updateSceneCardSummary(card);
         updateCounts();
+        saveHomeLayout();
         announcer.textContent = nextName + ' 장면 저장 완료';
         returnToSceneManager();
       });
@@ -2522,6 +2626,7 @@
         }
         replaceElementIcon(tab, roomEditorState.icon);
         updateCounts();
+        saveHomeLayout();
         announcer.textContent = nextName + ' 공간 저장 완료';
         returnToRoomManager();
       });
@@ -2567,6 +2672,7 @@
               }
             }
             updateCounts();
+            saveHomeLayout();
             renderManagerList(kind);
             announcer.textContent = name + ' 삭제';
           });
@@ -2577,6 +2683,110 @@
         refreshIcons();
       };
 
+      const createSceneCard = (name, icon) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.sceneCard = '';
+        button.dataset.name = name;
+        button.dataset.icon = icon;
+        button.setAttribute('aria-pressed', 'false');
+        const sceneName = document.createElement('span');
+        sceneName.textContent = name;
+        const sceneStatus = document.createElement('small');
+        sceneStatus.dataset.sceneStatus = '';
+        button.append(createIconNode(icon), sceneName, sceneStatus);
+        return button;
+      };
+
+      const createRoomTab = (name, icon) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.roomTab = '';
+        button.dataset.icon = icon;
+        button.setAttribute('aria-pressed', 'false');
+        const roomName = document.createElement('span');
+        roomName.textContent = name;
+        button.append(createIconNode(icon), roomName);
+        return button;
+      };
+
+      // 장면·공간·집 이름은 아직 서버 저장소가 없으므로 이 브라우저에 보관한다. 저장소가 막혀도 화면은 기본값으로 동작한다.
+      const saveHomeLayout = () => {
+        const layout = {
+          homeName: root.querySelector('[data-home-title]').textContent.trim(),
+          rooms: [...root.querySelectorAll('[data-room-tab]:not([data-system-room])')]
+            .map((tab) => ({ name: tab.textContent.trim(), icon: tab.dataset.icon || 'sofa' })),
+          scenes: [...root.querySelectorAll('[data-scene-card]')].map((card) => ({
+            name: card.dataset.name,
+            icon: sceneConfigs.get(card.dataset.name)?.icon || card.dataset.icon || 'sparkles',
+            actions: sceneConfigs.get(card.dataset.name)?.actions || {}
+          }))
+        };
+        try {
+          window.localStorage.setItem(HOME_LAYOUT_KEY, JSON.stringify(layout));
+          return true;
+        } catch (_error) {
+          return false;
+        }
+      };
+
+      const sanitizeSceneAction = (value) => {
+        if (!value || typeof value !== 'object' || !['keep', 'on', 'off'].includes(value.action)) return null;
+        const config = { action: value.action };
+        if (value.action !== 'on') return config;
+        if (Object.hasOwn(modeToApi, value.mode)) config.mode = value.mode;
+        if (Number.isInteger(value.temperature) && value.temperature >= 17 && value.temperature <= 30) config.temperature = value.temperature;
+        if (Object.hasOwn(fanToApi, value.fan)) config.fan = value.fan;
+        if ([30, 50, 70, 100].includes(value.brightness)) config.brightness = value.brightness;
+        return config;
+      };
+
+      const restoreHomeLayout = () => {
+        let layout = null;
+        try {
+          layout = JSON.parse(window.localStorage.getItem(HOME_LAYOUT_KEY) || 'null');
+        } catch (_error) {
+          layout = null;
+        }
+        if (!layout || typeof layout !== 'object') return;
+        const validName = (value, maxLength) => (typeof value === 'string' && value.trim().length <= maxLength ? value.trim() : '');
+        const validIcon = (value, fallback) => (ICON_OPTIONS.some((item) => item.name === value) ? value : fallback);
+        const homeName = validName(layout.homeName, 16);
+        if (homeName) {
+          root.querySelector('[data-home-title]').textContent = homeName;
+          root.querySelector('[data-more-home-name]').textContent = homeName;
+        }
+        if (Array.isArray(layout.rooms)) {
+          const seen = new Set();
+          root.querySelectorAll('[data-room-tab]:not([data-system-room])').forEach((tab) => tab.remove());
+          layout.rooms.forEach((room) => {
+            const name = validName(room?.name, 12);
+            if (!name || name === '전체' || seen.has(name)) return;
+            seen.add(name);
+            root.querySelector('.room-tabs').append(createRoomTab(name, validIcon(room.icon, 'sofa')));
+          });
+        }
+        if (Array.isArray(layout.scenes)) {
+          root.querySelectorAll('[data-scene-card]').forEach((card) => card.remove());
+          sceneConfigs.clear();
+          layout.scenes.forEach((scene) => {
+            const name = validName(scene?.name, 12);
+            if (!name || sceneConfigs.has(name)) return;
+            const icon = validIcon(scene.icon, 'sparkles');
+            const actions = {};
+            Object.entries(scene.actions && typeof scene.actions === 'object' ? scene.actions : {}).forEach(([deviceKey, value]) => {
+              const config = sanitizeSceneAction(value);
+              if (config && deviceKey && deviceKey !== '__proto__') actions[deviceKey] = config;
+            });
+            sceneConfigs.set(name, { icon, actions });
+            root.querySelector('.scene-list').append(createSceneCard(name, icon));
+          });
+        }
+        updateCounts();
+        refreshIcons();
+      };
+
+      restoreHomeLayout();
       root.querySelectorAll('[data-scene-card]').forEach(attachSceneBehavior);
       root.querySelectorAll('[data-room-tab]').forEach(attachRoomBehavior);
 
@@ -2618,15 +2828,25 @@
         }
         root.querySelector('[data-home-title]').textContent = nextName;
         root.querySelector('[data-more-home-name]').textContent = nextName;
+        saveHomeLayout();
         homeNameDialog.close();
         announcer.textContent = '집 이름이 ' + nextName + '(으)로 변경됨';
       });
 
-      root.querySelector('[data-refresh-system]').addEventListener('click', async () => {
+      // 시작 때 API 연결이 실패했다면 다시 확인이 에어컨 정보를 다시 불러온다. 키오스크는 페이지를 새로고침할 수 없다.
+      const refreshSystemStatus = async () => {
         const lastCheck = root.querySelector('[data-system-last-check]');
         lastCheck.textContent = '확인 중…';
         try {
           await apiCall('/health');
+          if (!activeDeviceId) {
+            const ready = await bootstrapApi();
+            lastCheck.textContent = ready ? '방금 확인' : '확인 실패';
+            announcer.textContent = ready ? '연결 상태 확인 완료' : '에어컨 연결 확인 실패';
+            return;
+          }
+          transmitterInfo = await apiCall('/api/v1/ir/transmitter');
+          await resyncAircons();
           lastCheck.textContent = '방금 확인';
           announcer.textContent = '연결 상태 확인 완료';
           setApiStatus(transmitterInfo.hardware_output === false ? 'Mock IR 연결 · 실제 송신 없음' : 'IR 송신기 연결됨');
@@ -2634,7 +2854,9 @@
           lastCheck.textContent = '확인 실패';
           setApiStatus(error.message, 'error');
         }
-      });
+      };
+
+      root.querySelector('[data-refresh-system]').addEventListener('click', () => refreshSystemStatus());
 
       const addManagerItem = (kind, form) => {
         const error = root.querySelector(`[data-manager-error="${kind}"]`);
@@ -2647,35 +2869,18 @@
           }
           error.textContent = '';
           if (kind === 'scene') {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.dataset.sceneCard = '';
-            button.dataset.name = name;
-            button.dataset.icon = managerDraftIcons.scene;
-            button.setAttribute('aria-pressed', 'false');
-            button.append(createIconNode(managerDraftIcons.scene));
-            const sceneName = document.createElement('span');
-            const sceneStatus = document.createElement('small');
-            sceneStatus.dataset.sceneStatus = '';
-            button.append(sceneName, sceneStatus);
-            button.querySelector('span').textContent = name;
+            const button = createSceneCard(name, managerDraftIcons.scene);
             sceneConfigs.set(name, { icon: managerDraftIcons.scene, actions: {} });
             root.querySelector('.scene-list').append(button);
             attachSceneBehavior(button);
           } else {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.dataset.roomTab = '';
-            button.dataset.icon = managerDraftIcons.room;
-            button.setAttribute('aria-pressed', 'false');
-            const roomName = document.createElement('span');
-            roomName.textContent = name;
-            button.append(createIconNode(managerDraftIcons.room), roomName);
+            const button = createRoomTab(name, managerDraftIcons.room);
             root.querySelector('.room-tabs').append(button);
             attachRoomBehavior(button);
           }
           input.value = '';
           updateCounts();
+          saveHomeLayout();
           renderManagerList(kind);
           refreshIcons();
           announcer.textContent = name + ' 추가';
@@ -2730,7 +2935,13 @@
       root.querySelectorAll('[data-aircon-feature]').forEach((button) => {
         button.addEventListener('click', () => {
           const key = button.dataset.airconFeature;
-          const commandIds = { economy: 'economy', turbo: 'turbo', led: 'led_toggle' };
+          if (key === 'economy') {
+            // 경제운전은 켜고 끄는 표시가 아니라, 냉방 중 현재 온도·자동풍으로 다시 보내는 1회 명령이다.
+            // 바뀐 온도·풍량은 서버 응답(last_desired_state)으로만 반영한다.
+            handleAirconChange({}, { commandId: 'economy' });
+            return;
+          }
+          const commandIds = { turbo: 'turbo', led: 'led_toggle' };
           const commandId = key === 'swing'
             ? (airconState.swing ? 'airflow_fix' : 'swing_toggle')
             : commandIds[key];
@@ -3030,6 +3241,14 @@
       const modelRequestForm = root.querySelector('[data-model-request-form]');
       const modelRequestError = root.querySelector('[data-model-request-error]');
 
+      // 비어 있는 선택 파일 입력도 브라우저는 filename="" 파트로 보내므로, 서버 검증 전에 빼 둔다.
+      const dropEmptyFileParts = (formData) => {
+        [...formData.entries()].forEach(([key, value]) => {
+          if (value instanceof File && !value.size && !value.name) formData.delete(key);
+        });
+        return formData;
+      };
+
       root.querySelector('[data-open-model-request]').addEventListener('click', () => {
         wizard.close();
         modelRequestForm.reset();
@@ -3048,7 +3267,7 @@
         submitButton.disabled = true;
         modelRequestError.textContent = '사진과 모델 정보를 저장 중…';
         try {
-          const formData = new FormData(modelRequestForm);
+          const formData = dropEmptyFileParts(new FormData(modelRequestForm));
           formData.append('device_type', 'air_conditioner');
           const result = await apiCall('/api/v1/device-requests', { method: 'POST', body: formData });
           modelRequestDialog.close();
@@ -3062,7 +3281,23 @@
         }
       });
 
-      const bootstrapApi = async () => {
+      let bootstrapPromise = null;
+      let bootstrapRetryTimer = null;
+      let bootstrapFailures = 0;
+
+      const wait = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+
+      // 키오스크는 새로고침할 수 없으므로 시작 때 API 연결이 실패하면 점점 긴 간격으로 다시 시도한다.
+      const scheduleBootstrapRetry = () => {
+        window.clearTimeout(bootstrapRetryTimer);
+        const delay = Math.min(60000, 5000 * 2 ** bootstrapFailures);
+        bootstrapFailures = Math.min(bootstrapFailures + 1, 4);
+        bootstrapRetryTimer = window.setTimeout(() => {
+          if (!activeDeviceId) bootstrapApi();
+        }, delay);
+      };
+
+      const runBootstrap = async () => {
         try {
           const [profiles, transmitter, registered] = await Promise.all([
             apiCall('/api/v1/device-profiles'),
@@ -3074,11 +3309,20 @@
           let devices = registered.items;
           let primary = devices.find((device) => device.profile_id === PROFILE_ID);
           if (!primary) {
-            primary = await apiCall('/api/v1/devices', {
+            // 첫 설치 때 키오스크와 휴대폰이 동시에 열어도 기본 에어컨을 두 번 만들 가능성을 줄인다.
+            await wait(300 + Math.random() * 1200);
+            devices = (await apiCall('/api/v1/devices')).items;
+            primary = devices.find((device) => device.profile_id === PROFILE_ID);
+          }
+          if (!primary) {
+            const created = await apiCall('/api/v1/devices', {
               method: 'POST',
               body: JSON.stringify({ name: '에어컨', room: '거실', profile_id: PROFILE_ID, icon: 'snowflake' })
             });
-            devices = [...devices, primary];
+            // 목록은 생성 순서라, 다른 화면이 동시에 만들었더라도 모든 화면이 같은 첫 기기를 기본으로 고른다.
+            devices = await apiCall('/api/v1/devices').then((response) => response.items).catch(() => [...devices, created]);
+            if (!devices.some((device) => device.id === created.id)) devices = [...devices, created];
+            primary = devices.find((device) => device.profile_id === PROFILE_ID);
           }
           activeDeviceId = primary.id;
           restoreRegisteredAircons(devices);
@@ -3086,10 +3330,49 @@
           populateProfileSelect();
           const isMock = transmitterInfo.hardware_output === false;
           setApiStatus(isMock ? 'Mock IR 연결 · 실제 송신 없음' : 'IR 송신기 연결됨');
+          bootstrapFailures = 0;
+          window.clearTimeout(bootstrapRetryTimer);
+          return true;
         } catch (error) {
           setApiStatus('API 연결 실패 · ' + error.message, 'error');
+          root.querySelectorAll('.device-grid .device-tile[data-device-kind="aircon"]:not([data-device-id])').forEach((tile) => {
+            tile.setAttribute('aria-pressed', 'false');
+            tile.querySelector('small').textContent = '연결 확인 필요';
+          });
+          scheduleBootstrapRetry();
+          return false;
         }
       };
+
+      // 다시 확인, SSE 재연결, 재시도 타이머가 겹쳐도 시작 요청은 한 번만 진행한다.
+      const bootstrapApi = () => {
+        if (!bootstrapPromise) bootstrapPromise = runBootstrap().finally(() => { bootstrapPromise = null; });
+        return bootstrapPromise;
+      };
+
+      // 다른 화면·휴대폰 앱·중앙 서버가 보낸 명령도 SSE device.commanded로 받아 카드 상태를 맞춘다.
+      const applyLiveDeviceEvent = (event) => {
+        if (event?.type === 'device.commanded') {
+          const record = event.data?.device;
+          if (!record?.id || !activeDeviceId) return;
+          if (!airconStates.has(record.id)) {
+            resyncAircons().catch(() => {});
+            return;
+          }
+          if (pendingDeviceCommands.has(record.id)) {
+            rememberSkippedRecord(record);
+            return;
+          }
+          upsertAirconTile(record);
+          renderDevicesView(currentInventoryRoom);
+          return;
+        }
+        if (event?.type !== 'stream.ready') return;
+        if (!activeDeviceId) bootstrapApi();
+        else resyncAircons().catch(() => {});
+      };
+
+      window.addEventListener('smart-home:event', (event) => applyLiveDeviceEvent(event.detail));
 
       root.querySelectorAll('.device-grid .device-tile').forEach(attachDeviceBehavior);
       renderDeviceRoomFilters();
@@ -3098,8 +3381,8 @@
       await bootstrapApi();
     })();
   </script>
-<script src="/static/sensors.js?v=20260912-1"></script>
-<script src="/static/automations.js?v=20260908-1"></script>
+<script src="/static/sensors.js?v=20261013-1"></script>
+<script src="/static/automations.js?v=20261013-1"></script>
 </div>
 </body>
 </html>

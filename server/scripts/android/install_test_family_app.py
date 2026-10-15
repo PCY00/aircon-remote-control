@@ -21,23 +21,35 @@ def main():
     parser.add_argument(
         "--release",
         action="store_true",
-        help="With --production-only, install the verified release APK",
+        help="Accepted for compatibility; the verified release APK is already the default",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Install the debuggable build instead; it replaces the release app in place",
     )
     args = parser.parse_args()
     if args.release and not args.production_only:
         parser.error("--release requires --production-only")
+    if args.debug and args.release:
+        parser.error("--debug contradicts --release")
     root = Path("tmp/family-app-build")
     hashes = json.loads((root / "build.json").read_text())
     for name, expected in hashes.items():
         if hashlib.sha256((root / name).read_bytes()).hexdigest() != expected:
             raise RuntimeError("Built APK changed; inspect")
-    production_name = "family-release.apk" if args.release else "family-debug.apk"
+    production_name = "family-debug.apk" if args.debug else "family-release.apk"
+    if args.debug:
+        print(
+            "WARNING=debuggable build replaces the installed release app with the same signer "
+            "and version code; run-as can then read its stored sign-in data"
+        )
     selected = (
         [production_name]
         if args.production_only
         else [
             name
-            for name in ("family-debug.apk", "family-fixture.apk", "family-test.apk")
+            for name in (production_name, "family-fixture.apk", "family-test.apk")
             if name in hashes
         ]
     )
@@ -117,7 +129,7 @@ def main():
             raise RuntimeError("Fixture capture missing")
         (images / (name + ".png")).write_bytes(result.stdout)
         record.log("ACTUAL_ANDROID_UI_CAPTURE=" + name + ".png IDENTITY=fictional_fixture")
-    if args.production_only or "family-debug.apk" in hashes:
+    if args.production_only or production_name in hashes:
         try:
             run(("shell", "input", "keyevent", "224"), "screen on [own app capture]")
             run(
@@ -127,18 +139,11 @@ def main():
             import time
 
             time.sleep(2)
-            run(
-                ("shell", "uiautomator", "dump", "/data/local/tmp/family-production-ui.xml"),
-                "uiautomator dump [own production app startup verification]",
+            record.log(
+                "$ adb [verified A50] exec-out uiautomator dump "
+                "[own production app startup verification; read privately, then removed]"
             )
-            ui = adb.run(
-                "-s",
-                endpoint,
-                "exec-out",
-                "cat",
-                "/data/local/tmp/family-production-ui.xml",
-                timeout=15,
-            )
+            ui = adb.dump_ui(endpoint, "family-production-ui")
             if ui.returncode or not all(
                 value.encode() in ui.stdout
                 for value in ("com.aircon.family", "우리 집을 함께", "Google로 계속하기")

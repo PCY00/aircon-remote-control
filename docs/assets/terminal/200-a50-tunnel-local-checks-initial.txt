@@ -5,7 +5,7 @@ $ [REDACTED_LOCAL_PATH]\.venv\Scripts\python.exe -m pytest tests/test_a50_public
 ================================== FAILURES ===================================
 ___________ test_stop_does_not_count_and_repeated_failures_disable ____________
 
-tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_stop_does_not_count_and_r0')
+tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-21/test_stop_does_not_count_and_r0')
 
     def test_stop_does_not_count_and_repeated_failures_disable(tmp_path):
         state, service = tmp_path/'state', tmp_path/'service'
@@ -20,8 +20,8 @@ tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-s
 tests\test_a50_public_tunnel.py:32:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-state = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_stop_does_not_count_and_r0/state')
-service = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_stop_does_not_count_and_r0/service')
+state = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-21/test_stop_does_not_count_and_r0/state')
+service = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-21/test_stop_does_not_count_and_r0/service')
 
     def record_failure(state: Path, service: Path, *, status: int, sig: int, now: float) -> int:
         if status == 0 or sig in (2, 15):
@@ -51,7 +51,7 @@ TUNNEL_ABNORMAL_EXIT attempt=3/5
 TUNNEL_ABNORMAL_EXIT attempt=4/5
 __________________ test_expired_failures_and_corrupt_history __________________
 
-tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_expired_failures_and_corr0')
+tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-21/test_expired_failures_and_corr0')
 
     def test_expired_failures_and_corrupt_history(tmp_path):
         state, service = tmp_path/'state', tmp_path/'service'
@@ -66,8 +66,8 @@ tmp_path = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-s
 tests\test_a50_public_tunnel.py:43:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-state = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_expired_failures_and_corr0/state')
-service = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-21/test_expired_failures_and_corr0/service')
+state = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-21/test_expired_failures_and_corr0/state')
+service = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-21/test_expired_failures_and_corr0/service')
 
     def record_failure(state: Path, service: Path, *, status: int, sig: int, now: float) -> int:
         if status == 0 or sig in (2, 15):

@@ -9,7 +9,7 @@ ______ test_first_apply_does_not_start_service_or_modify_source_history _______
 
 
 
-target = (WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-30/test_first_apply_does_not_star0'), {'files...s\\aircon-central-agent\\releases\\a708bac1e869c120\\agent.py']], <function target.<locals>.run at 0x0000026098F660C0>)
+target = (WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-30/test_first_apply_does_not_star0'), {'files...s\\aircon-central-agent\\releases\\a708bac1e869c120\\agent.py']], <function target.<locals>.run at [REDACTED_MEMORY_ADDRESS]>)
 
 
 
@@ -35,9 +35,9 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
 
 
-self = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-30/test_first_apply_does_not_star0/services/aircon-central-agent/current.new')
+self = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-30/test_first_apply_does_not_star0/services/aircon-central-agent/current.new')
 
-target = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-scp-ssh/pytest-30/test_first_apply_does_not_star0/services/aircon-central-agent/releases/a708bac1e869c120')
+target = WindowsPath('[REDACTED_LOCAL_PATH]/AppData/Local/Temp/pytest-of-[REDACTED_USER]/pytest-30/test_first_apply_does_not_star0/services/aircon-central-agent/releases/a708bac1e869c120')
 
 target_is_directory = True
 
@@ -59,7 +59,7 @@ target_is_directory = True
 
 >       os.symlink(target, self, target_is_directory)
 
-E       OSError: [WinError 1314] Ŭ���̾�Ʈ�� �ʿ��� ������ ������ ���� �ʽ��ϴ�: 'C:\\Users\\kksp1\\AppData\\Local\\Temp\\pytest-of-scp-ssh\\pytest-30\\test_first_apply_does_not_star0\\services\\aircon-central-agent\\releases\\a708bac1e869c120' -> 'C:\\Users\\kksp1\\AppData\\Local\\Temp\\pytest-of-scp-ssh\\pytest-30\\test_first_apply_does_not_star0\\services\\aircon-central-agent\\current.new'
+E       OSError: [WinError 1314] Ŭ���̾�Ʈ�� �ʿ��� ������ ������ ���� �ʽ��ϴ�: '[REDACTED_LOCAL_PATH]\\AppData\\Local\\Temp\\pytest-of-[REDACTED_USER]\\pytest-30\\test_first_apply_does_not_star0\\services\\aircon-central-agent\\releases\\a708bac1e869c120' -> '[REDACTED_LOCAL_PATH]\\AppData\\Local\\Temp\\pytest-of-[REDACTED_USER]\\pytest-30\\test_first_apply_does_not_star0\\services\\aircon-central-agent\\current.new'
 
 
 

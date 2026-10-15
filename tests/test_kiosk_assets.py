@@ -12,7 +12,10 @@ def test_kiosk_launcher_waits_for_display_and_dashboard() -> None:
     assert "/usr/bin/tailscale ip -4" in launcher
     assert 'health_url="http://${tailscale_ipv4}:${service_port}/health"' in launcher
     assert '"${health_url}"' in launcher
-    assert "/usr/bin/cage -d -s" in launcher
+    # No VT switching (-s): the kiosk session must not be escapable from the console.
+    assert "/usr/bin/cage -d -- /usr/bin/chromium" in launcher
+    cage_line = next(line for line in launcher.splitlines() if "/usr/bin/cage" in line)
+    assert " -s" not in cage_line
     assert "--kiosk" in launcher
     assert "--ozone-platform=wayland" in launcher
     assert 'cache_dir="${project_root}/runtime/kiosk/cache"' in launcher

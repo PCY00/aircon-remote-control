@@ -159,8 +159,16 @@ class Diagram:
             dict(type="arrow", points=points, color=COLORS[color], dashed=dashed, reverse=reverse)
         )
         if source or target:
+            # reverse=True is drawn with two heads: data also flows target -> source.
             self.links.append(
-                dict(source=source, target=target, color=color, dashed=dashed, points=points)
+                dict(
+                    source=source,
+                    target=target,
+                    color=color,
+                    dashed=dashed,
+                    reverse=reverse,
+                    points=points,
+                )
             )
 
     def label(self, x, y, value, *, color="muted", size=None):
@@ -360,6 +368,7 @@ def poster():
         ["HTTP v1 전송 요청 → 설치 토큰별 전달", "집 권한과 알림 대상은 A50이 결정"],
         color="teal",
         sources=["server/services/central-server/central_server/fcm.py"],
+        external=True,
     )
     d.node(
         "android-container",
@@ -986,6 +995,7 @@ def overview():
         color="teal",
         title_size=17,
         sources=["server/services/central-server/central_server/fcm.py"],
+        external=True,
     )
     d.arrow([(887, 247), (911, 247)], color="teal", source="central", target="fcm")
     d.arrow([(990, 247), (1010, 247)], color="teal", source="fcm", target="app")

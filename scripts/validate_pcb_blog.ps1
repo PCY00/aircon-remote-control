@@ -28,7 +28,8 @@ $imageLinks = 0
 $issues = [System.Collections.Generic.List[string]]::new()
 
 foreach ($mdPath in $checkedFiles) {
-    $label = [System.IO.Path]::GetRelativePath($repoRoot, $mdPath)
+    # Path.GetRelativePath needs PowerShell 7; every checked path is under $repoRoot.
+    $label = $mdPath.Substring($repoRoot.TrimEnd('\', '/').Length).TrimStart('\', '/').Replace('\', '/')
     if (-not (Test-Path -LiteralPath $mdPath -PathType Leaf)) {
         $issues.Add("MISSING_DOCUMENT=$label")
         continue

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Callable
 from threading import RLock
 
@@ -10,7 +11,13 @@ from app.devices.catalog import DeviceProfileCatalog
 from app.devices.commands import DeviceCommandResolver
 from app.devices.store import RegisteredDeviceStore
 from app.devices.transport import DeviceTransport
-from app.integrations.mqtt import H2_IR_MODEL, SensorBridge, ZigbeeGatewayUnavailableError
+from app.integrations.mqtt import (
+    H2_IR_MODEL,
+    H2_RESULT_TIMEOUT_SECONDS,
+    SensorBridge,
+    ZigbeeGatewayRequestError,
+    ZigbeeGatewayUnavailableError,
+)
 
 H2_AIRCON_PROFILE = "air_conditioner/Carrier/CS-A061GS"
 
@@ -29,12 +36,14 @@ class DeviceService:
         transport: DeviceTransport,
         zigbee_bridge: SensorBridge | None = None,
         on_update: Callable[[dict[str, object]], None] | None = None,
+        monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
         self._catalog = catalog
         self._store = store
         self._resolver = resolver
         self._transport = transport
         self._zigbee_bridge = zigbee_bridge
+        self._monotonic = monotonic
         self._command_lock = RLock()
         self._listeners: list[Callable[[dict[str, object]], None]] = []
         if on_update is not None:
@@ -108,14 +117,38 @@ class DeviceService:
         with self._command_lock:
             device = self._store.get(device_id)
             profile_id = str(device["profile_id"])
-            command = self._resolver.resolve(profile_id, request)
+            current_state = device.get("last_desired_state")
+            command = self._resolver.resolve(
+                profile_id, request,
+                current_state=current_state if isinstance(current_state, dict) else None,
+            )
             binding = device.get("zigbee_binding")
             if isinstance(binding, dict) and binding.get("type") == "h2_ir":
                 if self._zigbee_bridge is None:
                     raise ZigbeeGatewayUnavailableError("Zigbee bridge is unavailable")
+                started = self._monotonic()
                 transmission = self._zigbee_bridge.send_h2_command(
                     str(binding["friendly_name"]), command
                 )
+                follow_up = command.get("follow_up_command")
+                if isinstance(follow_up, dict):
+                    # The H2 ECONOMY request carries no setpoint; restore the current
+                    # cooling state as the remote's trailing state frames do. Both
+                    # steps share one result budget so callers still wait <= ~18 s.
+                    remaining = max(
+                        1.0, H2_RESULT_TIMEOUT_SECONDS - (self._monotonic() - started)
+                    )
+                    try:
+                        follow_up_transmission = self._zigbee_bridge.send_h2_command(
+                            str(binding["friendly_name"]), follow_up,
+                            timeout_seconds=remaining,
+                        )
+                    except (ZigbeeGatewayRequestError, ZigbeeGatewayUnavailableError) as exc:
+                        raise ZigbeeGatewayRequestError(
+                            f"{command['command_id']} was sent but restoring the cooling "
+                            f"state failed: {exc}"
+                        ) from exc
+                    transmission = {**transmission, "follow_up": follow_up_transmission}
             else:
                 transmission = self._transport.send(
                     device_id=device_id,

@@ -57,3 +57,12 @@ android/**/local.properties
 android/**/private-build.json
 android/**/google-services.json
 android/**/test-fixture.json
+
+# Logs, local databases, signing keys and built app packages
+*.log
+*.sqlite3
+*.db
+*.jks
+*.keystore
+*.apk
+*.aab

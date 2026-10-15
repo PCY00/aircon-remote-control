@@ -64,10 +64,12 @@ def main():
     hashes = json.loads((root / "build.json").read_text())
     release_hash = json.loads((original / "build.json").read_text())["family-release.apk"]
     apk = root / "family-production-test.apk"
-    assert hashlib.sha256(apk.read_bytes()).hexdigest() == hashes[apk.name]
-    assert (
-        hashlib.sha256((original / "family-release.apk").read_bytes()).hexdigest() == release_hash
-    )
+    if hashlib.sha256(apk.read_bytes()).hexdigest() != hashes[apk.name]:
+        raise RuntimeError("Smoke test APK changed since build; no phone action taken.")
+    if (
+        hashlib.sha256((original / "family-release.apk").read_bytes()).hexdigest() != release_hash
+    ):
+        raise RuntimeError("Delivered release APK changed since build; no phone action taken.")
     private = Path(".deploy/family-app")
     tools = json.loads((private / "tools.json").read_text())
     signing = json.loads((private / "signing.json").read_text())
@@ -91,7 +93,8 @@ def main():
         for line in signed.splitlines()
         if "certificate SHA-256 digest:" in line
     )
-    assert actual.lower() == signing["sha256"].replace(":", "").lower()
+    if actual.lower() != signing["sha256"].replace(":", "").lower():
+        raise RuntimeError("Smoke test APK signing certificate differs; no phone action taken.")
     manifest = subprocess.run(
         [
             str(buildtools / "aapt2.exe"),
@@ -106,8 +109,12 @@ def main():
         encoding="utf-8",
         check=True,
     ).stdout
-    assert "android:targetPackage" in manifest and 'com.aircon.family"' in manifest
-    assert "com.aircon.family.test" in manifest
+    if (
+        "android:targetPackage" not in manifest
+        or 'com.aircon.family"' not in manifest
+        or "com.aircon.family.test" not in manifest
+    ):
+        raise RuntimeError("Smoke test APK does not target the own app; no phone action taken.")
     print("SMOKE_APK_HASH_SIGNATURE_AND_EXACT_TARGET=PASS DELIVERED_RELEASE_HASH_UNCHANGED=TRUE")
     if not args.apply:
         print("PREVIEW_ONLY=NO_DEVICE_MUTATION")
@@ -147,9 +154,11 @@ def main():
         for line in located.stdout.decode().splitlines()
         if line.startswith("package:")
     ]
-    assert located.returncode == 0 and len(paths) == 1
+    if located.returncode or len(paths) != 1:
+        raise RuntimeError("Installed release APK path unavailable; no test APK installed.")
     digest = adb.run("-s", endpoint, "exec-out", "sha256sum", paths[0], timeout=20)
-    assert digest.returncode == 0 and digest.stdout.decode().split()[0] == release_hash
+    if digest.returncode or digest.stdout.decode().split()[:1] != [release_hash]:
+        raise RuntimeError("Installed release APK differs from delivery; no test APK installed.")
     record.log("INSTALLED_PRODUCTION_APK_EQUALS_PREVIOUSLY_DELIVERED_RELEASE=PASS")
     run(
         ["install", "-r", str(apk.resolve())],
@@ -159,9 +168,12 @@ def main():
     run(["shell", "input", "keyevent", "224"], "wake own A50 client for native test")
     if args.claim_file:
         claim = json.loads(args.claim_file.read_text(encoding="utf-8"))
-        assert set(claim) == {"claim_code", "hub_id"}
-        assert re.fullmatch(r"claim_[A-Za-z0-9_-]{43}", claim["claim_code"])
-        assert re.fullmatch(r"[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}", claim["hub_id"])
+        if (
+            set(claim) != {"claim_code", "hub_id"}
+            or not re.fullmatch(r"claim_[A-Za-z0-9_-]{43}", claim["claim_code"])
+            or not re.fullmatch(r"[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}", claim["hub_id"])
+        ):
+            raise RuntimeError("Claim file is not a valid one-use claim; not copied to phone.")
         target = "/sdcard/Android/data/com.aircon.family/files/pairing"
         run(["shell", "mkdir", "-p", target], "prepare own test pairing directory")
         run(
@@ -203,12 +215,14 @@ def main():
     captures_required = not args.hub_test or args.hub_test == "observeActualHubFCM"
     capture_root = ""
     if captures_required:
-        assert roots and len(set(roots)) == 1
+        if not roots or len(set(roots)) != 1:
+            raise RuntimeError("Native test did not report one capture location.")
         capture_root = roots[0].decode("utf-8")
-        assert re.fullmatch(
+        if not re.fullmatch(
             r"/storage/emulated/\d+/Android/data/com\.aircon\.family/files/test-captures",
             capture_root,
-        )
+        ):
+            raise RuntimeError("Unexpected capture location; no capture read.")
     captures = (
         (
             "17-a50-redesigned-home",
@@ -247,7 +261,8 @@ def main():
             capture_root + "/" + name + ".png",
             timeout=15,
         )
-        assert result.returncode == 0 and result.stdout.startswith(b"\x89PNG")
+        if result.returncode or not result.stdout.startswith(b"\x89PNG"):
+            raise RuntimeError("Native test capture missing or invalid.")
         exported = name + ("-" + args.capture_suffix if args.capture_suffix else "") + ".png"
         (images / exported).write_bytes(result.stdout)
         record.log(
@@ -262,19 +277,19 @@ def main():
         "reopen original release APK [verify saved Google session and HTTPS origin]",
     )
     time.sleep(2)
-    run(
-        ["shell", "uiautomator", "dump", "/data/local/tmp/family-post-restart.xml"],
-        "read own client UI after restart",
+    record.log(
+        "$ adb [verified A50] exec-out uiautomator dump "
+        "[read own client UI after restart privately; dump removed from the phone]"
     )
-    result = adb.run(
-        "-s", endpoint, "exec-out", "cat", "/data/local/tmp/family-post-restart.xml", timeout=15
-    )
-    assert result.returncode == 0
+    result = adb.dump_ui(endpoint, "family-post-restart")
+    if result.returncode:
+        raise RuntimeError("Own client UI could not be read after restart.")
     tree = ET.fromstring(result.stdout)
     texts = {
         node.get("text") for node in tree.iter("node") if node.get("package") == "com.aircon.family"
     }
-    assert args.home_name in texts and "새 집 만들기" in texts
+    if args.home_name not in texts or "새 집 만들기" not in texts:
+        raise RuntimeError("Saved session or test home missing after client restart.")
     record.log(
         "SIGNED_RELEASE_REAL_LOGIN_HTTPS_HOME_AND_CLIENT_RESTART=PASS TEST="
         + str(args.push_test or args.hub_test or args.ui_test or "household_ui")

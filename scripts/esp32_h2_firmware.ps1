@@ -88,6 +88,21 @@ function Invoke-Idf {
 
 Push-Location $projectPath
 try {
+    # An existing sdkconfig wins over sdkconfig.defaults for every option it
+    # lists, so regenerate the staging sdkconfig whenever the copied defaults
+    # (or partition table) change. The hash is stored only in staging.
+    $defaultsHashPath = "defaults.sha256"
+    $defaultsHash = (@("sdkconfig.defaults", "partitions.csv") |
+        Where-Object { Test-Path -LiteralPath $_ } |
+        ForEach-Object { "$_=$((Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash)" }) -join ";"
+    $storedHash = ""
+    if (Test-Path -LiteralPath $defaultsHashPath) {
+        $storedHash = "$(Get-Content -LiteralPath $defaultsHashPath -Raw)".Trim()
+    }
+    $defaultsChanged = $storedHash -ne $defaultsHash
+    if ($defaultsChanged) {
+        Remove-Item -LiteralPath "sdkconfig", "sdkconfig.old" -ErrorAction SilentlyContinue
+    }
     if (-not (Test-Path -LiteralPath "sdkconfig") -or
         ($Variant -eq "zigbee-ir-node" -and
          (-not (Select-String -LiteralPath "sdkconfig" -Pattern '^CONFIG_ZB_ENABLED=y$' -Quiet) -or
@@ -95,6 +110,9 @@ try {
         # set-target regenerates only this checkout's ASCII staging directory.
         # It does not touch repository sources or the physical board.
         Invoke-Idf -Arguments @("set-target", "esp32h2")
+    }
+    if ($defaultsChanged) {
+        Set-Content -LiteralPath $defaultsHashPath -Value $defaultsHash -Encoding ascii
     }
 
     switch ($Action) {

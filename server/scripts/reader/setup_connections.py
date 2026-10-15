@@ -21,8 +21,9 @@ def save_new(paths_and_values):
 
 
 def known_connection(args):
+    # A user starting with "-" would be read by ssh as an option; require a plain login name.
     if not re.fullmatch(r"[A-Za-z0-9_.:-]+", args.host) or not re.fullmatch(
-        r"[A-Za-z0-9_-]+", args.user
+        r"[A-Za-z0-9_][A-Za-z0-9_.-]*", args.user
     ):
         raise ValueError("Use a host and user you confirmed on your own device")
     if not 1 <= args.port <= 65535:
@@ -69,24 +70,40 @@ def main():
         targets.append(directory / "adb.json")
     if any(path.exists() for path in targets):
         parser.error("Settings already exist; keep them. No connection or settings changed")
-    connection = known_connection(args)
+    # Subprocess errors print the full command, which holds the private address
+    # and the local tool path, so report only a generic message.
+    try:
+        connection = known_connection(args)
+    except (OSError, subprocess.SubprocessError):
+        parser.error("ssh-keygen could not read the known_hosts file")
     files = [(targets[0], connection)]
     if args.device == "phone":
-        address, port = args.endpoint.rsplit(":", 1)
-        if str(ipaddress.IPv4Address(address)) != args.host or not 1 <= int(port) <= 65535:
+        try:
+            address, port = args.endpoint.rsplit(":", 1)
+            valid_endpoint = (
+                str(ipaddress.IPv4Address(address)) == args.host and 1 <= int(port) <= 65535
+            )
+        except ValueError:
+            valid_endpoint = False
+        if not valid_endpoint:
             parser.error("Use the connection port and the same phone Wi-Fi address")
         adb = args.adb.resolve()
         if not adb.is_file():
             parser.error("ADB file not found")
         values = []
-        for prop in ["ro.serialno", "ro.product.model"]:
-            result = subprocess.run(
-                [str(adb), "-s", args.endpoint, "shell", "getprop", prop],
-                capture_output=True,
-                timeout=10,
-                check=True,
+        try:
+            for prop in ["ro.serialno", "ro.product.model"]:
+                result = subprocess.run(
+                    [str(adb), "-s", args.endpoint, "shell", "getprop", prop],
+                    capture_output=True,
+                    timeout=10,
+                    check=True,
+                )
+                values.append(result.stdout.decode("utf-8").strip())
+        except (OSError, UnicodeDecodeError, subprocess.SubprocessError):
+            parser.error(
+                "ADB could not read the phone; reconnect wireless debugging and use the new port"
             )
-            values.append(result.stdout.decode("utf-8").strip())
         serial, model = values
         if not re.fullmatch(r"[A-Za-z0-9_-]{4,128}", serial) or model != args.model:
             parser.error("The connected device does not match the model you selected")

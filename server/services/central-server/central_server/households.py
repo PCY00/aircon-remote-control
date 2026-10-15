@@ -22,8 +22,8 @@ class Identity:
 
 
 class APIError(Exception):
-    def __init__(self, code: str, status: int):
-        self.code, self.status = code, status
+    def __init__(self, code: str, status: int, *, retry_after: int | None = None):
+        self.code, self.status, self.retry_after = code, status, retry_after
         super().__init__(code)
 
 
@@ -33,6 +33,11 @@ def identifier() -> str:
 
 def token_digest(kind: str, value: str) -> str:
     return hashlib.sha256((kind+'\0'+value).encode()).hexdigest()
+
+
+HOMES_PER_USER = 20
+OPEN_INVITATIONS_PER_HOME = 20
+EVENT_RETENTION = 5000  # newest events kept per home; their push diagnostics leave with them
 
 
 class Households:
@@ -92,6 +97,9 @@ class Households:
         with self.transaction(write=True) as conn:
             if not conn.execute('SELECT 1 FROM users WHERE id=? AND active=1', (user,)).fetchone():
                 raise APIError('account_disabled', 403)
+            if conn.execute('SELECT COUNT(*) FROM homes WHERE owner_id=? AND active=1',
+                            (user,)).fetchone()[0] >= HOMES_PER_USER:
+                raise APIError('quota_exceeded', 429)
             home = identifier()
             conn.execute('INSERT INTO homes(id,name,owner_id) VALUES (?,?,?)', (home, name, user))
             conn.execute('INSERT INTO memberships(home_id,user_id,role) VALUES (?,?,?)',
@@ -115,11 +123,20 @@ class Households:
             conn.execute('UPDATE homes SET active=0 WHERE id=?', (home,))
             conn.execute('UPDATE memberships SET active=0,revoked_seq=? WHERE home_id=?', (sequence, home))
             conn.execute('UPDATE hubs SET active=0 WHERE home_id=?', (home,))
+            self.forget_inventory(conn, [row['id'] for row in
+                                         conn.execute('SELECT id FROM hubs WHERE home_id=?', (home,))])
             conn.execute('UPDATE invitations SET consumed=1 WHERE home_id=?', (home,))
             conn.execute("UPDATE push_jobs SET state='cancelled',last_error='home_deleted' "
                          "WHERE state IN ('pending','sending') AND message_id IN "
                          "(SELECT id FROM push_messages WHERE home_id=?)", (home,))
             return {'status': 'deleted'}
+
+    @staticmethod
+    def forget_inventory(conn, hubs):
+        # Device names and rooms are private: they leave with the hub's authority, not later.
+        for hub in hubs:
+            conn.execute('DELETE FROM hub_devices WHERE hub_id=?', (hub,))
+            conn.execute('DELETE FROM hub_inventory WHERE hub_id=?', (hub,))
 
     def home(self, home, user):
         with self.transaction() as conn:
@@ -142,6 +159,9 @@ class Households:
             if target_id and conn.execute('SELECT 1 FROM memberships WHERE home_id=? AND user_id=? '
                                           'AND active=1', (home, target_id)).fetchone():
                 raise APIError('already_member', 409)
+            if conn.execute('SELECT COUNT(*) FROM invitations WHERE home_id=? AND consumed=0 AND expires_at>?',
+                            (home, self.clock())).fetchone()[0] >= OPEN_INVITATIONS_PER_HOME:
+                raise APIError('quota_exceeded', 429)
             token = 'invite_'+secrets.token_urlsafe(32)
             expires = self.clock()+86400
             sequence = self.audit(conn, home, user, 'invitation_created')
@@ -236,6 +256,7 @@ class Households:
             if not conn.execute('SELECT 1 FROM hubs WHERE id=? AND home_id=?', (hub, home)).fetchone():
                 raise APIError('not_found', 404)
             conn.execute('UPDATE hubs SET active=0 WHERE id=? AND home_id=?', (hub, home))
+            self.forget_inventory(conn, [hub])
             self.audit(conn, home, user, 'hub_revoked')
             return {'status': 'revoked'}
 
@@ -248,6 +269,7 @@ class Households:
                 raise APIError('invalid_hub_credentials', 401)
             expires = payload.get('notification_expires_at', self.clock()+300)
             if (isinstance(expires, bool) or not isinstance(expires, (int, float))
+                    or (isinstance(expires, int) and abs(expires) > 2**53)  # isfinite() would overflow
                     or not math.isfinite(expires) or expires > self.clock()+300):
                 raise APIError('invalid_notification_expiry', 400)
             encoded = json.dumps(payload, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
@@ -264,7 +286,20 @@ class Households:
                                    content, self.clock()))
             from central_server.push import enqueue
             enqueue(conn, hub['home_id'], self.clock(), event=cursor.lastrowid, expires_at=expires)
+            self.retain(conn, hub['home_id'])
             return {'id': cursor.lastrowid, 'duplicate': False}
+
+    @staticmethod
+    def retain(conn, home):
+        """Keep only the newest EVENT_RETENTION events of a home; a flooding hub cannot fill the disk."""
+        edge = conn.execute('SELECT id FROM events WHERE home_id=? ORDER BY id DESC LIMIT 1 OFFSET ?',
+                            (home, EVENT_RETENTION)).fetchone()
+        if edge:
+            conn.execute('DELETE FROM push_jobs WHERE message_id IN (SELECT p.id FROM push_messages p '
+                         'JOIN events e ON e.id=p.event_id WHERE e.home_id=? AND e.id<=?)', (home, edge['id']))
+            conn.execute('DELETE FROM push_messages WHERE event_id IN '
+                         '(SELECT id FROM events WHERE home_id=? AND id<=?)', (home, edge['id']))
+            conn.execute('DELETE FROM events WHERE home_id=? AND id<=?', (home, edge['id']))
 
     def events(self, home, user, event=None):
         with self.transaction() as conn:

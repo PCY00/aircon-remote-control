@@ -88,7 +88,7 @@
         "HTTP v1 전송 요청 → 설치 토큰별 전달",
         "집 권한과 알림 대상은 A50이 결정"
       ],
-      "external": false,
+      "external": true,
       "category": "teal"
     },
     {
@@ -624,6 +624,7 @@
       "target": "https-edge",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           320,
@@ -640,6 +641,7 @@
       "target": "central-container",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           558,
@@ -656,6 +658,7 @@
       "target": "fcm-provider",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           924,
@@ -672,6 +675,7 @@
       "target": "android-container",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           1226,
@@ -688,6 +692,7 @@
       "target": "https-edge",
       "color": "purple",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           1453,
@@ -712,6 +717,7 @@
       "target": "z2m",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           171,
@@ -728,6 +734,7 @@
       "target": "mqtt",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           344,
@@ -744,6 +751,7 @@
       "target": "sensor-service",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           427,
@@ -768,6 +776,7 @@
       "target": "pi-api",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           270,
@@ -784,6 +793,7 @@
       "target": "pi-db",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           161,
@@ -800,6 +810,7 @@
       "target": "automation",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           250,
@@ -824,6 +835,7 @@
       "target": "pi-api",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           391,
@@ -840,6 +852,7 @@
       "target": "pi-db",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           292,
@@ -856,6 +869,7 @@
       "target": "pi-agent",
       "color": "slate",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           161,
@@ -872,6 +886,7 @@
       "target": "households",
       "color": "purple",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           680,
@@ -888,6 +903,7 @@
       "target": "ingestion",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           975,
@@ -904,6 +920,7 @@
       "target": "push-store",
       "color": "purple",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           680,
@@ -920,6 +937,7 @@
       "target": "central-db",
       "color": "slate",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           814,
@@ -948,6 +966,7 @@
       "target": "central-db",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           975,
@@ -964,6 +983,7 @@
       "target": "central-db",
       "color": "slate",
       "dashed": false,
+      "reverse": true,
       "points": [
         [
           814,
@@ -980,6 +1000,7 @@
       "target": "push-worker",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           680,
@@ -996,6 +1017,7 @@
       "target": "push-worker",
       "color": "slate",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           975,
@@ -1012,6 +1034,7 @@
       "target": "firebase-session",
       "color": "purple",
       "dashed": false,
+      "reverse": true,
       "points": [
         [
           1388,
@@ -1028,6 +1051,7 @@
       "target": "api-client",
       "color": "purple",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           1518,
@@ -1044,6 +1068,7 @@
       "target": "api-client",
       "color": "purple",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           1388,
@@ -1060,6 +1085,7 @@
       "target": "api-client",
       "color": "purple",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           1279,
@@ -1084,6 +1110,7 @@
       "target": "app-prefs",
       "color": "slate",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           1279,
@@ -1100,6 +1127,7 @@
       "target": "android-notifications",
       "color": "teal",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           1518,
@@ -1116,6 +1144,7 @@
       "target": "h2-transport",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           180,
@@ -1132,6 +1161,7 @@
       "target": "h2-firmware",
       "color": "blue",
       "dashed": false,
+      "reverse": false,
       "points": [
         [
           326,

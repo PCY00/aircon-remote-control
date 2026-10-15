@@ -25,11 +25,12 @@ class PhoneSession:
                                encoding='utf-8')
 
     def log(self, value: str):
-        safe = self.redactor.redact(value)
+        safe = value
         for private in (str(Path.cwd()), str(Path.home()), self.config['identity_file'],
                         self.config['known_hosts_file']):
             for variant in (private, private.replace('\\', '/'), private.replace('\\', '\\\\')):
                 safe = safe.replace(variant, '[REDACTED_LOCAL_PATH]')
+        safe = self.redactor.redact(safe)
         with self.record.open('a', encoding='utf-8') as stream:
             stream.write(safe + '\n')
         print(safe, flush=True)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import re
 import threading
@@ -18,6 +19,8 @@ CERTIFICATE_URL = ('https://www.googleapis.com/robot/v1/metadata/x509/'
 
 
 class Certificates:
+    STALE_GRACE_SECONDS = 3600  # Keep recently valid keys through a brief Google/DNS outage.
+
     def __init__(self):
         self.lock = threading.Lock()
         self.keys = {}
@@ -29,7 +32,10 @@ class Certificates:
             now = time.monotonic()
             if now < self.expires:
                 return self.keys
+            usable = bool(self.keys) and now < self.expires+self.STALE_GRACE_SECONDS
             if now < self.retry_after:
+                if usable:
+                    return self.keys
                 raise APIError('authentication_unavailable', 503)
             try:
                 with urllib.request.urlopen(CERTIFICATE_URL, timeout=5) as response:
@@ -50,12 +56,20 @@ class Certificates:
                     lifetime = max(0, min(int(maximum[1]), 86400)-age) if maximum else 0
                 self.keys, self.expires = keys, time.monotonic()+lifetime
                 return keys
-            except (OSError, ValueError, TypeError, AttributeError) as error:
-                self.retry_after = time.monotonic()+5
+            except (OSError, ValueError, TypeError, AttributeError, http.client.HTTPException) as error:
+                self.retry_after = time.monotonic()+(30 if usable else 5)
+                if usable:
+                    return self.keys
                 raise APIError('authentication_unavailable', 503) from error
+
+    def stale(self):
+        # Only a failed refresh sets a future retry; keys served meanwhile are a fallback.
+        return time.monotonic() < self.retry_after
 
 
 class FirebaseIdentity:
+    CLOCK_SKEW_SECONDS = 60  # phones run slightly behind Google; exp stays strict below
+
     def __init__(self, project: str, *, certificates=None):
         if not re.fullmatch(r'[a-z][a-z0-9-]{4,61}[a-z0-9]', project):
             raise ValueError('Invalid Firebase project ID')
@@ -73,18 +87,23 @@ class FirebaseIdentity:
                 raise ValueError('Invalid token header')
             key = self.certificates.get().get(kid)
             if key is None:
+                # With stale keys an unknown kid may be a rotation we could not fetch, not a bad sign-in.
+                if getattr(self.certificates, 'stale', lambda: False)():
+                    raise APIError('authentication_unavailable', 503)
                 raise ValueError('Unknown signing key')
             issuer = 'https://securetoken.google.com/'+self.project
+            # PyJWT applies leeway to iat and exp alike; the explicit exp check below stays strict.
             claims = jwt.decode(token, key, algorithms=['RS256'], audience=self.project,
-                                issuer=issuer, options={'require':
+                                issuer=issuer, leeway=self.CLOCK_SKEW_SECONDS, options={'require':
                                     ['exp','iat','auth_time','aud','iss','sub']})
             now = time.time()
             if claims['aud'] != self.project:
                 raise ValueError('Firebase audience must be the project ID')
             if any(type(claims[name]) is not int for name in ('exp','iat','auth_time')):
                 raise ValueError('Invalid time claims')
-            if (claims['auth_time'] < 0 or claims['auth_time'] > now
-                    or claims['iat'] < 0 or claims['iat'] > now or claims['exp'] <= now):
+            if (claims['auth_time'] < 0 or claims['auth_time'] > now+self.CLOCK_SKEW_SECONDS
+                    or claims['iat'] < 0 or claims['iat'] > now+self.CLOCK_SKEW_SECONDS
+                    or claims['exp'] <= now):
                 raise ValueError('Invalid authentication time')
             if not isinstance(claims['sub'], str) or not 1 <= len(claims['sub']) <= 128:
                 raise ValueError('Invalid subject')

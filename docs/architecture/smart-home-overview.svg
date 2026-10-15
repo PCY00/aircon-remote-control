@@ -46,7 +46,7 @@
 <polygon points="424.00,285.00 420.50,293.00 427.50,293.00" fill="#7650a6"/>
 <rect x="585" y="320" width="329.75" height="22" rx="2" fill="#f8fafc" stroke="#f8fafc" stroke-width="1"/>
 <text x="589" y="337" font-size="16px" style="font-size:16px" fill="#7650a6" font-weight="400">HTTPS + Firebase ID 토큰 / 집·기록·설정 API</text>
-<rect x="911" y="210" width="79" height="69" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="911" y="210" width="79" height="69" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1" stroke-dasharray="6 4"/>
 <rect x="911" y="210" width="4" height="69" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
 <text x="924" y="233" font-size="17px" style="font-size:17px" fill="#087e83" font-weight="700">FCM</text>
 <text x="924" y="256.25" font-size="16px" style="font-size:16px" fill="#526779" font-weight="400">외부</text>

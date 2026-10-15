@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include "carrier_profile.h"
+#include "command_policy.h"
+#include "commissioning_retry.h"
 #include "ir_protocol.h"
 
 static void expect_frames(uint8_t command, const uint8_t *expected,
@@ -17,6 +19,19 @@ static void expect_frames(uint8_t command, const uint8_t *expected,
     uint8_t count = 0;
     assert(carrier_command_frames(&request, frames, &count));
     assert(count == expected_count);
+    assert(memcmp(frames, expected, (size_t)count * FRAME_BYTE_COUNT) == 0);
+}
+
+static void expect_cool_frames(uint8_t temperature, uint8_t fan, const uint8_t *expected)
+{
+    const aircon_request_t request = {
+        .wire_version = AIRCON_WIRE_VERSION_V2, .command_id = AIRCON_COMMAND_COOL_STATE,
+        .temperature_c = temperature, .fan = fan, .request_id = 1U,
+    };
+    uint8_t frames[MAX_FRAME_COUNT][FRAME_BYTE_COUNT] = {0};
+    uint8_t count = 0;
+    assert(carrier_command_frames(&request, frames, &count));
+    assert(count == FRAME_REPEAT_COUNT);
     assert(memcmp(frames, expected, (size_t)count * FRAME_BYTE_COUNT) == 0);
 }
 
@@ -111,10 +126,9 @@ int main(void)
         {0xB2, 0x4D, 0x3F, 0xC0, 0xE4, 0x1B},
         {0xB2, 0x4D, 0x3F, 0xC0, 0xE4, 0x1B},
     };
-    static const uint8_t economy[3][6] = {
+    /* Eco/sleep only, once as captured: no cool 17 C/auto state frame is replayed. */
+    static const uint8_t economy[1][6] = {
         {0xB2, 0x4D, 0xE0, 0x1F, 0x03, 0xFC},
-        {0xB2, 0x4D, 0xBF, 0x40, 0x00, 0xFF},
-        {0xB2, 0x4D, 0xBF, 0x40, 0x00, 0xFF},
     };
     static const uint8_t turbo[2][6] = {
         {0xB5, 0x4A, 0xF5, 0x0A, 0xA2, 0x5D},
@@ -135,7 +149,7 @@ int main(void)
     expect_frames(AIRCON_COMMAND_MODE_AUTO, &auto_mode[0][0], 2);
     expect_frames(AIRCON_COMMAND_MODE_DRY, &dry[0][0], 2);
     expect_frames(AIRCON_COMMAND_MODE_FAN_ONLY, &fan_only[0][0], 2);
-    expect_frames(AIRCON_COMMAND_ECONOMY, &economy[0][0], 3);
+    expect_frames(AIRCON_COMMAND_ECONOMY, &economy[0][0], 1);
     expect_frames(AIRCON_COMMAND_TURBO, &turbo[0][0], 2);
     expect_frames(AIRCON_COMMAND_LED_TOGGLE, &led[0][0], 2);
     expect_frames(AIRCON_COMMAND_AIRFLOW_FIX, &airflow[0][0], 1);
@@ -154,6 +168,161 @@ int main(void)
     assert(carrier_command_frames(&cool_request, frames, &count));
     assert(count == 2);
     assert(memcmp(frames, cool_20_high, sizeof(cool_20_high)) == 0);
+
+    /* Coolix temperature table, not plain Gray code, at 27 and 28 C. */
+    static const uint8_t cool_27_auto[2][6] = {
+        {0xB2, 0x4D, 0xBF, 0x40, 0x90, 0x6F},
+        {0xB2, 0x4D, 0xBF, 0x40, 0x90, 0x6F},
+    };
+    static const uint8_t cool_28_auto[2][6] = {
+        {0xB2, 0x4D, 0xBF, 0x40, 0x80, 0x7F},
+        {0xB2, 0x4D, 0xBF, 0x40, 0x80, 0x7F},
+    };
+    expect_cool_frames(27, AIRCON_FAN_AUTO, &cool_27_auto[0][0]);
+    expect_cool_frames(28, AIRCON_FAN_AUTO, &cool_28_auto[0][0]);
+    static const uint8_t coolix_codes[14] = {
+        0x0, 0x1, 0x3, 0x2, 0x6, 0x7, 0x5, 0x4, 0xC, 0xD, 0x9, 0x8, 0xA, 0xB,
+    };
+    for (uint8_t temperature = 17U; temperature <= 30U; ++temperature) {
+        for (uint8_t fan = AIRCON_FAN_AUTO; fan <= AIRCON_FAN_HIGH; ++fan) {
+            const aircon_request_t cool = {
+                .wire_version = 2, .command_id = AIRCON_COMMAND_COOL_STATE,
+                .temperature_c = temperature, .fan = fan, .request_id = 1,
+            };
+            assert(carrier_command_frames(&cool, frames, &count));
+            assert(count == FRAME_REPEAT_COUNT);
+            for (uint8_t i = 0; i < count; ++i) {
+                /* 0xE is the fan-only (no temperature) nibble. */
+                assert((frames[i][4] >> 4U) != 0xEU);
+                assert((frames[i][4] >> 4U) == coolix_codes[temperature - 17U]);
+                assert((frames[i][4] & 0x0FU) == 0U);
+                assert((uint8_t)(frames[i][4] ^ frames[i][5]) == 0xFFU);
+            }
+        }
+    }
+
+    /* ECONOMY must not carry any cool-state frame (fan byte BF/9F/5F/3F). */
+    const aircon_request_t economy_request = {
+        .wire_version = 2, .command_id = AIRCON_COMMAND_ECONOMY, .request_id = 1,
+    };
+    assert(carrier_command_frames(&economy_request, frames, &count));
+    for (uint8_t i = 0; i < count; ++i) {
+        assert(frames[i][2] != 0xBF && frames[i][2] != 0x9F &&
+               frames[i][2] != 0x5F && frames[i][2] != 0x3F);
+    }
+
+    /* Commissioning retry backoff: 1 s doubling to a 60 s cap, reset on success. */
+    static const uint32_t expected_delays[] = {
+        1000U, 2000U, 4000U, 8000U, 16000U, 32000U, 60000U, 60000U,
+    };
+    uint32_t next_delay_ms = COMMISSIONING_RETRY_MIN_MS;
+    for (size_t i = 0; i < sizeof(expected_delays) / sizeof(expected_delays[0]); ++i) {
+        assert(commissioning_retry_delay_ms(&next_delay_ms) == expected_delays[i]);
+    }
+    next_delay_ms = COMMISSIONING_RETRY_MIN_MS;
+    assert(commissioning_retry_delay_ms(&next_delay_ms) == 1000U);
+    next_delay_ms = 0U;
+    assert(commissioning_retry_delay_ms(&next_delay_ms) == 1000U);
+    next_delay_ms = UINT32_MAX;
+    assert(commissioning_retry_delay_ms(&next_delay_ms) == 60000U);
+    assert(next_delay_ms == 60000U);
+
+    /* Coordinator-only source check: short address 0x0000 in short mode only. */
+    assert(aircon_source_is_coordinator(AIRCON_ADDR_MODE_SHORT, 0x0000U));
+    assert(!aircon_source_is_coordinator(AIRCON_ADDR_MODE_NONE, 0x0000U));
+    assert(!aircon_source_is_coordinator(AIRCON_ADDR_MODE_GROUP, 0x0000U));
+    /* An extended address must be resolved to a short one before the check. */
+    assert(!aircon_source_is_coordinator(AIRCON_ADDR_MODE_EXT, 0x0000U));
+    for (unsigned mode = AIRCON_ADDR_MODE_EXT + 1U; mode < 256U; ++mode) {
+        assert(!aircon_source_is_coordinator((uint8_t)mode, 0x0000U));
+    }
+    for (uint32_t short_addr = 1U; short_addr <= 0xFFFFU; ++short_addr) {
+        assert(!aircon_source_is_coordinator(AIRCON_ADDR_MODE_SHORT, (uint16_t)short_addr));
+    }
+
+    /* Rejection log: first time, then at most once per minute, wrap-safe. */
+    assert(aircon_reject_log_due(false, 0U, 0U));
+    assert(aircon_reject_log_due(false, 123U, 0U));
+    assert(!aircon_reject_log_due(true, 1000U, 1000U));
+    assert(!aircon_reject_log_due(true, 1000U, 60999U));
+    assert(aircon_reject_log_due(true, 1000U, 61000U));
+    assert(aircon_reject_log_due(true, UINT32_MAX - 10U, 59989U));
+    assert(!aircon_reject_log_due(true, UINT32_MAX - 10U, 59988U));
+
+    /* IR pacing: 2 s before appliance-state commands, 0.5 s before feature toggles. */
+    static const uint8_t state_commands[] = {
+        AIRCON_COMMAND_POWER_OFF, AIRCON_COMMAND_COOL_STATE, AIRCON_COMMAND_MODE_AUTO,
+        AIRCON_COMMAND_MODE_DRY, AIRCON_COMMAND_MODE_FAN_ONLY, AIRCON_COMMAND_ECONOMY,
+    };
+    static const uint8_t feature_commands[] = {
+        AIRCON_COMMAND_TURBO, AIRCON_COMMAND_LED_TOGGLE, AIRCON_COMMAND_AIRFLOW_FIX,
+        AIRCON_COMMAND_SWING_TOGGLE,
+    };
+    for (size_t i = 0; i < sizeof(state_commands); ++i) {
+        assert(ir_pacing_gap_ms(state_commands[i]) == 2000U);
+        assert(ir_pacing_delay_ms(false, 0U, state_commands[i], 0U) == 0U);
+        assert(ir_pacing_delay_ms(false, 5000U, state_commands[i], 5001U) == 0U);
+        assert(ir_pacing_delay_ms(true, 1000U, state_commands[i], 1000U) == 2000U);
+        assert(ir_pacing_delay_ms(true, 1000U, state_commands[i], 1500U) == 1500U);
+        assert(ir_pacing_delay_ms(true, 1000U, state_commands[i], 2999U) == 1U);
+        assert(ir_pacing_delay_ms(true, 1000U, state_commands[i], 3000U) == 0U);
+        assert(ir_pacing_delay_ms(true, 1000U, state_commands[i], 90000U) == 0U);
+    }
+    for (size_t i = 0; i < sizeof(feature_commands); ++i) {
+        assert(ir_pacing_gap_ms(feature_commands[i]) == 500U);
+        assert(ir_pacing_delay_ms(false, 0U, feature_commands[i], 0U) == 0U);
+        assert(ir_pacing_delay_ms(true, 1000U, feature_commands[i], 1000U) == 500U);
+        assert(ir_pacing_delay_ms(true, 1000U, feature_commands[i], 1200U) == 300U);
+        assert(ir_pacing_delay_ms(true, 1000U, feature_commands[i], 1499U) == 1U);
+        assert(ir_pacing_delay_ms(true, 1000U, feature_commands[i], 1500U) == 0U);
+    }
+    assert(sizeof(state_commands) + sizeof(feature_commands) == AIRCON_COMMAND_SWING_TOGGLE);
+    /* Unknown command ids never get the short gap. */
+    assert(ir_pacing_gap_ms(0U) == 2000U);
+    assert(ir_pacing_gap_ms(AIRCON_COMMAND_SWING_TOGGLE + 1U) == 2000U);
+    assert(ir_pacing_gap_ms(255U) == 2000U);
+    /* Millisecond clock wrap: 272 ms elapsed across the wrap. */
+    assert(ir_pacing_delay_ms(true, 0xFFFFFF00U, AIRCON_COMMAND_POWER_OFF, 0x00000010U) == 1728U);
+    assert(ir_pacing_delay_ms(true, 0xFFFFFF00U, AIRCON_COMMAND_SWING_TOGGLE, 0x00000010U) == 228U);
+    /* A back-to-back queue keeps appliance-state commands >= 2 s apart however
+     * feature toggles are interleaved; the worker restamps after each TX.
+     */
+    {
+        static const uint8_t burst[] = {
+            AIRCON_COMMAND_POWER_OFF, AIRCON_COMMAND_SWING_TOGGLE, AIRCON_COMMAND_COOL_STATE,
+            AIRCON_COMMAND_TURBO, AIRCON_COMMAND_LED_TOGGLE, AIRCON_COMMAND_POWER_OFF,
+            AIRCON_COMMAND_ECONOMY, AIRCON_COMMAND_COOL_STATE, AIRCON_COMMAND_AIRFLOW_FIX,
+            AIRCON_COMMAND_MODE_DRY,
+        };
+        const uint32_t tx_duration_ms = 150U;
+        uint32_t now_ms = 10U;
+        uint32_t last_tx_ms = 0U;
+        uint32_t last_state_start_ms = 0U;
+        bool have_last_tx = false;
+        bool have_state_tx = false;
+        unsigned state_count = 0;
+        for (size_t i = 0; i < sizeof(burst); ++i) {
+            now_ms += ir_pacing_delay_ms(have_last_tx, last_tx_ms, burst[i], now_ms);
+            assert(ir_pacing_delay_ms(have_last_tx, last_tx_ms, burst[i], now_ms) == 0U);
+            if (ir_pacing_gap_ms(burst[i]) == IR_PACING_STATE_GAP_MS) {
+                assert(!have_state_tx || now_ms - last_state_start_ms >= 2000U + tx_duration_ms);
+                have_state_tx = true;
+                last_state_start_ms = now_ms;
+                ++state_count;
+            } else {
+                assert(now_ms - last_tx_ms >= 500U);
+            }
+            now_ms += tx_duration_ms;
+            last_tx_ms = now_ms;
+            have_last_tx = true;
+        }
+        assert(state_count == 6U);
+        /* Six state commands need at least five 2 s gaps plus their own TX time. */
+        assert(now_ms - 10U >= 5U * 2000U + sizeof(burst) * tx_duration_ms);
+    }
+    printf("POLICY state_gap_ms=%u feature_gap_ms=%u reject_log_ms=%u\n",
+           (unsigned)IR_PACING_STATE_GAP_MS, (unsigned)IR_PACING_FEATURE_GAP_MS,
+           (unsigned)AIRCON_REJECT_LOG_INTERVAL_MS);
 
     for (uint8_t command = AIRCON_COMMAND_POWER_OFF;
          command <= AIRCON_COMMAND_SWING_TOGGLE; ++command) {

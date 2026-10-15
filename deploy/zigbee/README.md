@@ -10,6 +10,19 @@ This directory contains source-controlled templates only. Runtime state and secr
 - SONOFF ZBDongle-P: `zstack` Coordinator mapped to `/dev/ttyUSB0` inside the container
 - Zigbee channel `20`: selected before pairing any device
 
+Broker identities (`runtime/zigbee/mosquitto/passwords`, hashed) and their topic
+permissions (`mosquitto/acl.conf`, source-controlled):
+
+- `zigbee2mqtt`: `readwrite zigbee2mqtt/#` (Zigbee2MQTT itself and the admin scripts)
+- `aircon-controller`: `read zigbee2mqtt/#`, `write zigbee2mqtt/+/set`,
+  `write zigbee2mqtt/bridge/request/permit_join` (the Pi web app only)
+
+Every other topic is denied once the ACL file is active. The helper scripts never put a
+broker password on a command line: `docker exec -e MQTT_PW` propagates it from the
+script's environment and the client reads it from a private `$XDG_CONFIG_HOME` options
+file inside the container. Password hashes are produced with `mosquitto_passwd -U` on
+mode-600 files.
+
 The host publishes MQTT and the Zigbee2MQTT frontend only on loopback:
 
 - MQTT: `127.0.0.1:1883`
@@ -31,8 +44,19 @@ file. Do not copy it into documentation or screenshots.
 3. On the Pi, run `sudo scripts/install_zigbee_host.sh` once.
 4. Log out and back in so the new `docker` group is applied.
 5. Run `scripts/setup_zigbee_stack.sh` as `air`.
-6. Run `scripts/check_zigbee_stack.sh` as `air`.
-7. Create a sensitive local backup with `scripts/backup_zigbee_stack.sh`.
+6. Run `scripts/setup_app_mqtt.sh` as `air` to create the `aircon-controller` broker user,
+   reload Mosquitto (SIGHUP) and point the web app at its own credentials.
+7. Run `scripts/check_zigbee_stack.sh` as `air` (verifies the ACL mount and the app user).
+8. Create a sensitive local backup with `scripts/backup_zigbee_stack.sh`.
+
+`mosquitto.conf` and `acl.conf` are bind-mounted read-only, so a changed broker
+configuration only takes effect after the container is recreated. After deploying a new
+`compose.yaml`, `mosquitto.conf` or `acl.conf`, run `scripts/setup_zigbee_stack.sh` again
+(its `docker compose up -d` recreates `aircon-mosquitto`; Zigbee2MQTT reconnects on its own)
+or run `docker compose --env-file runtime/zigbee/stack.env --file deploy/zigbee/compose.yaml
+up -d --force-recreate mosquitto`. Password-file edits by `setup_app_mqtt.sh` only need the
+SIGHUP it sends. Note: `scripts/deploy_zigbee.ps1` lists its files explicitly; the full
+`scripts/deploy.ps1` run copies `deploy/zigbee/mosquitto/acl.conf` as part of `deploy/`.
 
 The backup command briefly stops both Zigbee2MQTT and Mosquitto so the database, Coordinator
 backup, broker persistence, and secrets are copied as one consistent snapshot. It starts both
@@ -47,7 +71,7 @@ when missing. It does not overwrite an existing network.
 runtime/zigbee/
 ├─ stack.env                         # Compose host paths, mode 600
 ├─ mosquitto/
-│  ├─ passwords                     # hashed MQTT password, mode 600
+│  ├─ passwords                     # hashed MQTT passwords (zigbee2mqtt, aircon-controller), mode 600
 │  └─ data/                         # retained broker state
 ├─ zigbee2mqtt/
 │  ├─ configuration.yaml            # mutable runtime configuration

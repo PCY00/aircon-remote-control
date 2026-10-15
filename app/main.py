@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -21,7 +22,7 @@ from fastapi import (
 )
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 
 from app.automations.service import AutomationService
 from app.automations.store import AutomationNotFoundError, AutomationStore
@@ -37,6 +38,7 @@ from app.devices.store import (
     DeviceRequestStore,
     InvalidUploadError,
     RegisteredDeviceStore,
+    StorageQuotaExceededError,
     UploadPayload,
 )
 from app.devices.transport import (
@@ -47,10 +49,11 @@ from app.devices.transport import (
     TransportExecutionError,
     TransportUnavailableError,
 )
-from app.events import EventHub, format_sse
+from app.events import EventHub, EventHubFullError, format_sse
 from app.integrations.mqtt import (
     DisabledSensorBridge,
     PahoSensorBridge,
+    PermitJoinCooldown,
     SensorBridge,
     ZigbeeGatewayRequestError,
     ZigbeeGatewayUnavailableError,
@@ -62,14 +65,26 @@ from app.ir.store import CaptureStore
 from app.sensors.service import SensorService
 from app.sensors.store import SensorNotFoundError, SensorStore
 from app.settings import Settings, load_settings
+from app.web_security import (
+    DEVICE_REQUEST_RATE_LIMIT,
+    DEVICE_REQUEST_RATE_WINDOW_SECONDS,
+    UPLOAD_OVERHEAD_BYTES,
+    RequestGuardMiddleware,
+    SlidingWindowLimiter,
+    trusted_hosts,
+)
 
 WEB_INDEX = Path(__file__).parent / "static" / "index.html"
+DEVICE_REQUEST_PATH = "/api/v1/device-requests"
+LOGGER = logging.getLogger(__name__)
+# Strip before the length check so whitespace-only names are rejected with 422.
+DisplayText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
 
 
 class CaptureRequest(BaseModel):
     """User-supplied label and profile for one learned command."""
 
-    name: str = Field(min_length=1, max_length=100)
+    name: DisplayText
     profile_id: str = "carrier-16214-15597"
     timeout_seconds: float | None = Field(default=None, ge=1, le=300)
 
@@ -77,8 +92,8 @@ class CaptureRequest(BaseModel):
 class RegisterDeviceRequest(BaseModel):
     """Assign a supported model profile to a named room device."""
 
-    name: str = Field(min_length=1, max_length=100)
-    room: str = Field(min_length=1, max_length=100)
+    name: DisplayText
+    room: DisplayText
     profile_id: str = Field(min_length=1, max_length=200)
     icon: str = Field(default="box", min_length=1, max_length=50, pattern=r"^[a-z0-9-]+$")
     zigbee_friendly_name: str | None = Field(default=None, min_length=1, max_length=200)
@@ -132,6 +147,18 @@ async def _read_upload(upload: UploadFile, max_bytes: int) -> UploadPayload:
     )
 
 
+def _client_address(request: Request) -> str:
+    return request.client.host if request.client is not None else "unknown"
+
+
+async def _read_optional_upload(upload: UploadFile | None, max_bytes: int) -> UploadPayload | None:
+    # A browser submits an empty optional file input as filename="" with no data.
+    if upload is None:
+        return None
+    payload = await _read_upload(upload, max_bytes)
+    return payload if upload.filename or payload.data else None
+
+
 def create_app(
     settings: Settings | None = None,
     receiver_backend: ReceiverBackend | None = None,
@@ -182,13 +209,25 @@ def create_app(
     request_store = DeviceRequestStore(
         resolved_settings.data_dir,
         resolved_settings.max_upload_bytes,
+        resolved_settings.device_request_quota_bytes,
     )
     event_hub = EventHub()
+    join_cooldown = PermitJoinCooldown()
+
+    def known_sensor_ids() -> set[str] | None:
+        # An empty list means the bridge is disabled or bridge/devices has not arrived.
+        names = {
+            str(device["friendly_name"]) for device in bridge.devices()
+            if isinstance(device.get("friendly_name"), str)
+        }
+        return names or None
+
     automation_service = AutomationService(
         store=AutomationStore(resolved_settings.data_dir),
         sensors=sensor_service,
         devices=device_service,
         events=event_hub,
+        known_sensor_ids=known_sensor_ids,
     )
     sensor_service.add_listener(
         lambda sensor: event_hub.publish("sensor.updated", {"sensor": sensor})
@@ -227,6 +266,18 @@ def create_app(
     application.state.sensor_bridge = bridge
     application.state.event_hub = event_hub
     application.state.automation_service = automation_service
+    # No login by design (private tailnet): the Host/Origin checks keep a
+    # rebinding or cross-site page from reaching the write endpoints.
+    application.add_middleware(
+        RequestGuardMiddleware,
+        allowed_hosts=trusted_hosts(resolved_settings.host, resolved_settings.allowed_hosts),
+        service_port=resolved_settings.port,
+        upload_path=DEVICE_REQUEST_PATH,
+        upload_max_bytes=3 * resolved_settings.max_upload_bytes + UPLOAD_OVERHEAD_BYTES,
+        upload_limiter=SlidingWindowLimiter(
+            DEVICE_REQUEST_RATE_LIMIT, DEVICE_REQUEST_RATE_WINDOW_SECONDS
+        ),
+    )
     application.mount("/static", StaticFiles(directory=WEB_INDEX.parent), name="static")
 
     @application.get("/", include_in_schema=False)
@@ -248,21 +299,32 @@ def create_app(
 
     @application.get("/api/v1/events", tags=["events"])
     async def event_stream(request: Request) -> StreamingResponse:
+        if not event_hub.has_capacity():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="too many live event streams are open",
+                headers={"Retry-After": "30"},
+            )
+
         async def generate() -> AsyncIterator[str]:
             ready = {
                 "type": "stream.ready",
                 "occurred_at": automation_service.evaluate()["evaluated_at"],
                 "data": {"message": "live dashboard stream connected"},
             }
-            async with event_hub.subscribe() as queue:
-                yield format_sse(ready)
-                while not await request.is_disconnected():
-                    try:
-                        event = await asyncio.wait_for(queue.get(), timeout=15)
-                    except TimeoutError:
-                        yield ": keep-alive\n\n"
-                        continue
-                    yield format_sse(event)
+            try:
+                async with event_hub.subscribe() as queue:
+                    yield format_sse(ready)
+                    while not await request.is_disconnected():
+                        try:
+                            event = await asyncio.wait_for(queue.get(), timeout=15)
+                        except TimeoutError:
+                            yield ": keep-alive\n\n"
+                            continue
+                        yield format_sse(event)
+            except EventHubFullError:
+                # Lost the race with another connection after the capacity check.
+                return
 
         return StreamingResponse(
             generate(),
@@ -324,6 +386,28 @@ def create_app(
                 detail="sensor not found",
             ) from exc
 
+    @application.delete(
+        "/api/v1/sensors/{device_id}",
+        tags=["sensors"],
+        status_code=status.HTTP_204_NO_CONTENT,
+    )
+    def delete_sensor(device_id: str) -> Response:
+        # Clears a renamed/removed Zigbee sensor; one that still reports reappears.
+        try:
+            sensor_service.delete(device_id)
+        except SensorNotFoundError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="sensor not found",
+            ) from exc
+        event_hub.publish("sensor.deleted", {"device_id": device_id})
+        try:
+            automation_service.evaluate()
+        except Exception:
+            # The delete is committed; the poll loop re-evaluates shortly.
+            LOGGER.exception("automation evaluation failed after deleting a sensor")
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
     @application.get("/api/v1/sensors/{device_id}/events", tags=["sensors"])
     def list_sensor_events(
         device_id: str,
@@ -365,9 +449,25 @@ def create_app(
         return bridge.join_status()
 
     @application.post("/api/v1/zigbee/join", tags=["zigbee"])
-    def open_zigbee_join(request: PermitJoinRequest) -> dict[str, object]:
+    def open_zigbee_join(
+        join_request: PermitJoinRequest, request: Request
+    ) -> dict[str, object]:
+        retry_after = join_cooldown.retry_after_seconds()
+        if retry_after:
+            LOGGER.warning(
+                "permit_join re-open from %s refused during cooldown (%s s left)",
+                _client_address(request), retry_after,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=(
+                    "permit join was opened recently; close it first or retry in "
+                    f"{retry_after} seconds"
+                ),
+                headers={"Retry-After": str(retry_after)},
+            )
         try:
-            return bridge.set_permit_join(request.duration_seconds)
+            result = bridge.set_permit_join(join_request.duration_seconds)
         except ZigbeeGatewayUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -378,11 +478,17 @@ def create_app(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=str(exc),
             ) from exc
+        join_cooldown.mark_opened()
+        LOGGER.info(
+            "permit_join opened for %s s on the coordinator by %s",
+            join_request.duration_seconds, _client_address(request),
+        )
+        return result
 
     @application.delete("/api/v1/zigbee/join", tags=["zigbee"])
-    def close_zigbee_join() -> dict[str, object]:
+    def close_zigbee_join(request: Request) -> dict[str, object]:
         try:
-            return bridge.set_permit_join(0)
+            result = bridge.set_permit_join(0)
         except ZigbeeGatewayUnavailableError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -393,6 +499,9 @@ def create_app(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 detail=str(exc),
             ) from exc
+        join_cooldown.mark_closed()
+        LOGGER.info("permit_join closed by %s", _client_address(request))
+        return result
 
     @application.get("/api/v1/zigbee/devices", tags=["zigbee"])
     def list_zigbee_devices() -> dict[str, object]:
@@ -424,7 +533,7 @@ def create_app(
             ) from exc
 
     @application.post(
-        "/api/v1/device-requests",
+        DEVICE_REQUEST_PATH,
         tags=["devices"],
         status_code=status.HTTP_201_CREATED,
     )
@@ -438,15 +547,11 @@ def create_app(
     ) -> dict[str, object]:
         try:
             product = await _read_upload(product_photo, resolved_settings.max_upload_bytes)
-            remote = (
-                await _read_upload(remote_photo, resolved_settings.max_upload_bytes)
-                if remote_photo is not None
-                else None
+            remote = await _read_optional_upload(
+                remote_photo, resolved_settings.max_upload_bytes
             )
-            manual_payload = (
-                await _read_upload(manual, resolved_settings.max_upload_bytes)
-                if manual is not None
-                else None
+            manual_payload = await _read_optional_upload(
+                manual, resolved_settings.max_upload_bytes
             )
             return request_store.create(
                 device_type=device_type,
@@ -461,6 +566,11 @@ def create_app(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail=str(exc),
             ) from exc
+        except StorageQuotaExceededError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_507_INSUFFICIENT_STORAGE,
+                detail=str(exc),
+            ) from exc
 
     @application.post(
         "/api/v1/devices",
@@ -470,8 +580,8 @@ def create_app(
     def register_device(request: RegisterDeviceRequest) -> dict[str, object]:
         try:
             return device_service.register(
-                name=request.name.strip(),
-                room=request.room.strip(),
+                name=request.name,
+                room=request.room,
                 profile_id=request.profile_id,
                 icon=request.icon,
                 zigbee_friendly_name=request.zigbee_friendly_name,
@@ -581,7 +691,7 @@ def create_app(
     async def start_capture(request: CaptureRequest) -> dict[str, object]:
         try:
             return await service.start(
-                name=request.name.strip(),
+                name=request.name,
                 profile_id=request.profile_id,
                 timeout_seconds=request.timeout_seconds,
             )

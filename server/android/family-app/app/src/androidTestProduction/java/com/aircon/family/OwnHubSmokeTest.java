@@ -23,7 +23,7 @@ public class OwnHubSmokeTest extends OwnFamilySmokeTest {
     private String auth, homeId;
 
     private void owner() throws Exception {
-        await("새 집 만들기");
+        awaitStart();
         Context context=InstrumentationRegistry.getInstrumentation().getTargetContext();
         android.content.SharedPreferences prefs=PushManager.prefs(context);
         FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
@@ -33,7 +33,7 @@ public class OwnHubSmokeTest extends OwnFamilySmokeTest {
             prefs.getString("account","").equals(user.getUid()));
         // Normal Firebase SDK authentication; credentials stay inside the phone.
         auth=Tasks.await(user.getIdToken(false),20,TimeUnit.SECONDS).getToken();
-        api=new ApiClient(prefs.getString("origin",""),false);
+        api=new ApiClient(context,prefs.getString("origin",""),false);
         String name=new String(Base64.decode(InstrumentationRegistry.getArguments()
             .getString("home_name_b64",""),Base64.DEFAULT),StandardCharsets.UTF_8);
         assertFalse("Explicit user-approved home required",name.isEmpty());
@@ -100,7 +100,9 @@ public class OwnHubSmokeTest extends OwnFamilySmokeTest {
         while(System.currentTimeMillis()<deadline) {
             for(android.service.notification.StatusBarNotification notice:
                     context.getSystemService(android.app.NotificationManager.class).getActiveNotifications()) {
-                if(notice.getId()==10 && "새 기록이 도착했어요. 앱에서 확인해 주세요."
+                // Each record has its own id in the "other" group; the group summary carries the same text.
+                if((notice.getNotification().flags & android.app.Notification.FLAG_GROUP_SUMMARY)==0
+                        && "새 기록이 도착했어요. 앱에서 확인해 주세요."
                         .contentEquals(notice.getNotification().extras.getCharSequence("android.text","")))
                     notified=true;
             }
@@ -121,7 +123,7 @@ public class OwnHubSmokeTest extends OwnFamilySmokeTest {
         ownShell("input keyevent 224");
         context.startActivity(new Intent(context,MainActivity.class)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP));
-        await("새 집 만들기");click("알림 설정");await("최근 알림 수신 완료");
+        awaitStart();openPhoneNotifications();await("최근 알림 수신 완료");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();Thread.sleep(350);
         screenshot("13-a50-pi-connection-fcm-receipt");
     }

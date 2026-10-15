@@ -1,0 +1,253 @@
+# Actual executed commands and output; private details removed
+
+--- deployed-agent.py
+
++++ local-agent.py
+
+@@ -5,4 +5,5 @@
+
+ import argparse
+ import contextlib
++import email.utils
+ import hashlib
+ import ipaddress
+@@ -15,4 +16,5 @@
+
+ import stat
+ import time
++import unicodedata
+ import urllib.error
+ import urllib.parse
+@@ -28,4 +30,13 @@
+
+     "automation": ("automations/automations.sqlite3", "automation_events"),
+ }
++# A flapping (or spoofed MQTT) sensor relays at most this many transitions per window. Later ones
++# are coalesced: one deferred event per sensor always carries the latest transition, superseded
++# intermediate transitions are dropped, and every row still advances the cursor.
++RELAY_BUDGET_WINDOW = 300.0
++RELAY_BUDGET_TRANSITIONS = 10
++RELAY_COALESCE_DELAY = 60.0
++# 429 from the central server is transient: every pending event is held for Retry-After seconds
++# (minimum, default when absent, maximum); it is neither an attempt nor a failure.
++RATE_LIMIT_WAIT = (1.0, 30.0, 300.0)
+ 
+ 
+@@ -113,4 +124,7 @@
+
+                     id TEXT PRIMARY KEY, attempt_token TEXT NOT NULL, state TEXT NOT NULL,
+                     created_at REAL NOT NULL, reported INTEGER NOT NULL DEFAULT 0);
++                CREATE TABLE IF NOT EXISTS relay_budget(
++                    sensor_ref TEXT PRIMARY KEY, window_start REAL NOT NULL,
++                    relayed INTEGER NOT NULL, dropped INTEGER NOT NULL, deferred_event_id TEXT);
+             """)
+             # A process may have stopped after sending IR and before saving its result.
+@@ -130,5 +144,5 @@
+
+             conn.close()
+ 
+-    def _enqueue(self, conn, event_id, kind, payload, expires):
++    def _enqueue(self, conn, event_id, kind, payload, expires, due=None):
+         if conn.execute("SELECT 1 FROM outbox WHERE event_id=?", (event_id,)).fetchone():
+             return
+@@ -137,6 +151,44 @@
+
+         conn.execute(
+             "INSERT INTO outbox VALUES(?,?,?,?,'pending',0,?)",
+-            (event_id, kind, json.dumps(payload, sort_keys=True), expires, self.clock()),
++            (event_id, kind, json.dumps(payload, sort_keys=True), expires,
++             self.clock() if due is None else due),
+         )
++
++    def _relay(self, conn, sensor, event_id, kind, payload, expires):
++        """Budgeted relay. Returns ("queued"|"coalesced", transitions dropped in this window)."""
++        now = self.clock()
++        budget = conn.execute("SELECT * FROM relay_budget WHERE sensor_ref=?", (sensor,)).fetchone()
++        if budget is None or now - budget["window_start"] >= RELAY_BUDGET_WINDOW:
++            budget = {"window_start": now, "relayed": 0, "dropped": 0,
++                      "deferred_event_id": budget["deferred_event_id"] if budget else None}
++        relayed, dropped = budget["relayed"], budget["dropped"]
++        deferred = budget["deferred_event_id"]
++        if relayed < RELAY_BUDGET_TRANSITIONS:
++            # A fresher transition goes out now; one still held from the last window is stale.
++            if deferred and conn.execute(
++                "DELETE FROM outbox WHERE event_id=? AND state='pending'", (deferred,)
++            ).rowcount:
++                dropped += 1
++            self._enqueue(conn, event_id, kind, payload, expires)
++            outcome, relayed, deferred = "queued", relayed + 1, None
++        elif deferred and conn.execute(
++            "SELECT 1 FROM outbox WHERE event_id=? AND state='pending'", (deferred,)
++        ).fetchone():
++            # Not sent yet: the held transition is superseded by this latest one (same slot).
++            conn.execute(
++                "UPDATE outbox SET event_id=?,kind=?,payload=?,expires_at=? WHERE event_id=?",
++                (event_id, kind, json.dumps(payload, sort_keys=True), expires, deferred),
++            )
++            outcome, dropped, deferred = "coalesced", dropped + 1, event_id
++        else:
++            self._enqueue(conn, event_id, kind, payload, expires, now + RELAY_COALESCE_DELAY)
++            outcome, deferred = "queued", event_id
++        conn.execute(
++            "INSERT INTO relay_budget VALUES(?,?,?,?,?) ON CONFLICT(sensor_ref) DO UPDATE SET "
++            "window_start=excluded.window_start,relayed=excluded.relayed,"
++            "dropped=excluded.dropped,deferred_event_id=excluded.deferred_event_id",
++            (sensor, budget["window_start"], relayed, dropped, deferred),
++        )
++        return outcome, dropped
+ 
+     def connection_test(self):
+@@ -157,5 +209,5 @@
+
+ 
+     def collect(self, directory):
+-        counts = {"baseline": 0, "queued": 0, "expired": 0, "invalid": 0}
++        counts = {"baseline": 0, "queued": 0, "coalesced": 0, "expired": 0, "invalid": 0}
+         for source, (relative, table) in SOURCES.items():
+             path = Path(directory) / relative
+@@ -185,4 +237,5 @@
+
+                         (previous["last_id"],),
+                     ).fetchall()
++                    coalesced = {}
+                     for row in rows:
+                         try:
+@@ -223,6 +276,15 @@
+
+                                     (namespace + ":" + source + ":" + str(row["id"])).encode()
+                                 ).hexdigest()
+-                                self._enqueue(conn, stable, kind, payload, expires)
+-                                counts["queued"] += 1
++                                # Budget key: the door sensor, or the automation source as a whole.
++                                sensor = hashlib.sha256((
++                                    namespace + ":budget:" + source + ":"
++                                    + (str(row["device_id"]) if source == "door" else "")
++                                ).encode()).hexdigest()
++                                outcome, dropped = self._relay(
++                                    conn, sensor, stable, kind, payload, expires
++                                )
++                                counts[outcome] += 1
++                                if outcome == "coalesced":
++                                    coalesced[sensor] = dropped
+                         except (ValueError, TypeError, OverflowError):
+                             counts["invalid"] += 1
+@@ -230,4 +292,7 @@
+
+                             "UPDATE cursors SET last_id=? WHERE source=?", (row["id"], source)
+                         )
++                    for sensor, dropped in coalesced.items():
++                        log_limited("coalesce:" + sensor, logging.WARNING,
++                                    "RELAY_COALESCED sensor=%s dropped=%s", sensor[:12], dropped)
+             finally:
+                 src.close()
+@@ -343,5 +408,12 @@
+
+             return dict(row) if row else None
+ 
+-    def finish(self, item, outcome):
++    def finish(self, item, outcome, *, wait=0.0):
++        if outcome == "rate_limited":
++            # Hold every pending event (this one included) until Retry-After passes. Nothing is
++            # dropped, nothing is sent twice, and the attempt budget is not consumed.
++            with self.connect() as conn:
++                conn.execute("UPDATE outbox SET due_at=MAX(due_at,?) WHERE state='pending'",
++                             (self.clock() + wait,))
++            return
+         attempts = item["attempts"] + 1
+         state = "pending" if outcome == "retry" else outcome
+@@ -382,4 +454,20 @@
+
+ 
+ 
++def retry_after(headers):
++    """Retry-After as delta-seconds or an HTTP-date; otherwise the default. Always within bounds."""
++    low, default, high = RATE_LIMIT_WAIT
++    value = str((headers.get("Retry-After") if headers is not None else None) or "").strip()
++    try:
++        if re.fullmatch(r"[0-9]{1,9}", value):
++            wait = float(value)
++        elif value:
++            wait = email.utils.parsedate_to_datetime(value).timestamp() - time.time()
++        else:
++            wait = default
++    except (TypeError, ValueError, OverflowError):
++        wait = default
++    return min(max(wait, low), high)
++
++
+ class Sender:
+     def __init__(self, config):
+@@ -388,4 +476,5 @@
+
+         self.opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+         self.blocked = False
++        self.rate_limit_wait = 0.0
+ 
+     def send(self, item):
+@@ -399,5 +488,6 @@
+
+             data=json.dumps(body).encode(),
+             method="POST",
+-            headers={"Authorization": "Bearer " + self.token, "Content-Type": "application/json"},
++            headers={"Authorization": "Bearer " + self.token, "Content-Type": "application/json",
++                     "User-Agent": "FamilySmartHome-Pi/0.5.1"},
+         )
+         try:
+@@ -405,5 +495,5 @@
+
+                 reply = json.loads(response.read(8193))
+                 if (
+-                    response.status == 200
++                    response.status in (200, 202)
+                     and type(reply.get("id")) is int
+                     and type(reply.get("duplicate")) is bool
+@@ -415,5 +505,8 @@
+
+                 self.blocked = True
+                 return "rejected"
+-            if error.code == 429 or error.code >= 500:
++            if error.code == 429:
++                self.rate_limit_wait = retry_after(error.headers)
++                return "rate_limited"
++            if error.code >= 500:
+                 return "retry"
+             return "rejected"
+@@ -452,6 +545,8 @@
+
+     def devices(self):
+         rows = self.request('/api/v1/devices')['items']
+-        # Same normalisation as the server's text(): one odd name must not reject the heartbeat.
+-        return [{'id': row['id'], 'name': ''.join(c for c in str(row.get('name') or '') if ord(c)>=32).strip()[:80].strip() or 'Air conditioner'}
++        # Same Cc/Cf stripping as the server's heartbeat: one odd name must not reject it.
++        return [{'id': row['id'], 'name': ''.join(c for c in str(row.get('name') or '')
++                                                   if unicodedata.category(c) not in ('Cc', 'Cf')
++                                                   ).strip()[:80].strip() or 'Air conditioner'}
+                 for row in rows if isinstance(row, dict)
+                 and re.fullmatch(r'[a-f0-9]{32}', str(row.get('id', '')))
+@@ -485,5 +580,6 @@
+
+             raise RuntimeError('Hub credential rejected')
+         request = urllib.request.Request(self.url+path, data=json.dumps(body).encode(), method=method,
+-            headers={'Authorization': 'Bearer '+self.sender.token, 'Content-Type': 'application/json'})
++            headers={'Authorization': 'Bearer '+self.sender.token, 'Content-Type': 'application/json',
++                     'User-Agent': 'FamilySmartHome-Pi/0.5.1'})
+         try:
+             with self.sender.opener.open(request, timeout=5) as response:
+@@ -588,6 +684,9 @@
+
+         return False
+     outcome = sender.send(item)
+-    store.finish(item, outcome)
+-    LOGGER.info("CENTRAL_RELAY outcome=%s", outcome)
++    store.finish(item, outcome, wait=sender.rate_limit_wait)
++    if outcome == "rate_limited":
++        LOGGER.warning("CENTRAL_RELAY outcome=rate_limited wait=%s", int(sender.rate_limit_wait))
++    else:
++        LOGGER.info("CENTRAL_RELAY outcome=%s", outcome)
+     return True
+ 
+@@ -680,3 +779,2 @@
+
+ if __name__ == "__main__":
+     main()
+-

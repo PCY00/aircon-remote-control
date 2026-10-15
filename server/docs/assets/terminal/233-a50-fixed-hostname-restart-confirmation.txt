@@ -1,0 +1,14 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only follow-up after restart; missing import corrected; no second restart
+Traceback (most recent call last):
+  File "<stdin>", line 15, in <module>
+  File "/data/data/com.termux/files/usr/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/proc/17418/task/17418/children'
+
+EXIT_CODE=1

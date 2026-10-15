@@ -1,0 +1,105 @@
+# Pi security deployment 2026-10-15 — actual commands and output; private values removed
+
+$ ssh air@AC [backup] tar code/config + sqlite3 .backup (integrity_check)
+SQLITE_BACKUPS 2
+AGENT_SQLITE_BACKUPS 5
+runtime/backups/2026-10-15-security  884K
+
+$ powershell -File scripts/deploy.ps1            # preview
+TARGET=air@AC:/home/air/aircon-controller
+FILE_COUNT=90
+TOTAL_BYTES=1154818
+NO_REMOTE_CHANGES=preview-only
+
+$ powershell -File scripts/deploy.ps1 -Apply
+FILE_COUNT=90
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+$ scripts/deploy.ps1 -Apply -Include [6 zigbee helper / kiosk scripts]; scripts/deploy_zigbee.ps1 -Apply
+FILE_COUNT=6 CHECKSUMS=verified DEPLOYMENT_STATUS=success
+FILE_COUNT=10
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+
+$ ssh air@AC bash scripts/setup_zigbee_stack.sh
+[sha256 prefix] runtime/zigbee/zigbee2mqtt/secret.yaml
+ Container aircon-mosquitto  Recreate
+ Container aircon-mosquitto  Recreated
+ Container aircon-zigbee2mqtt  Recreate
+ Container aircon-zigbee2mqtt  Recreated
+ Container aircon-mosquitto  Starting
+ Container aircon-mosquitto  Started
+ Container aircon-zigbee2mqtt  Starting
+ Container aircon-zigbee2mqtt  Started
+ZIGBEE_RUNTIME_CREATED=/home/air/aircon-controller/runtime/zigbee
+ZIGBEE_ADAPTER_CONFIGURED=by-id
+ZIGBEE_CHANNEL=20
+ZIGBEE_STACK_START_REQUESTED=true
+MQTT_ACL_FILE=deploy/zigbee/mosquitto/acl.conf
+EXIT_SETUP=0
+[sha256 prefix] runtime/zigbee/zigbee2mqtt/secret.yaml (after)
+aircon-zigbee2mqtt Up 8 seconds
+aircon-mosquitto Up 8 seconds
+
+$ ssh air@AC bash scripts/setup_app_mqtt.sh
+fastapi 0.141.1 starlette 1.6.0
+MOSQUITTO_RELOAD=signalled
+APP_MQTT_USER=aircon-controller
+APP_MQTT_ENV=created mode=600
+SERVICE_UNIT=updated
+SERVICE_RESTART=completed
+EXIT_APP_MQTT=0
+zigbee2mqtt
+aircon-controller
+AIRCON_MQTT_USERNAME=aircon-controller
+600 runtime/app.env
+600 runtime/zigbee/mosquitto/passwords
+active
+
+$ ssh air@AC [verification]
+health=200
+devices_own_host=200
+devices_foreign_host=400
+post_cross_origin=403
+post_sec_fetch_cross=403
+== sensors/mqtt status ==
+{'enabled': True, 'connected': False, 'last_error': 'MQTT disconnected: Unspecified error'}
+join {'permit_join': False, 'remaining_seconds': 0}
+sensors 2
+== unit & process ==
+NRestarts=0 InaccessiblePaths=-/run/docker.sock ActiveState=active 
+uvicorn app.main:app --host [TS_IP] --port 8001 --limit-concurrency 64 --timeout-graceful-shutdown 5
+== mosquitto denials ==
+[ts] Client aircon-controller [[DOCKER_BRIDGE_IP]] disconnected: not authorised.
+[ts] Client aircon-controller [[DOCKER_BRIDGE_IP]] disconnected: not authorised.
+[ts] Client aircon-controller [[DOCKER_BRIDGE_IP]] disconnected: not authorised.
+[ts] Client aircon-controller [[DOCKER_BRIDGE_IP]] disconnected: not authorised.
+[ts] Client aircon-controller [[DOCKER_BRIDGE_IP]] disconnected: not authorised.
+== check_zigbee_stack ==
+[mqtt bridge state]
+{"state":"online"}
+[broker access control]
+MQTT_ACL_FILE_MOUNTED=true
+APP_MQTT_USER_PRESENT=true
+[host listeners]
+PORT_1883_LOOPBACK_ONLY=true
+PORT_8080_LOOPBACK_ONLY=true
+[existing application]
+{"status":"ok","service":"aircon-controller"}
+ZIGBEE_STACK_STATUS=success
+
+# Problem: the app was refused (not authorised). setup_app_mqtt.sh replaced the password file with mv;
+# Mosquitto bind-mounts that single file, so the running container still saw the old inode.
+$ ssh air@AC docker restart aircon-mosquitto
+inside container users (before): zigbee2mqtt
+inside container users (after): zigbee2mqtt aircon-controller
+[ts] New client connected from [IP] as aircon-controller (p4, c1, k60, u'aircon-controller').
+{'enabled': True, 'connected': True, 'last_error': None}
+# Fix: setup_app_mqtt.sh now rewrites the file in place (cat > passwords); redeployed, tests 5 passed.
+
+$ ../.venv/Scripts/python.exe scripts/pi/deploy_central_agent.py --apply   # see server capture 237
+AGENT_SERVICE=active
+AGENT_CODE_AND_UNIT_SHA256_MATCH=PASS
+NRestarts=0 InaccessiblePaths=-/run/docker.sock ActiveState=active
+tables [..., 'climate_cursors', 'control_receipts', 'relay_budget']  climate_cursors cols ['sensor_ref', 'reported_at', 'relayed_at']

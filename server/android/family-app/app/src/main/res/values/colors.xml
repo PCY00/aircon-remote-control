@@ -1,0 +1,4 @@
+<resources>
+    <!-- Mirrors FamilyActivity's dark palette for theme attributes that only accept references. -->
+    <color name="family_background">#0F1724</color>
+</resources>

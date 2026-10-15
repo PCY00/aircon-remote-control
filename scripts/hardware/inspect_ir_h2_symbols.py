@@ -1,7 +1,7 @@
-from pathlib import Path
 from kicad_sexpr import read, child, children, walk
+from hw_paths import kicad_root
 
-source = Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\IR_ESP32H2.kicad_sch')
+source = kicad_root() / 'IR_ESP32H2.kicad_sch'
 root = read(source)
 for symbol in children(child(root, 'lib_symbols'), 'symbol'):
     print('\nSYMBOL', symbol[1])

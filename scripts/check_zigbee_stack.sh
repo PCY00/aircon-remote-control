@@ -7,6 +7,7 @@ compose_dir="$project_root/deploy/zigbee"
 runtime_dir="$project_root/runtime/zigbee"
 env_file="$runtime_dir/stack.env"
 secret_file="$runtime_dir/zigbee2mqtt/secret.yaml"
+mosquitto_container="aircon-mosquitto"
 
 if [[ ! -f "$env_file" ]] || [[ ! -f "$secret_file" ]]; then
     echo "Zigbee runtime configuration is missing. Run setup_zigbee_stack.sh first." >&2
@@ -18,6 +19,27 @@ if [[ -z "$mqtt_password" ]]; then
     echo "Could not read the MQTT password from secret.yaml." >&2
     exit 1
 fi
+
+# The broker password rides in the docker CLI environment (-e NAME propagates it
+# without putting the value on the command line) and reaches the client through
+# its default-options file, so it never appears in any host or container argv.
+mqtt_client() {
+    local client="$1"
+    shift
+    MQTT_PW="$mqtt_password" docker exec -e MQTT_PW "$mosquitto_container" sh -c '
+        umask 077
+        dir="$(mktemp -d)" || exit 1
+        printf "%s %s\n" -P "$MQTT_PW" >"$dir/$0"
+        XDG_CONFIG_HOME="$dir" "$0" -h 127.0.0.1 -p 1883 -u zigbee2mqtt "$@"
+        rc=$?
+        rm -rf -- "$dir"
+        exit "$rc"
+    ' "$client" "$@"
+}
+
+mqtt_sub() {
+    mqtt_client mosquitto_sub "$@"
+}
 
 compose=(docker compose --env-file "$env_file" --file "$compose_dir/compose.yaml")
 
@@ -48,11 +70,23 @@ fi
 
 echo
 echo "[mqtt bridge state]"
-bridge_state="$(docker exec aircon-mosquitto mosquitto_sub \
-    -h 127.0.0.1 -p 1883 \
-    -u zigbee2mqtt -P "$mqtt_password" \
-    -t zigbee2mqtt/bridge/state -C 1 -W 10)"
+bridge_state="$(mqtt_sub -t zigbee2mqtt/bridge/state -C 1 -W 10)"
 printf '%s\n' "$bridge_state"
+
+echo
+echo "[broker access control]"
+if docker exec "$mosquitto_container" test -s /mosquitto/config/acl.conf; then
+    echo "MQTT_ACL_FILE_MOUNTED=true"
+else
+    echo "MQTT_ACL_FILE_MOUNTED=false"
+    echo "Recreate the broker with the ACL mount: setup_zigbee_stack.sh (compose up -d)." >&2
+    exit 1
+fi
+if grep -q '^aircon-controller:' "$runtime_dir/mosquitto/passwords"; then
+    echo "APP_MQTT_USER_PRESENT=true"
+else
+    echo "APP_MQTT_USER_PRESENT=false (run scripts/setup_app_mqtt.sh)"
+fi
 
 echo
 echo "[host listeners]"

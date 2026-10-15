@@ -1,0 +1,3 @@
+# Actual executed commands and output; private details removed
+
+CONTROL_CONFIGURATION=FAILED PRIVATE_DETAILS_NOT_LOGGED=TRUE

@@ -157,4 +157,4 @@ def test_schema_three_upgrade_preserves_registered_devices_and_existing_home(tmp
             ("private-token", "binding")
         ]
         assert conn.execute("SELECT COUNT(*) FROM notification_preferences").fetchone() == (0,)
-        assert conn.execute("PRAGMA user_version").fetchone() == (4,)
+        assert conn.execute("PRAGMA user_version").fetchone() == (7,)

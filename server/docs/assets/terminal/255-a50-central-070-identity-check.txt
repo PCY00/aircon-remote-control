@@ -1,0 +1,7 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] central_server.admin identity
+SERVER_IDENTITY_FINGERPRINT=d4c985adc5685256e36ea0681517bf02099b321257a86c925f53a3e0844b3d47
+SERVER_IDENTITY_GROUPED=d4c9 85ad c568 5256 e36e a068 1517 bf02 099b 3212 57a8 6c92 5f53 a3e0 844b 3d47
+
+EXIT_CODE=0

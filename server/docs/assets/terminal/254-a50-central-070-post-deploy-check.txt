@@ -1,0 +1,22 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - [read-only schema 7 row counts]
+SCHEMA_VERSION=7
+INTEGRITY=ok
+ROWS_HOMES=2
+ROWS_HUBS=1
+ROWS_MEMBERSHIPS=2
+ROWS_EVENTS=1044
+ROWS_INSTALLATIONS=4
+ROWS_NOTIFICATION_PREFERENCES=4
+ROWS_NOTIFICATION_LEVELS=12
+ROWS_HUB_DEVICES=0
+ROWS_HUB_INVENTORY=0
+ACTIVE_HOMES=1
+LEVEL_ROWS_BY_CATEGORY={"automation": 4, "report": 4, "security": 4}
+
+EXIT_CODE=0
+$ SSH [verified host key] central_server.admin identity
+/data/data/com.termux/files/usr/bin/bash: line 1: ../.venv/bin/python: No such file or directory
+
+EXIT_CODE=127

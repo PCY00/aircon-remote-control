@@ -1,8 +1,12 @@
+import subprocess
+import sys
 from pathlib import Path
 from time import monotonic, sleep
 
+import pytest
 from fastapi.testclient import TestClient
 
+from app.ir.backend import IrCtlReceiver
 from app.ir.mock import MockReceiver
 from app.main import create_app
 from app.settings import Settings
@@ -92,3 +96,59 @@ def test_rejects_unknown_remote_profile(tmp_path: Path) -> None:
         )
 
     assert response.status_code == 422
+
+
+def test_unparsable_capture_releases_receiver(tmp_path: Path) -> None:
+    # ir-ctl prints "# overflow" when the kernel reports LIRC_MODE2_OVERFLOW.
+    receiver = MockReceiver(["+4403 -4277 +650 -1501 # overflow", make_capture()])
+    app = create_app(make_settings(tmp_path), receiver)
+
+    with TestClient(app) as client:
+        first = client.post("/api/v1/ir/captures", json={"name": "noisy"})
+        failed = wait_for_terminal(client, first.json()["id"])
+        second = client.post("/api/v1/ir/captures", json={"name": "retry"})
+        assert second.status_code == 202
+        retried = wait_for_terminal(client, second.json()["id"])
+
+    assert failed["status"] == "failed"
+    assert "non-integer" in failed["error"]
+    assert failed["files"] == {"metadata": f"{failed['id']}.json"}
+    assert (tmp_path / "captures" / f"{failed['id']}.json").is_file()
+    assert retried["status"] == "completed"
+
+
+def test_capture_rejects_blank_name(tmp_path: Path) -> None:
+    app = create_app(make_settings(tmp_path), MockReceiver([make_capture()]))
+
+    with TestClient(app) as client:
+        response = client.post("/api/v1/ir/captures", json={"name": "   "})
+
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize(
+    ("features", "available"),
+    [
+        ("Receive features /dev/lirc0:\n - Device cannot receive\n"
+         "Send features /dev/lirc0:\n - Device can send raw IR\n", False),
+        ("Receive features /dev/lirc1:\n - Device can receive raw IR\n"
+         "Send features /dev/lirc1:\n - Device cannot send\n", True),
+    ],
+)
+def test_receiver_status_requires_receive_feature(
+    tmp_path: Path, features: str, available: bool
+) -> None:
+    device = tmp_path / "lirc"
+    device.touch()
+    calls: list[list[str]] = []
+
+    def runner(args: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        calls.append(args)
+        return subprocess.CompletedProcess(args, 0, features, "")
+
+    status = IrCtlReceiver(sys.executable, device, runner=runner).status()
+
+    assert status.available is available
+    expected_detail = "ready" if available else "Device cannot receive"
+    assert expected_detail in status.details
+    assert calls == [[sys.executable, f"--device={device}", "--features"]]

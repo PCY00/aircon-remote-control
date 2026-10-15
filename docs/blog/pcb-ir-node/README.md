@@ -63,6 +63,7 @@
 - [ ] DRC 0을 무결점·인증·실물 성공으로 표현하지 않는다. 비활성 검사와 남은 검증을 함께 남긴다.
 - [ ] 기기 고유 식별자·사설 주소·계정·절대 개인 경로가 새 캡처에 포함되지 않았는지 확인한다.
 - [ ] 추가한 사진을 포함해 `python scripts/sanitize_blog_images.py docs/assets/`가 `PRIVATE_METADATA_COUNT=0`인지 확인한다.
+- [ ] 같은 결과의 `UNCHECKED_COUNT=0`도 확인한다. 동영상처럼 도구가 읽지 못하는 파일은 메타데이터를 직접 확인한 뒤 `docs/assets/.sanitize-reviewed.json`에 SHA-256과 함께 기록한다.
 
 이번 공개용 이미지에는 개인 메타데이터가 없음을 검사했다. 검사 결과와 원고 링크 확인은
 [원고 정리 기록](../../journal/2026-09-22-pcb-blog-series.md)에 남긴다.

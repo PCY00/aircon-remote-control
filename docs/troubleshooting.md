@@ -306,6 +306,10 @@ PowerShell 파서에서 닫는 괄호와 대괄호를 잘못 해석했다. 주�
   공개 자산을 정리한다. EXIF orientation은 픽셀에 먼저 적용해 사진 방향을 유지한다.
 - 검증: 게시 직전에 `.venv/Scripts/python.exe scripts/sanitize_blog_images.py docs/assets/`
   를 실행하고 `PRIVATE_METADATA_COUNT=0`을 확인한다.
+- 동영상·WebP·HEIC처럼 이 도구가 읽지 못하는 파일은 `UNCHECKED=`로 표시되고
+  `UNCHECKED_COUNT`가 0이 아니면 검사가 실패한다. 메타데이터를 직접 확인한 파일만
+  `docs/assets/.sanitize-reviewed.json`에 경로, SHA-256과 확인 내용을 적는다. 파일이
+  바뀌면 해시가 달라져 다시 `UNCHECKED`로 나온다.
 
 ## Windows에서 Pi로 전송한 새 셸 스크립트가 직접 실행되지 않음
 
@@ -711,3 +715,65 @@ Pi 이벤트를 보내지 않는다. 센서 변화를 가짜로 만들어 시험
 0.4.0에서는 설정 → 알림 설정 → 이 휴대폰에서 받기 스위치로 알림을 켠다. 종류와 간격을 바꾼 뒤 하단의 선택 저장을 누른다. 연결 준비 중에는 상태가 갱신될 때까지 기다리거나 알림 연결 확인을 누른다.
 
 UI 검사도 화면의 실제 위치를 따라야 한다. 아래쪽 버튼을 누르고 위쪽 버튼을 찾을 때 아래로만 스크롤하면 실패한다. 접근성 노드의 화면 위치와 스크롤 영역을 비교해 앞으로 또는 뒤로 이동한다. 같은 APK에서 실패 338을 보존하고 수정 검사 341이 통과했다.
+
+## 경제운전이 422를 반환하거나 Pi 백엔드 동작이 달라짐 (2026-10-13)
+
+- 경제운전(`economy`)은 특수 프레임 뒤 마지막 요청 상태의 냉방 온도와 자동풍 상태를 다시
+  보낸다. 마지막 상태가 전원 켜짐·냉방·유효 온도가 아니면 IR 없이 422
+  `economy requires the air conditioner to be cooling`을 반환한다. 먼저 냉방을 켠다.
+  응답의 `device.last_desired_state`는 풍량 `auto`로 바뀐다. H2 경로에서 두 번째
+  `COOL_STATE`가 실패하면 502이며 특수 프레임은 이미 나갔을 수 있다.
+- 냉방 온도는 Coolix 온도표로 만든다. 27℃는 `90 6f`, 28℃는 `80 7f`다(ISSUE-021).
+- 학습 수신기는 서비스에서 `/dev/lirc1`을 쓰고, `ir-ctl --features`에
+  `Device can receive raw IR`이 있을 때만 `available=true`다(ISSUE-024).
+- 파싱할 수 없는 수신 결과(예: `# overflow`)는 해당 캡처만 `failed`로 남기고 수신기를
+  해제한다. 이전에는 재시작 전까지 계속 409였다.
+- H2의 `duplicate` 결과는 재전송 사본에 대한 응답이므로 원래 요청의 `sent`/`failed`를
+  계속 기다린다. Zigbee2MQTT 2.x의 `permit_join_end`(밀리초)는 초로 바꿔 계산한다.
+- 이름을 바꾸거나 제거한 도어센서의 남은 행은 `DELETE /api/v1/sensors/{device_id}`로
+  지운다(204, 없으면 404). 계속 보고하는 센서는 다음 보고에서 다시 생긴다.
+- Pi 시계가 뒤로 돌아간 뒤(정전 후 NTP 전) 들어온 보고는 과거 `last_seen`이어도 수신
+  순서대로 적용하고 경고 로그를 남긴다.
+
+## 하드웨어 스크립트가 KiCad 프로젝트 폴더를 찾지 못함
+
+2026-10-15 `scripts/hardware/` 스크립트에 들어 있던 PC 사용자 폴더 경로를 지우고 `hw_paths.py`로
+모았다. 스크립트는 `IR_H2_KICAD_ROOT`(KiCad 프로젝트 폴더), `KICAD_INSTALL_DIR`, `KICAD_CLI`,
+`IR_H2_VENDOR_FOOTPRINTS`, `IR_H2_ROUTE_TOOLS` 환경 변수를 먼저 읽고, 없으면 같은 PC의 기본 위치를
+찾는다. 둘 다 없으면 `Could not find ...; set IR_H2_KICAD_ROOT` 같은 한 줄 메시지로 멈추므로 그
+변수에 실제 폴더를 넣고 다시 실행한다. `render_svg_review.cjs`는 `SHARP_MODULE` 변수나 일반 Node
+모듈 검색으로 `sharp`를 찾는다.
+
+터미널 기록에 남는 pytest 임시 폴더 이름은 Windows 로그인 계정을 드러내므로 기록 200과 265에서
+`[REDACTED_USER]`로 바꾸고 PNG를 다시 만들었다. 독자 묶음 검사(`make_reader_bundle.py --check-only`)는
+이런 임시 폴더 이름, Tailscale 호스트 이름, `AIza`/`GOCSPX-`/`tskey-`/`hub_` 같은 토큰 접두어와
+현재 로그인 계정 이름도 걸러낸다.
+
+## API가 400 `Host header is not this service` 또는 403 `cross-site requests cannot change this service`를 돌려줌 (2026-10-15)
+
+- 400: 접속한 Host 이름이 허용 목록에 없다. 허용값은 `AIRCON_HOST`(run_pi.sh가 조회한
+  Tailscale IPv4), `127.0.0.1`, `localhost`, `::1`, 연결이 도착한 서버 주소,
+  `AIRCON_ALLOWED_HOSTS`뿐이다. MagicDNS 같은 이름으로 접속하려면 `runtime/app.env`에
+  `AIRCON_ALLOWED_HOSTS=<이름>`을 적고 `systemctl --user restart aircon-controller`.
+  `run_pi.sh`를 거치지 않고 uvicorn을 직접 띄웠다면 `AIRCON_HOST`를 같이 내보낸다.
+- 403: 다른 사이트에서 온 `Origin`이거나 `Sec-Fetch-Site: cross-site`인 변경 요청이다.
+  대시보드를 허용된 주소로 열면 같은 출처가 되어 사라진다. `curl`과 중앙 에이전트처럼
+  헤더가 없는 요청은 막지 않는다.
+- 411/413/507/429 on `POST /api/v1/device-requests`: 각각 `Content-Length` 누락, 요청
+  크기 초과, 저장 총량(`AIRCON_DEVICE_REQUEST_QUOTA_BYTES`) 초과, 시간당 20건 초과다.
+  `runtime/device_requests/` 아래 처리한 요청을 정리하면 507이 풀린다.
+- 429 on `POST /api/v1/zigbee/join`: 5분 안에 다시 열었다. 먼저 닫기(`DELETE`)를 보낸다.
+- 503 on `/api/v1/events`: 실시간 스트림이 32개를 넘었다. 열린 탭을 닫고 다시 연다.
+
+## Mosquitto `not authorised` 또는 앱 `connection refused` (ACL 적용 뒤)
+
+- 브로커에 `acl.conf`가 적용되면 목록에 없는 토픽은 모두 거부된다. 앱이 `zigbee2mqtt`
+  계정을 그대로 쓰면 동작은 하지만 권한이 과하므로 `scripts/setup_app_mqtt.sh`로
+  `aircon-controller` 계정을 만들어 `runtime/app.env`를 갱신한다.
+- `mosquitto.conf`·`acl.conf`는 읽기 전용 bind mount라 파일만 바꿔서는 컨테이너에
+  반영되지 않는다. `scripts/setup_zigbee_stack.sh`를 다시 실행(`compose up -d`로 재생성)
+  하거나 `--force-recreate mosquitto`를 쓴다. 비밀번호 파일 변경은 `docker kill
+  --signal=HUP aircon-mosquitto`로 충분하다.
+- 헬퍼 스크립트가 `Connection Refused: not authorised`로 끝나면 컨테이너 안의
+  `$XDG_CONFIG_HOME/mosquitto_sub` 옵션 파일이 읽히지 않은 것이다. 이 방식은 Pi에서
+  `scripts/check_zigbee_stack.sh`로 처음 확인해야 하며, 확인 전에는 성공으로 적지 않는다.

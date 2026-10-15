@@ -1,10 +1,10 @@
 """Post-route copper, legibility and mechanical invariants for user artwork."""
-from pathlib import Path
 import json,os
 import pcbnew as p
 from snapshot_user_libraries import apply_library_models_to_board
+from hw_paths import kicad_root
 
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
+OUT=kicad_root()/'artwork-current'
 PCB=OUT/'IR_ESP32H2.kicad_pcb';os.environ['KIPRJMOD']=str(OUT)
 def v(x,y):return p.VECTOR2I(p.FromMM(x),p.FromMM(y))
 def xy(i):return [round(p.ToMM(i.GetPosition().x),6),round(p.ToMM(i.GetPosition().y),6)]

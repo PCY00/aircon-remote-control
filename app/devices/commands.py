@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from string import hexdigits
+
 from app.devices.catalog import DeviceProfileCatalog, InvalidProfileError
 
 
@@ -37,7 +39,7 @@ class DeviceCommandResolver:
         if not isinstance(encoders, dict):
             raise InvalidProfileError("profile has no command encoders")
         encoder = encoders.get("cool_state")
-        if not isinstance(encoder, dict) or encoder.get("kind") != "carrier_gray_code_48":
+        if not isinstance(encoder, dict) or encoder.get("kind") != "carrier_coolix_48":
             raise UnsupportedCommandError("profile cannot encode a cooling state")
 
         temperature = request.get("temperature_c")
@@ -63,10 +65,20 @@ class DeviceCommandResolver:
             or len(selected_fan) != 2
         ):
             raise InvalidProfileError("cool-state encoder bytes are malformed")
+        # Coolix temperature table, not plain Gray code: 27/28 C are 0x9/0x8 and
+        # 0xE is the fan-only "no temperature" code.
+        codes = encoder.get("temperature_codes")
+        if (
+            not isinstance(codes, list)
+            or len(codes) != maximum - minimum + 1
+            or any(
+                not isinstance(code, str) or len(code) != 1 or code not in hexdigits
+                for code in codes
+            )
+        ):
+            raise InvalidProfileError("cool-state temperature table is malformed")
 
-        offset = temperature - minimum
-        gray = offset ^ (offset >> 1)
-        temperature_byte = (gray << 4) & 0xF0
+        temperature_byte = int(codes[temperature - minimum], 16) << 4
         complement = temperature_byte ^ 0xFF
         frame = [*prefix, *selected_fan, f"{temperature_byte:02x}", f"{complement:02x}"]
         repeat_count = int(encoder.get("repeat_count", 2))
@@ -74,9 +86,12 @@ class DeviceCommandResolver:
             "command_id": f"cool_{temperature}_{fan}",
             "kind": "state",
             "frames_hex": [frame for _ in range(repeat_count)],
-            "source": "generated_from_measured_gray_code_rule",
-            "verification": "encoding_rule_verified_17_to_20_only",
-            "warning": "hardware transmission remains unverified until Step 4",
+            "source": "generated_from_coolix_temperature_table",
+            "verification": "temperature_codes_measured_17_to_20_only",
+            "warning": (
+                "21-30 C use the Coolix temperature table; "
+                "27 and 28 C are not yet confirmed on the real air conditioner"
+            ),
             "effective_state": {
                 "power": True,
                 "mode": "cool",
@@ -85,14 +100,71 @@ class DeviceCommandResolver:
             },
         }
 
-    def resolve(self, profile_id: str, request: dict[str, object]) -> dict[str, object]:
+    @classmethod
+    def _with_current_cool_state(
+        cls,
+        command: dict[str, object],
+        current_state: dict[str, object] | None,
+        command_data: dict[str, object],
+    ) -> dict[str, object]:
+        """Rebuild the remote's trailing state frames from the current setpoint.
+
+        The captured economy press is an eco frame followed by the remote's full
+        cool state (fan auto). Replaying the captured 17 C state would change the
+        setpoint or power the unit on, so the state is generated from what the
+        device was last told and becomes the recorded effective state.
+        """
+        follow = command.pop("followed_by_current_cool_state", None)
+        if follow is None:
+            return command
+        frames = command.get("frames_hex")
+        if (
+            not isinstance(follow, dict)
+            or not isinstance(follow.get("fan"), str)
+            or not isinstance(frames, list)
+        ):
+            raise InvalidProfileError(f"follow-up state is malformed: {command['command_id']}")
+        state = current_state if isinstance(current_state, dict) else {}
+        requirement = f"{command['command_id']} requires the air conditioner to be cooling"
+        if state.get("power") is not True or state.get("mode") != "cool":
+            raise UnsupportedCommandError(requirement)
+        try:
+            follow_up = cls._cool_state(
+                {"temperature_c": state.get("temperature_c"), "fan": follow["fan"]},
+                command_data,
+            )
+        except UnsupportedCommandError as exc:
+            raise UnsupportedCommandError(f"{requirement} at a known temperature") from exc
+        effective_state = follow_up["effective_state"]
+        assert isinstance(effective_state, dict)
+        command["frames_hex"] = [*frames, *follow_up["frames_hex"]]
+        # The H2 node sends the eco frame only; DeviceService sends this as COOL_STATE.
+        command["follow_up_command"] = {
+            "command_id": follow_up["command_id"],
+            "kind": follow_up["kind"],
+            "effective_state": dict(effective_state),
+        }
+        command["effective_state"] = {
+            **{key: value for key, value in state.items() if key != "confirmation"},
+            **effective_state,
+        }
+        return command
+
+    def resolve(
+        self,
+        profile_id: str,
+        request: dict[str, object],
+        current_state: dict[str, object] | None = None,
+    ) -> dict[str, object]:
         command_data = self._catalog.get_commands(profile_id)
         action = request.get("action")
         if action == "execute":
             command_id = request.get("command_id")
             if not isinstance(command_id, str) or not command_id:
                 raise UnsupportedCommandError("command_id is required for execute")
-            command = self._command_from_catalog(command_id, command_data)
+            command = self._with_current_cool_state(
+                self._command_from_catalog(command_id, command_data), current_state, command_data
+            )
         elif action == "set_state":
             power = request.get("power")
             if power is False:

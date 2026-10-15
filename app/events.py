@@ -9,12 +9,19 @@ from contextlib import asynccontextmanager, suppress
 from datetime import UTC, datetime
 from threading import Lock
 
+MAX_SUBSCRIBERS = 32
+
+
+class EventHubFullError(RuntimeError):
+    """Raised when the live-stream subscriber cap is reached."""
+
 
 class EventHub:
     """Broadcast JSON-safe events from MQTT threads to async SSE clients."""
 
-    def __init__(self, *, queue_size: int = 100) -> None:
+    def __init__(self, *, queue_size: int = 100, max_subscribers: int = MAX_SUBSCRIBERS) -> None:
         self._queue_size = queue_size
+        self.max_subscribers = max_subscribers
         self._loop: asyncio.AbstractEventLoop | None = None
         self._subscribers: set[asyncio.Queue[dict[str, object]]] = set()
         self._sequence = 0
@@ -48,8 +55,19 @@ class EventHub:
                     queue.get_nowait()
             queue.put_nowait(event)
 
+    @property
+    def subscriber_count(self) -> int:
+        return len(self._subscribers)
+
+    def has_capacity(self) -> bool:
+        return len(self._subscribers) < self.max_subscribers
+
     @asynccontextmanager
     async def subscribe(self) -> AsyncIterator[asyncio.Queue[dict[str, object]]]:
+        # Each kiosk/phone tab holds one stream; an unbounded set lets one client
+        # pin memory and connection slots for everyone else.
+        if not self.has_capacity():
+            raise EventHubFullError(f"at most {self.max_subscribers} live event streams")
         queue: asyncio.Queue[dict[str, object]] = asyncio.Queue(
             maxsize=self._queue_size
         )

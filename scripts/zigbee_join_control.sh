@@ -34,16 +34,29 @@ if [[ -z "$mqtt_password" ]]; then
     exit 1
 fi
 
+# The broker password rides in the docker CLI environment (-e NAME propagates it
+# without putting the value on the command line) and reaches the client through
+# its default-options file, so it never appears in any host or container argv.
+mqtt_client() {
+    local client="$1"
+    shift
+    MQTT_PW="$mqtt_password" docker exec -e MQTT_PW "$mosquitto_container" sh -c '
+        umask 077
+        dir="$(mktemp -d)" || exit 1
+        printf "%s %s\n" -P "$MQTT_PW" >"$dir/$0"
+        XDG_CONFIG_HOME="$dir" "$0" -h 127.0.0.1 -p 1883 -u zigbee2mqtt "$@"
+        rc=$?
+        rm -rf -- "$dir"
+        exit "$rc"
+    ' "$client" "$@"
+}
+
 mqtt_sub() {
-    docker exec "$mosquitto_container" mosquitto_sub \
-        -h 127.0.0.1 -p 1883 \
-        -u zigbee2mqtt -P "$mqtt_password" "$@"
+    mqtt_client mosquitto_sub "$@"
 }
 
 mqtt_pub() {
-    docker exec "$mosquitto_container" mosquitto_pub \
-        -h 127.0.0.1 -p 1883 \
-        -u zigbee2mqtt -P "$mqtt_password" "$@"
+    mqtt_client mosquitto_pub "$@"
 }
 
 print_status() {

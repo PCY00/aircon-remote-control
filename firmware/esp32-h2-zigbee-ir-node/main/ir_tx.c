@@ -6,8 +6,17 @@
 #include "driver/rmt_tx.h"
 #include "esp_check.h"
 #include "esp_log.h"
+#include "sdkconfig.h"
 #include "carrier_profile.h"
 #include "ir_tx.h"
+
+/* Commands are longer than the non-DMA channel memory, so TX depends on RMT
+ * refill interrupts. They must keep running while Zigbee NVS flash writes
+ * disable the cache; the payload buffer below is already in internal RAM.
+ */
+#if !defined(CONFIG_RMT_TX_ISR_CACHE_SAFE)
+#error "CONFIG_RMT_TX_ISR_CACHE_SAFE is required; regenerate sdkconfig from sdkconfig.defaults"
+#endif
 
 #define IR_TX_GPIO GPIO_NUM_5
 #define RMT_RESOLUTION_HZ 1000000U

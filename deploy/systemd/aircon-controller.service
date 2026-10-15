@@ -10,16 +10,23 @@ WorkingDirectory=%h/aircon-controller
 Environment=AIRCON_PORT=8001
 Environment=AIRCON_IR_TRANSPORT=ir-ctl
 Environment=AIRCON_IR_TRANSMITTER_DEVICE=/dev/lirc0
+# Verified gpio-ir receiver; /dev/lirc0 is the send-only gpio-ir-tx node (ISSUE-024).
+Environment=AIRCON_IR_RECEIVER_DEVICE=/dev/lirc1
 Environment=AIRCON_IR_SEND_TIMEOUT=5
 EnvironmentFile=-%h/aircon-controller/runtime/app.env
 ExecStart=%h/aircon-controller/scripts/run_pi.sh
 Restart=on-failure
 RestartSec=5s
+# run_pi.sh gives open SSE streams 5 s; do not wait the default 90 s for SIGKILL.
+TimeoutStopSec=20s
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
 ReadWritePaths=%h/aircon-controller/runtime
+# The service user is in the docker group for the Zigbee stack; the web app
+# itself must never be able to drive the Docker daemon.
+InaccessiblePaths=-/run/docker.sock
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=aircon-controller

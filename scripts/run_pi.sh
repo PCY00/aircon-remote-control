@@ -15,6 +15,14 @@ if [[ -z "${host_address}" ]]; then
     exit 1
 fi
 
+# The app builds its Host allowlist from AIRCON_HOST; export the resolved address
+# so the Tailscale IP is accepted even when only run_pi.sh looked it up.
+export AIRCON_HOST="${host_address}"
+
+# The dashboard keeps an SSE stream open; without a limit a stop waits for it forever.
+# --limit-concurrency bounds open connections (kiosk, phones, agent) with 503s.
 exec "${python_path}" -m uvicorn app.main:app \
     --host "${host_address}" \
-    --port "${service_port}"
+    --port "${service_port}" \
+    --limit-concurrency 64 \
+    --timeout-graceful-shutdown 5

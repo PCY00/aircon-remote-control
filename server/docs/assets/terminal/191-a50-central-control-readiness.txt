@@ -1,0 +1,10 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] verify_control.py [read-only control heartbeat, schema and rejected public requests]
+LIVE_CONTROL_HUBS=1 ACTIVE_CONTROL_DEVICES=1 DATABASE=ok SCHEMA=5
+PUBLIC_ROUTE=/v1/homes/unknown/control REJECTED_AUTH=401
+PUBLIC_ROUTE=/v1/homes/unknown/control/commands REJECTED_AUTH=401
+PUBLIC_ROUTE=/v1/hub/control/next REJECTED_AUTH=401
+CONTROL_READINESS=PASS NO_PHYSICAL_COMMAND_SENT=TRUE
+
+EXIT_CODE=0

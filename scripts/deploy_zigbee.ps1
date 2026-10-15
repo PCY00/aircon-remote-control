@@ -28,6 +28,7 @@ $relativePaths = @(
     "deploy/zigbee/README.md",
     "deploy/zigbee/compose.yaml",
     "deploy/zigbee/mosquitto/mosquitto.conf",
+    "deploy/zigbee/mosquitto/acl.conf",
     "deploy/zigbee/zigbee2mqtt/configuration.example.yaml",
     "scripts/install_zigbee_host.sh",
     "scripts/setup_zigbee_stack.sh",

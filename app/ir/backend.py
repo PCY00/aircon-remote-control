@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import shutil
+import subprocess
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Protocol
@@ -48,9 +50,15 @@ class ReceiverBackend(Protocol):
 class IrCtlReceiver:
     """Capture a single raw packet using Linux media-utils ``ir-ctl``."""
 
-    def __init__(self, command: str, device: Path) -> None:
+    def __init__(
+        self,
+        command: str,
+        device: Path,
+        runner: Callable[..., subprocess.CompletedProcess[str]] | None = None,
+    ) -> None:
         self._command = command
         self._device = device
+        self._runner = runner or subprocess.run
 
     def _resolved_command(self) -> str | None:
         command_path = Path(self._command)
@@ -67,16 +75,40 @@ class IrCtlReceiver:
             missing.append(f"command not found: {self._command}")
         if not device_exists:
             missing.append(f"device not found: {self._device}")
+        details = "ready" if available else "; ".join(missing)
+        if available:
+            # /dev/lirc numbering follows overlay order; a send-only gpio-ir-tx node
+            # exists too, so require the receive feature like the transmitter does.
+            try:
+                result = self._runner(
+                    [str(command), f"--device={self._device}", "--features"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                    check=False,
+                )
+            except (OSError, subprocess.SubprocessError) as exc:
+                available, details = False, str(exc)
+            else:
+                feature_output = "\n".join(part for part in (result.stdout, result.stderr) if part)
+                available = (
+                    result.returncode == 0
+                    and "device can receive raw" in feature_output.casefold()
+                )
+                details = (
+                    "ready" if available
+                    else feature_output.strip() or f"ir-ctl --features exited {result.returncode}"
+                )
         return ReceiverStatus(
             backend="ir-ctl",
             available=available,
             command=command,
             device=str(self._device),
-            details="ready" if available else "; ".join(missing),
+            details=details,
         )
 
     async def capture_once(self, timeout_seconds: float) -> str:
-        status = self.status()
+        status = await asyncio.to_thread(self.status)
         if not status.available or status.command is None:
             raise ReceiverUnavailableError(status.details)
 

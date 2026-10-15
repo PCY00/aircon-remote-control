@@ -1,0 +1,8 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only comparison of USB H2 and previously registered Zigbee H2
+USB_H2_MATCHES_EXISTING_PI_H2=True
+PERMIT_JOIN=False
+READ_ONLY_IDENTITY_COMPARISON=TRUE
+
+EXIT_CODE=0

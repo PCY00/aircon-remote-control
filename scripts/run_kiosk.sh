@@ -54,7 +54,8 @@ until /usr/bin/curl --fail --silent --show-error --max-time 3 "${health_url}" >/
 done
 echo "Dashboard is healthy. Starting Chromium kiosk."
 
-exec /usr/bin/cage -d -s -- /usr/bin/chromium \
+# No -s: the kiosk must not allow VT switching away from the locked-down session.
+exec /usr/bin/cage -d -- /usr/bin/chromium \
     --kiosk \
     --no-first-run \
     --no-default-browser-check \

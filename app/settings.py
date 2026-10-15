@@ -60,6 +60,32 @@ def _read_max_upload_bytes() -> int:
     return value
 
 
+def _read_device_request_quota_bytes() -> int:
+    raw_value = os.getenv("AIRCON_DEVICE_REQUEST_QUOTA_BYTES", str(200 * 1024 * 1024))
+    try:
+        value = int(raw_value)
+    except ValueError as exc:
+        raise ValueError("AIRCON_DEVICE_REQUEST_QUOTA_BYTES must be an integer") from exc
+
+    if not 1024 * 1024 <= value <= 10 * 1024 * 1024 * 1024:
+        raise ValueError("AIRCON_DEVICE_REQUEST_QUOTA_BYTES must be between 1 MiB and 10 GiB")
+    return value
+
+
+def _read_allowed_hosts() -> tuple[str, ...]:
+    # Extra Host names (e.g. a Tailscale MagicDNS name) besides the bind address
+    # and loopback. Compared without port, case-insensitively.
+    hosts: list[str] = []
+    for raw_host in os.getenv("AIRCON_ALLOWED_HOSTS", "").split(","):
+        host = raw_host.strip().lower()
+        if not host:
+            continue
+        if "/" in host or " " in host or host == "*" or host.startswith("*."):
+            raise ValueError("AIRCON_ALLOWED_HOSTS must list exact host names without wildcards")
+        hosts.append(host)
+    return tuple(dict.fromkeys(hosts))
+
+
 def _read_bool(name: str, default: bool) -> bool:
     raw_value = os.getenv(name)
     if raw_value is None:
@@ -117,6 +143,8 @@ class Settings:
     ir_transmitter_device: Path = Path("/dev/lirc0")
     ir_send_timeout_seconds: float = 5.0
     max_upload_bytes: int = 10 * 1024 * 1024
+    device_request_quota_bytes: int = 200 * 1024 * 1024
+    allowed_hosts: tuple[str, ...] = ()
     mqtt_enabled: bool = False
     mqtt_host: str = "127.0.0.1"
     mqtt_port: int = 1883
@@ -145,6 +173,8 @@ def load_settings() -> Settings:
         ),
         ir_send_timeout_seconds=_read_send_timeout(),
         max_upload_bytes=_read_max_upload_bytes(),
+        device_request_quota_bytes=_read_device_request_quota_bytes(),
+        allowed_hosts=_read_allowed_hosts(),
         mqtt_enabled=_read_bool("AIRCON_MQTT_ENABLED", False),
         mqtt_host=os.getenv("AIRCON_MQTT_HOST", "127.0.0.1").strip(),
         mqtt_port=_read_mqtt_port(),

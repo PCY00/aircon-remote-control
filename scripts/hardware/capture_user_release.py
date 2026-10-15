@@ -1,7 +1,8 @@
 """Preserve actual verification stdout and native CAM transcript for the blog."""
 from pathlib import Path
 import subprocess,shutil,sys
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
+from hw_paths import kicad_root
+OUT=kicad_root()/'artwork-current'
 DOCS=Path('docs/assets')
 command=[sys.executable,'scripts/hardware/validate_user_release.py']
 result=subprocess.run(command,capture_output=True,text=True,encoding='utf8',errors='replace')

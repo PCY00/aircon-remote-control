@@ -15,14 +15,30 @@
   },
   "encoders": {
     "cool_state": {
-      "kind": "carrier_gray_code_48",
+      "kind": "carrier_coolix_48",
       "prefix": [
         "b2",
         "4d"
       ],
       "temperature_min_c": 17,
       "temperature_max_c": 30,
-      "temperature_rule": "high_nibble(gray(temperature_c - 17))",
+      "temperature_rule": "high_nibble(temperature_codes[temperature_c - 17])",
+      "temperature_codes": [
+        "0",
+        "1",
+        "3",
+        "2",
+        "6",
+        "7",
+        "5",
+        "4",
+        "c",
+        "d",
+        "9",
+        "8",
+        "a",
+        "b"
+      ],
       "fan_bytes": {
         "auto": [
           "bf",
@@ -42,7 +58,7 @@
         ]
       },
       "repeat_count": 2,
-      "verification": "fan values measured; temperature rule measured at 17, 18, 19, and 20 degrees"
+      "verification": "fan values measured; temperature codes measured at 17, 18, 19, and 20 degrees; 21 to 30 degrees follow the Coolix temperature table; 27 and 28 degrees are not yet confirmed on the real air conditioner"
     }
   },
   "commands": {
@@ -169,26 +185,13 @@
           "1f",
           "03",
           "fc"
-        ],
-        [
-          "b2",
-          "4d",
-          "bf",
-          "40",
-          "00",
-          "ff"
-        ],
-        [
-          "b2",
-          "4d",
-          "bf",
-          "40",
-          "00",
-          "ff"
         ]
       ],
+      "followed_by_current_cool_state": {
+        "fan": "auto"
+      },
       "source_capture": "economy-press-01-multiframe",
-      "verification": "captured_from_cool_17_high"
+      "verification": "eco frame captured; the remote's trailing cool state frames are rebuilt from the current cooling setpoint with fan auto, so economy requires the air conditioner to be cooling"
     },
     "turbo": {
       "kind": "instant",

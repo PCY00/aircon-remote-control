@@ -211,6 +211,9 @@ class SensorService:
     def list_events(self, device_id: str, limit: int = 50) -> list[dict[str, object]]:
         return self._store.list_door_events(device_id, limit)
 
+    def delete(self, device_id: str) -> None:
+        self._store.delete(device_id)
+
     def update_metadata(
         self,
         device_id: str,

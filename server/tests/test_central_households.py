@@ -157,7 +157,7 @@ def test_migration_preserves_metadata_and_rolls_back_invalid_change(tmp_path, mo
     monkeypatch.undo(); initialize(db)
     with sqlite3.connect(db) as conn:
         assert conn.execute('SELECT * FROM runtime_metadata').fetchone() == (1,'keep-id','keep-date')
-        assert conn.execute('PRAGMA user_version').fetchone()[0] == 4
+        assert conn.execute('PRAGMA user_version').fetchone()[0] == 7
 
 
 def test_disabled_account_and_recreated_email_do_not_gain_old_rights(environment):
@@ -214,8 +214,54 @@ def test_public_certificate_cache_and_network_failure(monkeypatch):
     cache = auth.Certificates()
     assert 'fixture' in cache.get() and 'fixture' in cache.get() and len(calls) == 1
     clock[0] = 191.0
-    def failure(*args,**kwargs): raise OSError('offline')
+    def failure(*args,**kwargs): calls.append('failed'); raise OSError('offline')
     monkeypatch.setattr(auth.urllib.request,'urlopen',failure)
+    # Recently valid keys survive a failed refresh, which then backs off instead of retrying per request.
+    assert 'fixture' in cache.get() and 'fixture' in cache.get() and calls.count('failed') == 1
+    assert cache.stale()
+    clock[0] = 190.0+3600
     with pytest.raises(APIError) as caught: cache.get()
     assert caught.value.status == 503
     with pytest.raises(APIError): cache.get()
+    assert calls.count('failed') == 2
+
+
+def test_certificate_http_errors_and_stale_unknown_key_are_json_503(environment, monkeypatch):
+    import http.client
+    import central_server.auth as auth
+    db, _, fixture, token, _ = environment
+    class Truncated:
+        def __enter__(self): return self
+        def __exit__(self,*args): pass
+        def geturl(self): return auth.CERTIFICATE_URL
+        def read(self,limit): raise http.client.IncompleteRead(b'{')
+    def bad_status(): raise http.client.BadStatusLine('x')
+    responses = [Truncated, bad_status]
+    def fetch(url,timeout): return responses.pop(0)()
+    monkeypatch.setattr(auth.urllib.request,'urlopen',fetch)
+    verifier = FirebaseIdentity('test-project')
+    client = create_app(db, identity_verifier=verifier).test_client()
+    def me():
+        return client.get('/v1/me', headers={'Authorization':'Bearer '+token('owner')})
+    for _ in range(2):
+        response = me()
+        assert response.status_code == 503 and response.json == {'error':'authentication_unavailable'}
+        verifier.certificates.retry_after = 0.0
+    def offline(*args,**kwargs): raise http.client.IncompleteRead(b'')
+    monkeypatch.setattr(auth.urllib.request,'urlopen',offline)
+    cache, known = verifier.certificates, fixture.certificates.get()
+    cache.keys, cache.expires = dict(known), time.monotonic()-1
+    assert me().status_code == 200
+    cache.keys = {'rotated':known['fixture']}
+    response = me()
+    assert response.status_code == 503 and response.json == {'error':'authentication_unavailable'}
+    cache.keys, cache.expires = dict(known), time.monotonic()-cache.STALE_GRACE_SECONDS-1
+    assert me().status_code == 503
+
+
+def test_out_of_range_event_id_is_json_not_found(environment):
+    _, _, _, _, call = environment
+    home = call('a','POST','/v1/homes',{'name':'A'}).json['id']
+    for event in (2**63-1, 2**63, 10**23):
+        response = call('a','GET',f'/v1/homes/{home}/events/{event}')
+        assert response.status_code == 404 and response.json == {'error':'not_found'}

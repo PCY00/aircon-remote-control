@@ -22,7 +22,8 @@ def main():
     record = PhoneSession("family-apk-verification")
     for name, expected in hashes.items():
         apk = root / name
-        assert hashlib.sha256(apk.read_bytes()).hexdigest() == expected, "APK changed since build"
+        if hashlib.sha256(apk.read_bytes()).hexdigest() != expected:
+            raise RuntimeError("APK changed since build")
         result = subprocess.run(
             [
                 str(java),
@@ -42,9 +43,8 @@ def main():
             for line in result.stdout.splitlines()
             if "certificate SHA-256 digest:" in line
         )
-        assert actual.lower() == signing["sha256"].replace(":", "").lower(), (
-            "APK signing key mismatch"
-        )
+        if actual.lower() != signing["sha256"].replace(":", "").lower():
+            raise RuntimeError("APK signing key mismatch")
         permissions = subprocess.run(
             [str(buildtools / "aapt2.exe"), "dump", "permissions", str(apk)],
             capture_output=True,
@@ -60,6 +60,21 @@ def main():
         )
         record.log("$ aapt2 dump permissions " + name + "\n" + permissions)
         if name in ("family-debug.apk", "family-release.apk"):
+            badging = subprocess.run(
+                [str(buildtools / "aapt2.exe"), "dump", "badging", str(apk)],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
+            ).stdout
+            debuggable = "application-debuggable" in badging
+            if name == "family-release.apk" and debuggable:
+                raise RuntimeError("Release APK is debuggable; run-as could read its sign-in data")
+            record.log(
+                "$ aapt2 dump badging " + name + " [debuggable flag only]\nAPPLICATION_DEBUGGABLE="
+                + str(debuggable).upper()
+            )
             firebase = json.loads((private / "google-services.json").read_text())
             client = next(
                 c
@@ -74,16 +89,16 @@ def main():
                 next(c["client_id"] for c in client["oauth_client"] if c["client_type"] == 3),
             ]
             with zipfile.ZipFile(apk) as archive:
-                assert "assets/test-fixture.json" not in archive.namelist(), (
-                    "Fixture assets in production APK"
-                )
+                if "assets/test-fixture.json" in archive.namelist():
+                    raise RuntimeError("Fixture assets in production APK")
                 dex_files = []
                 for entry in archive.namelist():
                     if entry.endswith(".dex"):
                         data = archive.read(entry)
                         dex_files.append(data)
                         for marker in (b"owner@example.test", b"fixture-owner", b"family_token"):
-                            assert marker not in data, "Fixture identity code in production APK"
+                            if marker in data:
+                                raise RuntimeError("Fixture identity code in production APK")
                 for value in expected_config:
                     if not any(value.encode("utf-8") in data for data in dex_files):
                         raise RuntimeError(
@@ -124,9 +139,12 @@ def main():
                 for line in manifest.splitlines()
             ):
                 raise RuntimeError("Manifest does not reference the checked network policy")
-            assert 'android.permission.POST_NOTIFICATIONS' in permissions
-            assert 'FamilyMessagingService' in manifest
-            assert 'firebase_messaging_auto_init_enabled' in manifest
+            if (
+                'android.permission.POST_NOTIFICATIONS' not in permissions
+                or 'FamilyMessagingService' not in manifest
+                or 'firebase_messaging_auto_init_enabled' not in manifest
+            ):
+                raise RuntimeError("FCM notification permission or receiver missing")
             record.log('FCM_SENDER_CONFIGURATION_NOTIFICATION_PERMISSION_AND_PRIVATE_RECEIVER=PASS')
             network = subprocess.run(
                 [

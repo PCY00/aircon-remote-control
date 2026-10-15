@@ -38,7 +38,7 @@
 <text x="621" y="235" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">Galaxy A50 · Termux 중앙 서버</text>
 <text x="621" y="254.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">Flask + Waitress / SQLite / 전송 작업</text>
 <text x="621" y="271.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">집·가족·허브 연결과 휴대폰별 수신 선택</text>
-<rect x="974" y="212" width="252" height="88" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1"/>
+<rect x="974" y="212" width="252" height="88" rx="6" fill="#ffffff" stroke="#087e83" stroke-width="1" stroke-dasharray="6 4"/>
 <rect x="974" y="212" width="4" height="88" rx="0" fill="#087e83" stroke="#087e83" stroke-width="1"/>
 <text x="987" y="235" font-size="14px" style="font-size:14px" fill="#087e83" font-weight="700">Google FCM · 외부 서비스</text>
 <text x="987" y="254.5" font-size="12px" style="font-size:12px" fill="#526779" font-weight="400">HTTP v1 전송 요청 → 설치 토큰별 전달</text>

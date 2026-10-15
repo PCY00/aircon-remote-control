@@ -3,12 +3,12 @@
 Input is the verified snapshot. Output is an independent editable working project.
 Locked mechanical placements are asserted before and after every transformation.
 """
-from pathlib import Path
 import json
 import os
 import pcbnew as p
+from hw_paths import kicad_root
 
-ROOT = Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2')
+ROOT = kicad_root()
 SNAP = ROOT.parent/'IR_ESP32H2-snapshots/user-design-20260920-022829'
 OUT = ROOT/'artwork-current'
 NAME = 'IR_ESP32H2'

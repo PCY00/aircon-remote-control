@@ -86,6 +86,26 @@ def test_recursive_staging_preserves_tools_path_and_initializes_target_once(
     ]
 
 
+def test_changed_sdkconfig_defaults_regenerate_staging_sdkconfig(environment: dict) -> None:
+    assert invoke(environment, "build").returncode == 0
+    assert invoke(environment, "build").returncode == 0
+    calls = environment["tmp"] / "calls.txt"
+    assert calls.read_text().splitlines() == ["set-target esp32h2", "build", "build"]
+
+    stage = next(environment["root"].iterdir())
+    (stage / "sdkconfig").write_text(
+        'CONFIG_IDF_TARGET="esp32h2"\n# CONFIG_RMT_TX_ISR_CACHE_SAFE is not set\n'
+    )
+    defaults = environment["project"] / "firmware/esp32-h2-ir-node/sdkconfig.defaults"
+    defaults.write_text("test source\nCONFIG_RMT_TX_ISR_CACHE_SAFE=y\n", encoding="utf-8")
+    assert invoke(environment, "build").returncode == 0
+    assert calls.read_text().splitlines() == [
+        "set-target esp32h2", "build", "build", "set-target esp32h2", "build",
+    ]
+    assert "CACHE_SAFE" not in (stage / "sdkconfig").read_text()
+    assert (stage / "sdkconfig.defaults").read_text().endswith("CONFIG_RMT_TX_ISR_CACHE_SAFE=y\n")
+
+
 def test_another_checkout_gets_independent_build_directory(environment: dict) -> None:
     assert invoke(environment, "build").returncode == 0
     other = environment["tmp"] / "another-checkout"

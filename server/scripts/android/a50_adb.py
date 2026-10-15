@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import ipaddress
 import json
+import os
 import re
 import shlex
 import subprocess
@@ -12,9 +14,36 @@ import sys
 import time
 from pathlib import Path
 
+from a50_ssh import ssh_command
+
 
 class ConnectionError(RuntimeError):
     """The configured phone could not be safely selected."""
+
+
+# Public captures must not carry the PC account, LAN/Tailscale/tunnel identifiers or pairing codes.
+MAC_ADDRESS = re.compile(r"(?<![\w:.-])(?:[0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}(?![\w:.-])")
+IPV6_ADDRESS = re.compile(
+    r"(?<![\w:.])(?:"
+    r"(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,7}:(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4}){0,6})?"
+    r"|::[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4}){0,6}"
+    r")(?:%\w+)?(?:/\d{1,3})?(?![\w:.])"
+)
+TAILNET_HOST = re.compile(r"\b[A-Za-z0-9][A-Za-z0-9.-]*\.ts\.net\b")
+TUNNEL_HOST = re.compile(r"\b[A-Za-z0-9][A-Za-z0-9.-]*\.trycloudflare\.com\b")
+# Six digits only in a pairing/code context; byte counts and timestamps keep their digits.
+PAIRING_CODE = re.compile(r"(?i)\b(pair(?:ing)?|code)\b([^\d\n]{0,32}?)\b(\d{6})\b")
+
+
+def local_user_names() -> set[str]:
+    """Account names of this PC that may appear in paths, prompts and pytest temp directories."""
+    names = {os.environ.get("USERNAME"), os.environ.get("USER")}
+    try:
+        names.add(getpass.getuser())
+    except (OSError, KeyError, ImportError):
+        pass
+    return {name for name in names if name and len(name) >= 3}
 
 
 def validate_endpoint(value: str) -> str:
@@ -61,9 +90,30 @@ class A50ADB:
         token = self.config.get("manager_rpc_token")
         if token:
             value = value.replace(token, "[REDACTED_CAPABILITY]")
+        value = re.sub(r"pytest-of-[^\\/\s]+", "pytest-of-[REDACTED_USER]", value)
+        for name in sorted(local_user_names(), key=len, reverse=True):
+            value = re.sub(r"(?<!\w)" + re.escape(name) + r"(?!\w)", "[REDACTED_USER]", value)
+        value = MAC_ADDRESS.sub("[REDACTED_MAC]", value)
         value = re.sub(r"\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b", "[REDACTED_ADDRESS]", value)
+        value = IPV6_ADDRESS.sub("[REDACTED_ADDRESS]", value)
+        value = TAILNET_HOST.sub("[REDACTED_TAILNET_HOST]", value)
+        value = TUNNEL_HOST.sub("[REDACTED_TUNNEL_HOST]", value)
+        value = PAIRING_CODE.sub(r"\1\2[REDACTED_CODE]", value)
         value = re.sub(r"\bu0_a\d+\b", "[REDACTED_APP_USER]", value)
         return re.sub(r"\buid=\d+\b", "uid=[REDACTED]", value)
+
+    def dump_ui(
+        self, endpoint: str, name: str, timeout: float = 30
+    ) -> subprocess.CompletedProcess[bytes]:
+        """Read the current UI hierarchy; the temporary dump is removed in the same command."""
+        if not re.fullmatch(r"[a-z0-9-]{1,40}", name):
+            raise ValueError("Invalid UI dump name")
+        path = "/data/local/tmp/" + name + ".xml"
+        script = (
+            "uiautomator dump " + path + " >/dev/null && cat " + path
+            + "; s=$?; rm -f " + path + "; exit $s"
+        )
+        return self.run("-s", endpoint, "exec-out", script, timeout=timeout)
 
     def verify(self, endpoint: str) -> bool:
         state = self.run("-s", endpoint, "get-state", timeout=4)
@@ -91,18 +141,19 @@ class A50ADB:
             "am broadcast -a com.aircon.a50manager.RECOVER "
             "-n com.aircon.a50manager/.RecoveryReceiver --es token " + shlex.quote(token)
         )
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(Path(__file__).with_name("a50_ssh.py")),
-                "--connection",
-                str(connection),
-                request,
-            ],
-            capture_output=True,
-            timeout=20,
-            check=False,
-        )
+        try:
+            command = ssh_command(connection, request)
+        except (OSError, ValueError, KeyError, TypeError):
+            # Incomplete local SSH details: no request was sent; keep polling ADB as before.
+            self.ssh_recovery_requested = False
+            return False
+        try:
+            # Run ssh as the direct child so the timeout kill reaches it and releases the pipes.
+            result = subprocess.run(command, capture_output=True, timeout=20, check=False)
+        except OSError:
+            # No usable ssh client: a failed attempt, so connect() keeps polling ADB.
+            self.ssh_recovery_requested = False
+            return False
         self.ssh_recovery_requested = (
             # TermuxAm returns the ordered broadcast's result code as its process exit code.
             # System am may return zero instead; both require the explicit accepted reply.
@@ -110,8 +161,24 @@ class A50ADB:
         )
         return self.ssh_recovery_requested
 
-    def connect(self, timeout: float = 30, rediscover: bool = False) -> str:
+    def persist_endpoint(self, endpoint: str) -> None:
+        # Update only the cached endpoint; in-memory overrides must never reach the file.
+        saved = json.loads(self.config_path.read_text(encoding="utf-8"))
+        saved["cached_endpoint"] = endpoint
+        self.config_path.write_text(json.dumps(saved, indent=2) + "\n", encoding="utf-8")
+
+    def connect(
+        self,
+        timeout: float = 30,
+        rediscover: bool = False,
+        allow_ssh_recovery: bool | None = None,
+    ) -> str:
         self.ssh_recovery_requested = False
+        recovery_enabled = (
+            self.config.get("ssh_recovery_enabled", False)
+            if allow_ssh_recovery is None
+            else allow_ssh_recovery
+        )
         if not rediscover and self.config.get("cached_endpoint"):
             cached = validate_endpoint(self.config["cached_endpoint"])
             try:
@@ -136,12 +203,10 @@ class A50ADB:
                     self.run("connect", endpoint, timeout=4)
                     if self.verify(endpoint):
                         self.config["cached_endpoint"] = endpoint
-                        self.config_path.write_text(
-                            json.dumps(self.config, indent=2) + "\n", encoding="utf-8"
-                        )
+                        self.persist_endpoint(endpoint)
                         return endpoint
                 elif (
-                    self.config.get("ssh_recovery_enabled", False)
+                    recovery_enabled
                     and recovery_attempts < 8
                     and time.monotonic() >= next_recovery
                 ):

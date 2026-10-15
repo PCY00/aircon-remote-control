@@ -22,6 +22,10 @@ if [[ ! -f "$compose_dir/compose.yaml" ]]; then
     echo "Compose file is missing: $compose_dir/compose.yaml" >&2
     exit 1
 fi
+if [[ ! -f "$compose_dir/mosquitto/acl.conf" ]]; then
+    echo "Broker ACL file is missing: $compose_dir/mosquitto/acl.conf" >&2
+    exit 1
+fi
 
 shopt -s nullglob
 adapters=(/dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_*-if00-port0)
@@ -87,11 +91,14 @@ fi
 
 docker pull "$mosquitto_image"
 if [[ ! -f "$mosquitto_dir/passwords" ]]; then
+    # Write the plain entry into the mode-600 file and let mosquitto_passwd -U
+    # hash it in place, so the password is never a `docker run` argument.
+    printf '%s:%s\n' zigbee2mqtt "$mqtt_password" >"$mosquitto_dir/passwords"
     docker run --rm \
         --user "$host_uid:$host_gid" \
         --volume "$mosquitto_dir:/work" \
         "$mosquitto_image" \
-        mosquitto_passwd -b -c /work/passwords zigbee2mqtt "$mqtt_password"
+        mosquitto_passwd -U /work/passwords
 fi
 
 chmod 700 -- "$runtime_dir" "$z2m_data_dir" "$mosquitto_dir" "$mosquitto_dir/data" "$runtime_dir/backups"
@@ -105,3 +112,5 @@ echo "ZIGBEE_RUNTIME_CREATED=$runtime_dir"
 echo "ZIGBEE_ADAPTER_CONFIGURED=by-id"
 echo "ZIGBEE_CHANNEL=20"
 echo "ZIGBEE_STACK_START_REQUESTED=true"
+echo "MQTT_ACL_FILE=deploy/zigbee/mosquitto/acl.conf"
+echo "NEXT_STEP=scripts/setup_app_mqtt.sh creates the aircon-controller broker user"

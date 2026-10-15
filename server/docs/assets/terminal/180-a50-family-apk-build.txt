@@ -1,0 +1,75 @@
+# Actual executed commands and output; private details removed
+
+$ Gradle 8.13 testProductionDebugUnitTest assembleProductionDebug assembleProductionRelease [ASCII staging, private configuration]
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preProductionDebugBuild UP-TO-DATE
+> Task :app:generateProductionDebugBuildConfig
+> Task :app:javaPreCompileProductionDebug
+> Task :app:checkProductionDebugAarMetadata
+> Task :app:processProductionDebugNavigationResources
+> Task :app:generateProductionDebugResValues
+> Task :app:compileProductionDebugNavigationResources
+> Task :app:mapProductionDebugSourceSetPaths
+> Task :app:generateProductionDebugResources
+> Task :app:packageProductionDebugResources
+> Task :app:parseProductionDebugLocalResources
+> Task :app:createProductionDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksProductionDebug
+> Task :app:mergeProductionDebugResources
+> Task :app:processProductionDebugMainManifest
+> Task :app:processProductionDebugManifest
+> Task :app:preProductionDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileProductionDebugUnitTest
+> Task :app:processProductionDebugManifestForPackage
+> Task :app:processProductionDebugJavaRes NO-SOURCE
+> Task :app:processProductionDebugUnitTestJavaRes NO-SOURCE
+> Task :app:mergeProductionDebugNativeDebugMetadata NO-SOURCE
+> Task :app:mergeProductionDebugShaders
+> Task :app:compileProductionDebugShaders NO-SOURCE
+> Task :app:generateProductionDebugAssets UP-TO-DATE
+> Task :app:mergeProductionDebugAssets
+> Task :app:compressProductionDebugAssets
+> Task :app:processProductionDebugResources
+> Task :app:checkProductionDebugDuplicateClasses
+
+> Task :app:compileProductionDebugJavaWithJavac
+
+> Task :app:bundleProductionDebugClassesToCompileJar
+> Task :app:bundleProductionDebugClassesToRuntimeJar
+
+> Task :app:compileProductionDebugUnitTestJavaWithJavac FAILED
+
+[Incubating] Problems report is available at: file:///[REDACTED_BUILD_CONFIG]/.codex/family-android-build/project-8rsymz84/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+26 actionable tasks: 26 executed
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+[REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-8rsymz84\app\src\test\java\com\aircon\family\AirconUiTest.java:33: error: invalid method declaration; return type required
+    @Test public void_toggleCommandsExplainThatTheyChangeTheCurrentApplianceState() {
+                 ^
+1 error
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileProductionDebugUnitTestJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  [REDACTED_BUILD_CONFIG]\.codex\family-android-build\project-8rsymz84\app\src\test\java\com\aircon\family\AirconUiTest.java:33: error: invalid method declaration; return type required
+      @Test public void_toggleCommandsExplainThatTheyChangeTheCurrentApplianceState() {
+                   ^
+  1 error
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1m 8s
+
+EXIT_CODE=1

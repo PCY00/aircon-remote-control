@@ -1,0 +1,9 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] restart only fixed tunnel; verify stable hostname, private key and existing services
+ok: run: /data/data/com.termux/files/usr/var/service/aircon-fixed-tunnel: (pid 17418) 1s
+Traceback (most recent call last):
+  File "<stdin>", line 19, in <module>
+NameError: name 'sys' is not defined. Did you forget to import 'sys'?
+
+EXIT_CODE=1

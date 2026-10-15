@@ -1,0 +1,8 @@
+# Actual executed commands and output; private details removed
+
+$ python -m pytest -q [central, agent, schema migration and deployment tests]
+........................................................................ [ 51%]
+......................................ss............................     [100%]
+138 passed, 2 skipped in 11.64s
+
+EXIT_CODE=0

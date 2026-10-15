@@ -1,0 +1,20 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] agent.log tail [no secrets logged]
+INFO:__main__:CENTRAL_RELAY outcome=accepted
+INFO:__main__:SOURCE_COLLECTION counts={"baseline": 0, "climate_baseline": 0, "climate_expired": 0, "climate_invalid": 0, "climate_queued": 0, "climate_skipped"
+INFO:__main__:SOURCE_COLLECTION counts={"baseline": 0, "climate_baseline": 0, "climate_expired": 0, "climate_invalid": 0, "climate_queued": 1, "climate_skipped"
+INFO:__main__:CENTRAL_RELAY outcome=accepted
+INFO:__main__:SOURCE_COLLECTION counts={"baseline": 0, "climate_baseline": 0, "climate_expired": 0, "climate_invalid": 0, "climate_queued": 1, "climate_skipped"
+INFO:__main__:CENTRAL_RELAY outcome=accepted
+INFO:__main__:SOURCE_COLLECTION counts={"baseline": 0, "climate_baseline": 0, "climate_expired": 0, "climate_invalid": 0, "climate_queued": 1, "climate_skipped"
+INFO:__main__:CENTRAL_RELAY outcome=accepted
+INFO:__main__:SOURCE_COLLECTION counts={"baseline": 0, "climate_baseline": 0, "climate_expired": 0, "climate_invalid": 0, "climate_queued": 1, "climate_skipped"
+INFO:__main__:CENTRAL_RELAY outcome=accepted
+INFO:__main__:SOURCE_COLLECTION counts={"baseline": 0, "climate_baseline": 0, "climate_expired": 0, "climate_invalid": 0, "climate_queued": 1, "climate_skipped"
+INFO:__main__:CENTRAL_RELAY outcome=accepted
+INFO:__main__:SOURCE_COLLECTION counts={"baseline": 0, "climate_baseline": 0, "climate_expired": 0, "climate_invalid": 0, "climate_queued": 0, "climate_skipped"
+WARNING:__main__:CONTROL_TEMPORARILY_UNAVAILABLE kind=HTTPError
+INFO:__main__:INVENTORY_SENT devices=3
+
+EXIT_CODE=0

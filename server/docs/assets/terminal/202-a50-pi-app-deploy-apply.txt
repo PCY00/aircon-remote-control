@@ -1,0 +1,38 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] verify installed files and LIRC roles; back up databases and stop own Pi web service
+LIRC_lirc0_RECEIVE=False_SEND=True
+LIRC_lirc1_RECEIVE=True_SEND=False
+PREWRITE_BASELINE_AND_SERVICE_MATCH=PASS
+CONSISTENT_PI_DATABASE_BACKUPS=6 NON_SQLITE_FILES_PRESERVED=2 SOURCE_BACKUP=PASS
+PI_WEB_SERVICE_STOPPED_FOR_SOURCE_UPDATE=TRUE
+
+EXIT_CODE=0
+MODE=APPLY
+TARGET=[verified Pi]/aircon-controller
+FILE_COUNT=18
+TOTAL_BYTES=329865
+FILE=.env.example BYTES=960 SHA256=e9c91f50758c3aea5bda940e611dbabe4518630972a7db0f2b539e9baf205f0b
+FILE=app/automations/service.py BYTES=8382 SHA256=10f4ebd015dc276787408c8399530a7c78f472ac6594228fc2aa49dab8936e5d
+FILE=app/devices/commands.py BYTES=8400 SHA256=b535b231289ab18b10b9ffc8bb524ab531ecb17a19a0c31968278dc0e9149f7e
+FILE=app/devices/service.py BYTES=7236 SHA256=4c94d43262a42c9a4e8d8a8603f9355d87a94e14c61f0beb5f2c08bfe4681606
+FILE=app/integrations/mqtt.py BYTES=23966 SHA256=e4afac8b66f43ffbc39cb582aa50d3275c1f3bb0de5a3885608bc97404e4c177
+FILE=app/ir/backend.py BYTES=4920 SHA256=6c1c3172611c267f60866b85afad0cf546db28e1a8f29cc4137be955fc3444d4
+FILE=app/ir/service.py BYTES=6812 SHA256=d0d46b3450f99e152f1c4f16f5dae4928ea3df31f84ba57cde4de5531f1df550
+FILE=app/main.py BYTES=25655 SHA256=9144b3f0ca0b0be9ebb855fb6d01645489b5c819d8611f9ded1d1e904e155e71
+FILE=app/sensors/service.py BYTES=7617 SHA256=6acc6e60fcac30773f0ffb41382efe1acca8a1b928de4cc2fb44b8dc8aa3fbe0
+FILE=app/sensors/store.py BYTES=15965 SHA256=ea8ab5135d43e9504c8d8e8987d56c583ae36ff6412824ce6ba949ce1ab891a5
+FILE=app/static/automations.js BYTES=8090 SHA256=c96dcf027b6a0779aa6bb102dba3d3c8c6bdeea152bcbfa5b91dafa3da254dd5
+FILE=app/static/index.html BYTES=154277 SHA256=0d9726e5c479ad2d27c2b1de9ccd7730e54a8f8c2b2e2894f84ef45d27a61e88
+FILE=app/static/sensors.js BYTES=44514 SHA256=2e895683977d6b3a0346b7d9af8c0c4496a778570d91ba6b8c2f63ab3ae18a30
+FILE=deploy/systemd/aircon-controller.service BYTES=996 SHA256=2dc277d7c0692cbdf17f2103f2e06d2b24d99173a6ae429a6f4a12a9622e667f
+FILE=device_profiles/air_conditioner/Carrier/CS-A061GS/commands.json BYTES=5611 SHA256=5c12af2f006f1287b66688f505aa3ecd72a0d1fb52b11bd840ee1cbb3f4d34a2
+FILE=device_profiles/air_conditioner/Carrier/CS-A061GS/packet.md BYTES=3984 SHA256=91d43213325582ddff73d0091943178f1d7080398df30824a12354f965964021
+FILE=device_profiles/air_conditioner/Carrier/CS-A061GS/profile.json BYTES=1837 SHA256=8a0a81e91cd921ef269f1b9d8dbdd83ac9258a4aa9d8056d72ca1974194fa7ae
+FILE=scripts/run_pi.sh BYTES=643 SHA256=c15e926f84fbbff8d313807709a1ad67e748cc9cff59dfa91bbaad874da99040
+CHECKSUMS=verified
+DEPLOYMENT_STATUS=success
+$ SSH [verified host key] install checked own service unit, reload and start updated Pi web service
+PI_APP_UPDATED_AND_ACTIVE=PASS NO_PHYSICAL_COMMAND_SENT=TRUE
+
+EXIT_CODE=0

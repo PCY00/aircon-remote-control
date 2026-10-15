@@ -1,0 +1,7 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only HTTPS status; no credential or physical command
+{"status": 403, "user_agent": null, "server": "cloudflare", "cloudflare": true}
+{"status": 200, "user_agent": "FamilySmartHome-ConnectivityCheck/0.1", "ready": true}
+
+EXIT_CODE=0

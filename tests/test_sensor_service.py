@@ -229,3 +229,53 @@ def test_metadata_update_notifies_live_clients_without_new_sensor_report(tmp_pat
     assert updated["metadata"]["display_name"] == "현관문"
     assert updated["last_received_at"] == original["last_received_at"]
     assert service.list_events("sensor_door_01") == []
+
+
+def test_report_after_host_clock_regression_is_applied(tmp_path: Path) -> None:
+    clock = Clock()
+    service = SensorService(store=SensorStore(tmp_path), clock=clock)
+    ingest(service, "sensor_door_01", {
+        "contact": True, "last_seen": "2026-09-07T12:00:00+00:00",
+    })
+    # Power cut: the Pi boots with its clock ~30 min behind and no NTP yet, so
+    # Zigbee2MQTT's last_seen and our receive time both go backwards.
+    clock.value = datetime(2026, 9, 7, 11, 30, tzinfo=UTC)
+    opened = ingest(service, "sensor_door_01", {
+        "contact": False, "last_seen": "2026-09-07T11:30:00+00:00",
+    })
+    closed = ingest(service, "sensor_door_01", {
+        "contact": True, "last_seen": "2026-09-07T11:30:05+00:00",
+    })
+
+    assert opened["state"]["door_state"] == "open"
+    assert opened["event_recorded"] is True
+    assert "stale_report_ignored" not in opened
+    assert closed["state"]["door_state"] == "closed"
+    assert [item["state"] for item in service.list_events("sensor_door_01")] == [
+        "closed", "open",
+    ]
+
+
+def test_door_event_history_is_pruned_per_sensor(tmp_path: Path) -> None:
+    from app.sensors.store import DOOR_EVENT_HISTORY_LIMIT
+
+    assert DOOR_EVENT_HISTORY_LIMIT == 2000
+    store = SensorStore(tmp_path, max_door_events=5)
+    service = SensorService(store=store, clock=Clock())
+    ingest(service, "sensor_door_01", {"contact": True})
+    ingest(service, "sensor_door_02", {"contact": True})
+    for index in range(12):
+        ingest(service, "sensor_door_01", {"contact": index % 2 == 0})
+    ingest(service, "sensor_door_02", {"contact": False})
+
+    events = service.list_events("sensor_door_01", limit=200)
+    with sqlite3.connect(store.path) as connection:
+        counts = dict(connection.execute(
+            "SELECT device_id, COUNT(*) FROM door_events GROUP BY device_id"
+        ).fetchall())
+
+    # The newest transitions survive; the other sensor's history is untouched.
+    assert len(events) == 5
+    assert [event["state"] for event in events] == ["open", "closed", "open", "closed", "open"]
+    assert events[0]["occurred_at"] > events[-1]["occurred_at"]
+    assert counts == {"sensor_door_01": 5, "sensor_door_02": 1}

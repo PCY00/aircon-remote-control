@@ -7,9 +7,21 @@ omits addresses, credentials, sensor identifiers and event payloads for blog use
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import time
 from urllib.request import urlopen
+
+# Match any cache-busting revision so a UI release does not break this check.
+UI_ASSET_PATTERN = re.compile(r"/static/(sensors|automations)\.js\?v=([A-Za-z0-9._-]+)")
+
+
+def ui_asset_revisions(html: str) -> dict[str, str]:
+    """Return the served revision of each dashboard script the smoke check needs."""
+
+    revisions = dict(UI_ASSET_PATTERN.findall(html))
+    assert set(revisions) == {"sensors", "automations"}, sorted(revisions)
+    return revisions
 
 
 def main() -> None:
@@ -50,9 +62,11 @@ def main() -> None:
     print(f"AUTOMATION_EVENT_COUNT={len(history)}", flush=True)
     with urlopen(base + "/?kiosk=1", timeout=10) as response:
         html = response.read().decode("utf-8")
-    assert "/static/sensors.js?v=20260908-1" in html
-    assert "/static/automations.js?v=20260908-1" in html
-    print("UI_ASSET_REVISION=20260908-1", flush=True)
+    revisions = ui_asset_revisions(html)
+    print(
+        "UI_ASSET_REVISION=" + ",".join(f"{name}:{revisions[name]}" for name in sorted(revisions)),
+        flush=True,
+    )
     print("KIOSK_CURSOR_CSS=" + str('html[data-kiosk="true"]' in html).lower(), flush=True)
 
     ready = False

@@ -44,15 +44,31 @@ def recipient():
     )
 
 
-@pytest.mark.parametrize("category,priority", [("other", "HIGH"), ("climate", "NORMAL")])
-def test_http_v1_is_data_only_and_contains_no_home_or_sensor_details(category, priority):
+@pytest.mark.parametrize(
+    "category,alert,level,priority",
+    [
+        ("other", "other", "alert", "HIGH"),
+        ("climate", "report", "alert", "NORMAL"),
+        ("climate", "report", "urgent", "HIGH"),
+        ("door", "security", "alert", "HIGH"),
+        ("other", "safety", "urgent", "HIGH"),
+    ],
+)
+def test_http_v1_is_data_only_and_contains_no_home_or_sensor_details(
+    category, alert, level, priority
+):
     item, calls = sender(200)
-    assert item.send(recipient() | {"category": category}) == ("accepted", 0)
+    chosen = {"category": category, "alert_category": alert, "level": level}
+    assert item.send(recipient() | chosen) == ("accepted", 0)
     url, options = calls[0]
     message = options["json"]["message"]
     assert url == item.url and options["allow_redirects"] is False
     assert set(message) == {"token", "data", "android"}
-    assert set(message["data"]) == {"message_id", "binding", "recipient", "kind", "category"}
+    assert set(message["data"]) == {
+        "message_id", "binding", "recipient", "kind", "category", "alert_category", "level"
+    }
+    assert {key: message["data"][key] for key in chosen} == chosen
+    assert all(isinstance(value, str) for value in message["data"].values())
     assert "private-home" not in str(message) and "sensor" not in str(message)
     assert message["android"]["priority"] == priority
 

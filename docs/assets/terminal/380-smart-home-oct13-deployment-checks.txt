@@ -1,0 +1,20 @@
+# Actual test outputs; progress omitted
+$ .venv/Scripts/python.exe -m pytest -q
+178 passed in 26.77s
+
+$ cd server; ../.venv/Scripts/python.exe -m pytest -q
+327 passed, 2 skipped in 40.70s
+
+$ node --test tests/test_device_ui.cjs tests/test_h2_converter.cjs tests/test_sensor_refresh_policy.cjs
+# tests 54
+# pass 54
+# fail 0
+
+ANDROID_JUNIT={"tests":22,"failures":0,"errors":0}
+FAMILY_APK_VERSION=0.5.2 VERSION_CODE=9
+RELEASE_APK_SHA256=188c23c9254df6cc1afc0cc387b75bd966ae4f8e110bac625f999ca154940acd
+PI_FINAL_SOURCE_AND_INSTALLED_UNIT_MATCH=PASS FILES=18
+DASHBOARD_SMOKE=passed MQTT_CONNECTED=true SSE_KEEPALIVE=true
+CENTRAL_DEPLOYMENT=PASS DATABASE=ok HEALTH_READY=200
+CONTROL_READINESS=PASS NO_PHYSICAL_COMMAND_SENT=TRUE
+H2_FIRMWARE_FLASH=NOT_PERFORMED PHYSICAL_APPLIANCE_CHECK=PENDING

@@ -1,0 +1,5 @@
+# Actual executed commands and output; private details removed
+
+$ configure_control.py --apply
+{"central_health_ready": true, "control_enabled": true, "private_api_origin_verified": true, "supported_device_count": 1}
+EXISTING_HUB_TOKEN_PRESERVED=TRUE NO_NEW_PORT_OR_FIREWALL_CHANGE=TRUE

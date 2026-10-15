@@ -12,6 +12,7 @@ from waitress import serve
 
 from central_server import VERSION
 from central_server.auth import FirebaseIdentity
+from central_server.inventory import BODY_BYTES
 from central_server.storage import initialize
 from central_server.web import create_app
 
@@ -55,9 +56,11 @@ def main():
         logging.info('FCM_SENDER_CONFIGURED')
     else:
         logging.info('FCM_SENDER_NOT_CONFIGURED')
+    # Waitress refuses a body of max_request_body_size bytes or more. Its cap fits the 32 KiB
+    # device-list route; Flask keeps every other route at 16 KiB (MAX_CONTENT_LENGTH).
     serve(create_app(database, identity_verifier=verifier, push_sender_ready=sender is not None), host='127.0.0.1', port=8001, threads=2,
           connection_limit=32, channel_timeout=15, max_request_header_size=16384,
-          max_request_body_size=16384, expose_tracebacks=False)
+          max_request_body_size=BODY_BYTES+1, expose_tracebacks=False)
 
 
 if __name__ == '__main__':

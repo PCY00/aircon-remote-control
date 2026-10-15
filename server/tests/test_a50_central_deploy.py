@@ -1,8 +1,10 @@
 """Ensure preview and conflict handling preserve remote-owned files."""
 
+import base64
 import hashlib
 import json
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -65,3 +67,65 @@ def test_untracked_boot_hook_is_not_overwritten(device):
     with pytest.raises(RuntimeError, match='Untracked hook'):
         installer.install({'release_id': 'reviewed', 'files': {}}, apply=True)
     assert hook.read_text() == 'owner hook'
+
+
+def fresh_install(device, monkeypatch, *, discovered_after):
+    """Run a first install with runsvdir already running and a delayed service rescan."""
+    _, device_prefix = device
+    service = device_prefix/'var/service/aircon-central'
+    hooks = ('termux/run', 'termux/finish', 'termux/log-run', 'termux/20-start-central')
+    files = {name: base64.b64encode(b'#!/bin/sh\n').decode() for name in hooks}
+    files['requirements.txt'] = base64.b64encode(b'').decode()
+    clock, sleeps, calls = [0.0], [0], []
+
+    def sleep(seconds):
+        clock[0] += seconds
+        sleeps[0] += 1
+        if discovered_after is not None and sleeps[0] >= discovered_after:
+            (service/'supervise').mkdir(exist_ok=True)
+            (service/'supervise/ok').touch()
+
+    def run(command, **kwargs):
+        calls.append((list(command), (service/'supervise/ok').exists()))
+        return installer.subprocess.CompletedProcess(command, 0)
+
+    class Ready:
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return b'ready'
+
+    fake_time = types.SimpleNamespace(
+        monotonic=lambda: clock[0], sleep=sleep, time_ns=lambda: 0
+    )
+    monkeypatch.setattr(installer, 'time', fake_time)
+    monkeypatch.setattr(installer.os, 'umask', lambda mask: 0)
+    monkeypatch.setattr(installer.subprocess, 'run', run)
+    monkeypatch.setattr(installer.urllib.request, 'urlopen', lambda *a, **k: Ready())
+    monkeypatch.setattr(
+        installer.Path, 'symlink_to',
+        lambda self, target, target_is_directory=False: self.write_text(str(target)),
+    )
+    return calls, lambda: installer.install(
+        {'release_id': 'reviewed', 'files': files}, apply=True
+    )
+
+
+def test_fresh_install_waits_for_runit_supervise_before_enable(device, monkeypatch):
+    calls, install = fresh_install(device, monkeypatch, discovered_after=12)
+    install()
+    enable = [ready for command, ready in calls if command[0] == 'sv-enable']
+    assert enable == [True]
+
+
+def test_fresh_install_stops_when_runit_never_discovers_service(device, monkeypatch):
+    calls, install = fresh_install(device, monkeypatch, discovered_after=None)
+    with pytest.raises(RuntimeError, match='runit has not discovered'):
+        install()
+    assert not [command for command, _ in calls if command[0] == 'sv-enable']

@@ -1,0 +1,13 @@
+# Actual executed commands and output; private details removed
+
+SOURCE_SHA256=735362a3ff40139fe0c6deecf7346658a8cd75d75c2837c3d151a76427459925 agent.py
+SOURCE_SHA256=d5c4c2405fe354224a057269a9993d0c99a7f5dc32af7bcaf881c6383b28b9fd aircon-central-agent.service
+$ SSH [verified host key] python3 - < independent Pi agent checked manifest [preview]
+READONLY_SOURCE=door_events ROWS=680
+READONLY_SOURCE=automation_events ROWS=150
+MANIFEST_FILES=2 RELEASE=34f5f09b09e02bd6
+EXISTING_PI_APP_FILES_AND_DATABASES=NO_WRITE NO_APP_RESTART=TRUE
+AGENT_SERVICE=active
+PREVIEW_ONLY=NO_REMOTE_MUTATION
+
+EXIT_CODE=0

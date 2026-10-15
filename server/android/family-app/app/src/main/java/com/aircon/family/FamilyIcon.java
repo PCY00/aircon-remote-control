@@ -58,6 +58,64 @@ final class FamilyIcon extends Drawable {
             case "logout": path(canvas,10,4,4,4,4,20,10,20); path(canvas,9,12,21,12,17,8); path(canvas,21,12,17,16); break;
             case "network": canvas.drawArc(2,3,22,23,220,100,false,paint); canvas.drawArc(6,8,18,20,220,100,false,paint); canvas.drawCircle(12,18,1,paint); break;
             case "trash": path(canvas,4,6,20,6); path(canvas,9,3,15,3,15,6); path(canvas,6,6,7,21,17,21,18,6); path(canvas,10,10,10,17); path(canvas,14,10,14,17); break;
+            case "minus": path(canvas,5,12,19,12); break;
+            case "snowflake":
+                // Six identical arms, each a spoke with a small chevron near its tip.
+                for (int arm = 0; arm < 6; arm++) {
+                    int turned = canvas.save(); canvas.rotate(arm * 60f, 12, 12);
+                    path(canvas,12,12,12,3); path(canvas,9.8f,5,12,7.2f,14.2f,5);
+                    canvas.restoreToCount(turned);
+                }
+                break;
+            case "auto":
+                // Two arrows chasing each other: the automatic cycle.
+                canvas.drawArc(5,5,19,19,200,140,false,paint); path(canvas,19.6f,6.8f,18.6f,9.6f,16f,8.1f);
+                canvas.drawArc(5,5,19,19,20,140,false,paint); path(canvas,4.4f,17.2f,5.4f,14.4f,8f,15.9f); break;
+            case "droplet": {
+                Path drop = new Path(); drop.moveTo(12,3); drop.cubicTo(9,7,5,10.5f,5,14.5f);
+                drop.arcTo(5,7.5f,19,21.5f,180,-180,false); drop.cubicTo(19,10.5f,15,7,12,3);
+                canvas.drawPath(drop,paint); break;
+            }
+            case "wind":
+                path(canvas,3,9,15,9); canvas.drawArc(12.5f,4,17.5f,9,90,-270,false,paint);
+                path(canvas,3,13,19,13);
+                path(canvas,3,17,13,17); canvas.drawArc(10.5f,17,15.5f,22,270,270,false,paint); break;
+            case "power": canvas.drawArc(5,5,19,19,-60,300,false,paint); path(canvas,12,3,12,11); break;
+            case "aircon":
+                canvas.drawRoundRect(3,5,21,13,2,2,paint); path(canvas,6,10,18,10);
+                path(canvas,8,16,7,20); path(canvas,12,16,12,20); path(canvas,16,16,17,20); break;
+            case "shield": path(canvas,12,3,19,6,19,12,12,21,5,12,5,6,12,3); path(canvas,9,12,11,14,15,10); break;
+            case "expand": path(canvas,6,9,12,15,18,9); break;
+            case "thermometer":
+                canvas.drawRoundRect(9.5f,3,14.5f,15,2.5f,2.5f,paint); canvas.drawCircle(12,18,3.5f,paint); path(canvas,12,8,12,18); break;
+            case "bulb":
+                canvas.drawArc(6,3,18,15,150,240,false,paint); path(canvas,7.6f,12,9.5f,15.5f,9.5f,17,14.5f,17,14.5f,15.5f,16.4f,12);
+                path(canvas,10,20,14,20); break;
+            case "plug":
+                path(canvas,9,3,9,8); path(canvas,15,3,15,8); path(canvas,6,8,18,8,18,12);
+                canvas.drawArc(6,6,18,18,0,180,false,paint); path(canvas,6,12,6,8); path(canvas,12,18,12,21); break;
+            case "motion":
+                canvas.drawCircle(13,4.5f,1.8f,paint); path(canvas,9,10,12,8,15,10,17,12); path(canvas,12,8,11,14,14,17,14,21);
+                path(canvas,11,14,8,17,6,17); break;
+            case "wifi_off":
+                canvas.drawArc(2,4,22,24,220,100,false,paint); canvas.drawArc(6,9,18,21,220,100,false,paint);
+                canvas.drawCircle(12,18,1,paint); path(canvas,4,4,20,20); break;
+            case "battery":
+                canvas.drawRoundRect(3,8,19,16,2,2,paint); path(canvas,21,11,21,13); path(canvas,6,11,6,13); break;
+            case "star": case "star_filled": {
+                Path star=new Path();
+                for(int point=0;point<10;point++) {
+                    double angle=Math.toRadians(-90+point*36); float radius=point%2==0 ? 9f : 4f;
+                    float x=12+(float)(radius*Math.cos(angle)), y=12.5f+(float)(radius*Math.sin(angle));
+                    if(point==0) star.moveTo(x,y); else star.lineTo(x,y);
+                }
+                star.close();
+                if(name.equals("star_filled")) { paint.setStyle(Paint.Style.FILL_AND_STROKE); canvas.drawPath(star,paint); paint.setStyle(Paint.Style.STROKE); }
+                else canvas.drawPath(star,paint);
+                break;
+            }
+            case "moon": canvas.drawArc(4,4,20,20,60,250,false,paint); canvas.drawArc(9,2,21,14,95,170,false,paint); break;
+            case "check": path(canvas,5,12,10,17,19,7); break;
             default: canvas.drawCircle(12,12,8,paint);
         }
         canvas.restoreToCount(saved);

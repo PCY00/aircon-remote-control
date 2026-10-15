@@ -1,0 +1,10 @@
+# Actual earlier server test output; progress omitted
+$ ../.venv/Scripts/python.exe -m pytest -q
+216 passed, 2 skipped in 39.88s
+
+# Current JUnit XML and desktop APK readback
+ANDROID_JUNIT={"tests": 13, "failures": 0, "errors": 0}
+VERSION=0.5.1 VERSION_CODE=8
+DESKTOP_APK_COPY=PASS BYTES=4422449
+RELEASE_APK_SHA256=b88ebb488658207a1991f2bf67829ef860dcd565aa832e538dcc6b10bb477cab
+PHYSICAL_COMMANDS_SENT=0 UI_AND_APPLIANCE_CHECK=PENDING

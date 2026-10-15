@@ -9,7 +9,9 @@ description = "Raspberry Pi IR gateway for a wall-mounted air conditioner"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi>=0.115,<1.0",
+    # 0.141+ only parses JSON bodies for application/json content types
+    # (simple cross-site form posts cannot reach the JSON endpoints).
+    "fastapi>=0.141,<1.0",
     "paho-mqtt>=2.1,<3.0",
     "python-multipart>=0.0.20,<1.0",
     "uvicorn>=0.30,<1.0",

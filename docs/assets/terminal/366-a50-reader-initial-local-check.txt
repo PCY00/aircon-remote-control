@@ -1,0 +1,29 @@
+# Actual executed commands and output; private details removed
+
+$ .venv/Scripts/ruff.exe check scripts/reader scripts/android/prepare_manager_tools.py scripts/android/a50_record.py scripts/pi/pi_session.py scripts/pi/link_central_agent.py tests/test_reader_setup.py --output-format concise
+scripts\android\prepare_manager_tools.py:25:101: E501 Line too long (110 > 100)
+scripts\android\prepare_manager_tools.py:37:101: E501 Line too long (101 > 100)
+scripts\pi\pi_session.py:3:1: I001 [*] Import block is un-sorted or un-formatted
+scripts\pi\pi_session.py:18:101: E501 Line too long (109 > 100)
+scripts\reader\make_reader_bundle.py:78:101: E501 Line too long (102 > 100)
+scripts\reader\make_reader_bundle.py:111:101: E501 Line too long (107 > 100)
+scripts\reader\make_reader_bundle.py:115:101: E501 Line too long (102 > 100)
+scripts\reader\make_reader_bundle.py:116:101: E501 Line too long (102 > 100)
+scripts\reader\make_reader_bundle.py:132:101: E501 Line too long (104 > 100)
+scripts\reader\make_reader_bundle.py:170:101: E501 Line too long (103 > 100)
+scripts\reader\make_reader_bundle.py:176:101: E501 Line too long (102 > 100)
+scripts\reader\prepare_phone_boot.py:34:101: E501 Line too long (104 > 100)
+scripts\reader\prepare_phone_boot.py:38:101: E501 Line too long (122 > 100)
+scripts\reader\setup_connections.py:24:101: E501 Line too long (106 > 100)
+scripts\reader\setup_connections.py:32:101: E501 Line too long (107 > 100)
+scripts\reader\setup_connections.py:55:101: E501 Line too long (107 > 100)
+tests\test_reader_setup.py:31:101: E501 Line too long (102 > 100)
+tests\test_reader_setup.py:70:101: E501 Line too long (111 > 100)
+tests\test_reader_setup.py:72:101: E501 Line too long (116 > 100)
+tests\test_reader_setup.py:85:101: E501 Line too long (109 > 100)
+tests\test_reader_setup.py:87:101: E501 Line too long (104 > 100)
+tests\test_reader_setup.py:98:16: E702 Multiple statements on one line (semicolon)
+Found 22 errors.
+[*] 1 fixable with the `--fix` option.
+
+EXIT_CODE=1

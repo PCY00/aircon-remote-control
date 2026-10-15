@@ -1,4 +1,46 @@
-# A50 중앙 API의 시험용 HTTPS 통로
+# A50 중앙 API의 HTTPS 통로
+
+## 고정 주소 연결
+
+2026년 10월 15일 `roomrelay.top`의 고정 연결을 준비했다. 고정 터널은 `fixed.py`를 진입점으로 사용하고, 기존 Quick Tunnel과 별도 서비스로 실행한다. 실제 접속 확인 결과와 따라 할 순서는 [고정 주소 안내](../../docs/fixed-server-address.md)에 기록한다. 전체 요청 방향은 [연결 그림과 설명](../../docs/connection-flow.md)에서 본다.
+
+`server/` 폴더에서 실행한다. 먼저 Cloudflare 대시보드에서 본인 터널을 만들고, 복사한 연결 명령에서 **토큰만** Git 제외 비공개 파일에 저장한다. 토큰 자체를 터미널 명령행이나 블로그에 붙이지 않는다.
+
+```powershell
+python -m pytest tests/test_a50_public_tunnel.py -q
+python scripts/android/deploy_a50_tunnel.py --mode fixed --hostname YOUR_DOMAIN
+python scripts/android/deploy_a50_tunnel.py --mode fixed --hostname YOUR_DOMAIN --token-file .deploy/a50/fixed-tunnel.token --apply
+python scripts/android/verify_a50_tunnel.py --fixed --hostname YOUR_DOMAIN
+```
+
+Cloudflare의 Published application 경로는 `YOUR_DOMAIN` → `http://127.0.0.1:8001`로 만든다. DNS의 CNAME은 본인 터널의 `<TUNNEL_ID>.cfargotunnel.com`을 가리키고 Proxied를 켠다. 기존 A/AAAA/CNAME이 같은 이름을 사용하면 충돌하므로 원래 목적과 값을 확인한 뒤 교체한다. 기존 DNSSEC는 [공식 이전 순서](https://developers.cloudflare.com/dns/dnssec/)를 따라 DS 기록 만료까지 확인한다.
+
+| 고정 터널 대상 | A50 경로 |
+| --- | --- |
+| 코드와 배포 기록 | `~/services/aircon-fixed-tunnel/` |
+| runit 서비스 | `$PREFIX/var/service/aircon-fixed-tunnel/` |
+| 비공개 설정과 연결 키 | `~/.config/aircon-fixed-tunnel/` |
+| 상태와 크기를 제한한 로그 | `~/.local/state/aircon-fixed-tunnel/` |
+
+연결 키는 `0600` 파일로 저장하고 `--token-file`로 읽는다. 최초 배포 뒤 기존 키와 설정이 달라지면 자동으로 덮어쓰지 않는다. 재배포에서 비공개 전송 파일이 필요하면 A50의 기존 키를 안전하게 다시 가져오거나 의도한 키 교체 절차를 별도로 수행한다. A50의 키를 APK·GitHub·블로그에 넣지 않는다.
+
+고정 터널도 5분 안에 비정상 종료 5회면 멈춘다. 재시작은 아래처럼 A50 SSH에서 수행한다. 이때 중앙 API와 데이터 파일은 유지된다.
+
+```sh
+export SVDIR="$PREFIX/var/service"
+sv status "$SVDIR/aircon-fixed-tunnel"
+sv -w 20 restart "$SVDIR/aircon-fixed-tunnel"
+```
+
+PC에서 HTTPS 확인을 통과하면 기존 Pi 연결 설정의 주소만 바꾼다. `configure_control.py`는 기존 허브 키를 유지하고, 미리보기 때 읽은 설정과 다르면 중단하며, 적용 후 연결 서비스가 계속 켜져 있는지 확인한다. 가족 앱은 ‘연결 설정’에서 같은 주소를 저장하고 기존 Google 계정으로 다시 로그인한다. 집을 새로 만들거나 허브를 다시 등록하지 않는다.
+
+```powershell
+python scripts/pi/configure_control.py
+python scripts/pi/configure_control.py --apply
+python scripts/pi/verify_control.py
+```
+
+## 이전 시험용 연결
 
 사용자가 다른 휴대폰용 외부 중앙서버 주소 생성을 요청한 범위에서 구성했다.
 Cloudflare Quick Tunnel을 A50에서 직접 실행한다. 노트북은 운영 중계에 사용하지 않는다.
@@ -10,7 +52,7 @@ Cloudflare Quick Tunnel을 A50에서 직접 실행한다. 노트북은 운영 �
 
 ## 배포
 
-프로젝트 루트에서 확인된 A50 SSH 설정과 전용 호스트 키를 사용한다.
+`server/` 폴더에서 확인된 A50 SSH 설정과 전용 호스트 키를 사용한다.
 
 ```powershell
 python scripts/android/a50_record.py --label tunnel-package-install --script scripts/android/prepare_a50_tunnel.sh --timeout 300

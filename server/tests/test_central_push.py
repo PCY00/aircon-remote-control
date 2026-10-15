@@ -89,15 +89,23 @@ def test_queued_delivery_rechecks_current_authority(setup, change):
     ]
 
 
-def test_installation_proof_prevents_takeover_and_token_cannot_bind_twice(setup):
-    _, _, _, push, owner, member, _, _, _, ids, _ = setup
+def test_installation_proof_prevents_takeover_and_token_moves_only_within_the_account(setup):
+    db, _, _, push, owner, member, _, _, _, ids, _ = setup
     with pytest.raises(APIError):
         push.register(member, ids[owner], "b" * 64, "new_" + "x" * 40)
-    with pytest.raises(APIError):
+    with pytest.raises(APIError) as caught:  # another account cannot claim a live phone's token
         push.register(member, str(uuid.uuid4()), "b" * 64, "token_" + "0" * 40)
+    assert caught.value.code == "installation_conflict"
+    # Deliberate change (S1-7): the same account's new installation (reinstall/restore) takes the
+    # token over instead of 409; the earlier row is detached (token NULL, inactive, binding rotated).
+    moved = str(uuid.uuid4())
+    assert push.register(owner, moved, "c" * 64, "token_" + "0" * 40)["status"] == "registered"
+    assert rows(db, "SELECT token,active FROM installations WHERE id='" + ids[owner] + "'") == [(None, 0)]
+    assert rows(db, "SELECT token FROM installations WHERE id='" + moved + "'") == [("token_" + "0" * 40,)]
     before = push.register(owner, ids[owner], "a" * 64, "token_" + "0" * 40)["binding"]
     after = push.register(owner, ids[owner], "a" * 64, "token_" + "0" * 40)["binding"]
     assert before == after
+    assert rows(db, "SELECT token,active FROM installations WHERE id='" + moved + "'") == [(None, 0)]
 
 
 def test_same_account_devices_receive_home_events_and_test_targets_only_selected_device(setup):
@@ -198,7 +206,7 @@ def test_schema_two_migration_preserves_identity_and_registered_home(tmp_path):
         c.execute("PRAGMA user_version=2")
     initialize(db)
     initialize(db)
-    assert rows(db, "PRAGMA user_version") == [(4,)]
+    assert rows(db, "PRAGMA user_version") == [(7,)]
     assert rows(db, "SELECT installation_id FROM runtime_metadata") == [("keep-runtime",)]
     assert rows(db, "SELECT name FROM homes") == [("keep-home",)]
     assert rows(db, "PRAGMA integrity_check") == [("ok",)]

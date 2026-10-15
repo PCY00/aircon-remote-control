@@ -1,8 +1,8 @@
 """Package only the verified user-derived CAD and order files, never old revA."""
-from pathlib import Path
 import hashlib,json,zipfile
 from kicad_sexpr import read,children,walk
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
+from hw_paths import kicad_root
+OUT=kicad_root()/'artwork-current'
 validation=json.loads((OUT/'checks/release-validation.json').read_text())
 assert validation['passed']
 def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()

@@ -39,8 +39,8 @@ def main() -> int:
 
     client = A50ADB(args.config)
     # Bootstrap must already be connected; do not change settings while selecting an update target.
-    client.config["ssh_recovery_enabled"] = False
-    endpoint = client.connect(timeout=20)
+    # Suppress the recovery RPC for this call only; the saved preference stays untouched.
+    endpoint = client.connect(timeout=20, allow_ssh_recovery=False)
     wifi = client.run("-s", endpoint, "shell", "cmd wifi status", timeout=15)
     if wifi.returncode:
         raise RuntimeError("Current Wi-Fi could not be measured; no update was installed.")

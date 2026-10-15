@@ -27,7 +27,7 @@ final class FirebaseSession implements AuthSession {
     public void token(TokenResult result) {
         FirebaseUser user=auth.getCurrentUser();
         if (user==null) { result.done(null,new IllegalStateException("signed out")); return; }
-        user.getIdToken(false).addOnCompleteListener(activity, task -> {
+        user.getIdToken(false).addOnCompleteListener(callbacks, task -> {
             if (task.isSuccessful()) result.done(task.getResult().getToken(),null);
             else result.done(null,new IllegalStateException("token unavailable"));
         });
@@ -45,7 +45,7 @@ final class FirebaseSession implements AuthSession {
                             throw new IllegalArgumentException();
                         String googleToken=GoogleIdTokenCredential.createFrom(credential.getData()).getIdToken();
                         auth.signInWithCredential(GoogleAuthProvider.getCredential(googleToken,null))
-                            .addOnCompleteListener(activity, task -> {
+                            .addOnCompleteListener(callbacks, task -> {
                                 if (task.isSuccessful()) success.run();
                                 else error.accept("Google 로그인에 실패했어요. 연결을 확인하고 다시 시도해 주세요.");
                             });

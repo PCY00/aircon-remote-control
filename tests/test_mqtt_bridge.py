@@ -1,11 +1,12 @@
 import json
+import time
 from pathlib import Path
 from types import SimpleNamespace
 
 import paho.mqtt.client as mqtt
 import pytest
 
-from app.integrations.mqtt import PahoSensorBridge
+from app.integrations.mqtt import PahoSensorBridge, PermitJoinCooldown
 from app.sensors.service import SensorService
 from app.sensors.store import SensorStore
 from app.settings import Settings
@@ -205,3 +206,110 @@ def test_paho_bridge_tracks_devices_and_opens_then_closes_joining(
     closed = bridge.set_permit_join(0)
     assert closed["permit_join"] is False
     assert [item[1]["time"] for item in fake_client.published] == [60, 0]
+
+
+def make_bridge(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> tuple[PahoSensorBridge, FakeMqttClient]:
+    fake_client = FakeMqttClient()
+    monkeypatch.setattr(
+        "app.integrations.mqtt.mqtt.Client",
+        lambda *_args, **_kwargs: fake_client,
+    )
+    settings = Settings(
+        host="127.0.0.1", port=8001, log_level="INFO", data_dir=tmp_path, mqtt_enabled=True,
+    )
+    bridge = PahoSensorBridge(settings, SensorService(store=SensorStore(tmp_path)))
+    bridge.start()
+    assert fake_client.on_connect is not None and fake_client.on_message is not None
+    fake_client.on_connect(fake_client, None, None, 0, None)
+    return bridge, fake_client
+
+
+def test_bridge_info_permit_join_end_milliseconds(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    bridge, fake_client = make_bridge(monkeypatch, tmp_path)
+    assert fake_client.on_message is not None
+    # Zigbee2MQTT 2.x: herdsman permitJoinEnd = Date.now() + time * 1000.
+    now_ms = int(time.time() * 1000)
+    fake_client.on_message(fake_client, None, SimpleNamespace(
+        topic="zigbee2mqtt/bridge/info",
+        payload=json.dumps({"permit_join": True, "permit_join_end": now_ms + 60_000}).encode(),
+    ))
+
+    status = bridge.join_status()
+    assert status["permit_join"] is True
+    assert 0 < status["remaining_seconds"] <= 60
+    assert abs(status["permit_join_end"] - (now_ms // 1000 + 60)) <= 1
+
+    # A stale retained "open" in milliseconds expires instead of counting for decades.
+    fake_client.on_message(fake_client, None, SimpleNamespace(
+        topic="zigbee2mqtt/bridge/info",
+        payload=json.dumps({"permit_join": True, "permit_join_end": now_ms - 5_000}).encode(),
+    ))
+    assert bridge.join_status()["permit_join"] is False
+    bridge.stop()
+
+
+def test_on_message_survives_malformed_bridge_payloads(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    bridge, fake_client = make_bridge(monkeypatch, tmp_path)
+    assert fake_client.on_message is not None
+    fake_client.on_message(fake_client, None, SimpleNamespace(
+        topic="zigbee2mqtt/bridge/devices",
+        payload=json.dumps([{
+            "type": "EndDevice", "friendly_name": "h2_ir_01",
+            "definition": {"model": "AIRCON_H2_IR_01"},
+        }]).encode(),
+    ))
+    deep = b"[" * 200_000
+    for topic, payload in (
+        ("zigbee2mqtt/bridge/info", b'{"permit_join":true,"permit_join_end":NaN}'),
+        ("zigbee2mqtt/bridge/info", b'{"permit_join":true,"permit_join_end":Infinity}'),
+        ("zigbee2mqtt/bridge/devices", deep),
+        ("zigbee2mqtt/h2_ir_01", deep),
+        ("zigbee2mqtt/sensor_door_01", deep),
+    ):
+        # paho re-raises callback errors and would end its network thread.
+        fake_client.on_message(fake_client, None, SimpleNamespace(topic=topic, payload=payload))
+
+    assert bridge.join_status()["permit_join_end"] is None
+    assert bridge.status()["connected"] is True
+    fake_client.on_message(fake_client, None, SimpleNamespace(
+        topic="zigbee2mqtt/sensor_door_01", payload=b'{"contact":false}',
+    ))
+    assert bridge.status()["last_error"] is None
+    bridge.stop()
+
+
+def test_permit_join_request_targets_the_coordinator_only(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    bridge, fake_client = make_bridge(monkeypatch, tmp_path)
+
+    bridge.set_permit_join(60)
+    bridge.set_permit_join(0)
+
+    requests = [payload for topic, payload in fake_client.published
+                if topic == "zigbee2mqtt/bridge/request/permit_join"]
+    assert [item["device"] for item in requests] == ["coordinator", "coordinator"]
+    assert [item["time"] for item in requests] == [60, 0]
+    bridge.stop()
+
+
+def test_permit_join_cooldown_blocks_reopen_until_closed_or_expired() -> None:
+    now = [100.0]
+    cooldown = PermitJoinCooldown(seconds=300, clock=lambda: now[0])
+
+    assert cooldown.retry_after_seconds() == 0
+    cooldown.mark_opened()
+    assert cooldown.retry_after_seconds() == 300
+    now[0] += 299.5
+    assert cooldown.retry_after_seconds() == 1
+    now[0] += 1
+    assert cooldown.retry_after_seconds() == 0
+    cooldown.mark_opened()
+    cooldown.mark_closed()
+    assert cooldown.retry_after_seconds() == 0

@@ -3,16 +3,16 @@
 Critical power and USB routing is explicitly constructed here; remaining control
 signals may be routed with a separate, offline DSN/SES pass. Never overwrites user CAD.
 """
-from pathlib import Path
 import json
 import os
 import sys
 import xml.etree.ElementTree as ET
 import pcbnew as p
+from hw_paths import kicad_install, kicad_root
 
-OUT = Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\codex-revA')
+OUT = kicad_root() / 'codex-revA'
 NAME = 'IR_ESP32H2_RevA'
-KICAD = Path(r'C:\Users\kksp1\AppData\Local\Programs\KiCad\10.0')
+KICAD = kicad_install()
 os.environ['KICAD10_3DMODEL_DIR'] = str(KICAD/'share/kicad/3dmodels')
 os.environ['KIPRJMOD'] = str(OUT)
 

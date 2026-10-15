@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from functools import wraps
 
 from flask import Blueprint, g, jsonify, request
-from werkzeug.exceptions import BadRequest, UnsupportedMediaType
+from werkzeug.exceptions import BadRequest, RequestEntityTooLarge, UnsupportedMediaType
 
 from central_server.households import APIError, Households
+from central_server.identity import ServerIdentity
+from central_server.limits import Limiter
 from central_server.push import PushStore
+from central_server.control import ALLOWED_ACTIONS, Controls
+from central_server.inventory import BODY_BYTES, Inventory, validate
+from central_server.preferences import CATEGORIES, CHOICES, INTERVALS
 
 
 def register(app, database, identity_verifier):
@@ -18,6 +24,16 @@ def register(app, database, identity_verifier):
     app.extensions['households'] = service
     push = PushStore(database)
     app.extensions['push'] = push
+    control = Controls(database)
+    app.extensions['control'] = control
+    inventory = Inventory(database)
+    app.extensions['inventory'] = inventory
+    identity = ServerIdentity(database)
+    # Process-local: the A50 runs one worker process. Keys are authenticated hub ids. The Pi sends
+    # its device list on change at most every 15 s (5760/day), so the daily cap stays above that.
+    limits = app.extensions['limits'] = {'hub_events': Limiter((120, 60), (20000, 86400)),
+                                         'hub_inventory': Limiter((12, 60), (6000, 86400)),
+                                         'identity': Limiter((60, 60))}  # per client, no global cap
     api = Blueprint('households', __name__, url_prefix='/v1')
 
     def bearer():
@@ -41,18 +57,29 @@ def register(app, database, identity_verifier):
 
     def body(fields):
         try:
-            value = request.get_json()
-        except (BadRequest, UnsupportedMediaType) as error:
+            value = request.get_json()  # deep nesting raises RecursionError, not a JSON error
+        except (BadRequest, UnsupportedMediaType, ValueError, RecursionError) as error:
             raise APIError('invalid_body', 400) from error
         if not isinstance(value, dict) or set(value) != set(fields):
             raise APIError('invalid_body', 400)
         return value
 
     def text(value, *, maximum=128):
+        # Control (Cc) and format (Cf: bidi overrides, zero-width) characters never reach screens;
+        # a lone surrogate (Cs) cannot be stored as UTF-8 and would otherwise surface as a 500.
         if (not isinstance(value, str) or not 1 <= len(value.strip()) <= maximum
-                or any(ord(c)<32 for c in value)):
+                or any(unicodedata.category(c) in ('Cc', 'Cf', 'Cs') for c in value)):
             raise APIError('invalid_body', 400)
         return value.strip()
+
+    def hub_auth():
+        # Credential first: an unauthenticated body never reaches the JSON parser.
+        token = bearer()
+        if not token.startswith('hub_'):
+            raise APIError('invalid_hub_credentials', 401)
+        with control.transaction() as conn:
+            hub = control.hub(conn, token)
+        return token, hub['id']
 
     def role(value):
         if value not in ('member','viewer'):
@@ -64,7 +91,25 @@ def register(app, database, identity_verifier):
         response = jsonify(error=error.code)
         if error.status == 401:
             response.headers['WWW-Authenticate'] = 'Bearer'
+        if error.retry_after:
+            response.headers['Retry-After'] = str(error.retry_after)
         return response, error.status
+
+    @api.get('/server-identity')
+    def server_identity():
+        # Unauthenticated by design: the app pins this key before it trusts any server reply.
+        nonce = request.args.get('nonce', '')
+        host = request.headers.get('Host', '').strip().lower()
+        if (not re.fullmatch(r'[0-9a-f]{32}', nonce) or not host or len(host) > 255
+                or any(c.isspace() for c in host)):
+            raise APIError('invalid_body', 400)
+        # Per client (Cloudflare's visitor address behind the tunnel, else the peer): a stranger
+        # holding the URL must not lock every phone out of its trust check. Signing is ~0.1 ms.
+        client = (request.headers.get('CF-Connecting-IP') or request.remote_addr or '')[:64]
+        wait = limits['identity'].take(client)
+        if wait:
+            raise APIError('rate_limited', 429, retry_after=wait)
+        return jsonify(identity.describe(nonce, host))
 
     @api.get('/me')
     @user_route
@@ -119,6 +164,20 @@ def register(app, database, identity_verifier):
         options = {key:value[key] for key in ('door','climate','warning','climate_interval_minutes')}
         return jsonify(push.set_preferences(g.user, installation_id(installation),
                        installation_secret(value['secret']), options))
+
+    @api.put('/installations/<installation>/notification-levels')
+    @user_route
+    def notification_levels(installation):
+        value = body(['secret', 'levels', 'report_interval_minutes'])
+        levels, interval = value['levels'], value['report_interval_minutes']
+        # Every configurable category, every time: a missing one is a client bug, not a default.
+        if (not isinstance(levels, dict) or set(levels) != set(CATEGORIES)
+                or any(not isinstance(levels[name], str) or levels[name] not in CHOICES[name]
+                       for name in CATEGORIES)
+                or type(interval) is not int or interval not in INTERVALS):
+            raise APIError('invalid_notification_preferences', 400)
+        return jsonify(push.set_levels(g.user, installation_id(installation),
+                       installation_secret(value['secret']), levels, interval))
 
     @api.get('/homes')
     @user_route
@@ -193,9 +252,10 @@ def register(app, database, identity_verifier):
 
     @api.post('/hub/events')
     def ingest():
-        token = bearer()
-        if not token.startswith('hub_'):
-            raise APIError('invalid_hub_credentials', 401)
+        token, hub = hub_auth()
+        wait = limits['hub_events'].take(hub)
+        if wait:
+            raise APIError('rate_limited', 429, retry_after=wait)
         value = body(['event_id','kind','payload'])
         event_id = text(value['event_id'], maximum=64)
         kind = text(value['kind'], maximum=64)
@@ -218,6 +278,82 @@ def register(app, database, identity_verifier):
     @api.get('/homes/<home>/events/<int:event>')
     @user_route
     def event_detail(home, event):
+        if event > 2**63-1:  # SQLite INTEGER range; larger ids cannot exist.
+            raise APIError('not_found', 404)
         return jsonify(service.events(home, g.user, event)[0])
+
+    @api.get('/homes/<home>/control')
+    @user_route
+    def control_status(home):
+        return jsonify(control.status(home, g.user))
+
+    @api.get('/homes/<home>/devices')
+    @user_route
+    def home_devices(home):
+        return jsonify(inventory.devices(home, g.user))
+
+    @api.post('/homes/<home>/control/commands')
+    @user_route
+    def control_command(home):
+        value = body(['request_id', 'device_id', 'action'])
+        if not isinstance(value['action'], str) or value['action'] not in ALLOWED_ACTIONS:
+            raise APIError('invalid_body', 400)
+        device = value['device_id']
+        if not isinstance(device, str) or not re.fullmatch(r'[a-f0-9]{32}', device):
+            raise APIError('invalid_body', 400)
+        return jsonify(control.enqueue(home, g.user, installation_id(value['request_id']), device, value['action'])), 202
+
+    @api.get('/homes/<home>/control/commands/<command>')
+    @user_route
+    def control_result(home, command):
+        return jsonify(control.command(home, g.user, command))
+
+    @api.put('/hub/control/status')
+    def hub_control_status():
+        token, _ = hub_auth()
+        value = body(['devices'])
+        devices = value['devices']
+        if not isinstance(devices, list) or len(devices) > 20:
+            raise APIError('invalid_body', 400)
+        seen = set()
+        for device in devices:
+            if (not isinstance(device, dict) or set(device) != {'id', 'name'}
+                    or not isinstance(device['id'], str) or not re.fullmatch(r'[a-f0-9]{32}', device['id'])
+                    or device['id'] in seen or not isinstance(device['name'], str)):
+                raise APIError('invalid_body', 400)
+            # Hub names reach family screens: strip Cc/Cf/Cs here so one odd name cannot drop the heartbeat.
+            device['name'] = text(''.join(c for c in device['name']
+                                          if unicodedata.category(c) not in ('Cc', 'Cf', 'Cs')), maximum=80)
+            seen.add(device['id'])
+        return jsonify(control.heartbeat(token, devices))
+
+    @api.put('/hub/inventory')
+    def hub_inventory():
+        token, hub = hub_auth()
+        wait = limits['hub_inventory'].take(hub)
+        if wait:
+            raise APIError('rate_limited', 429, retry_after=wait)
+        # 50 named devices with state need more than the app-wide 16 KiB; Werkzeug enforces this
+        # route's own cap while reading, so an oversized body is never parsed.
+        request.max_content_length = BODY_BYTES
+        try:
+            value = body(['devices'])
+        except RequestEntityTooLarge as error:
+            raise APIError('body_too_large', 413) from error
+        return jsonify(inventory.replace(token, validate(value['devices'], inventory.clock())))
+
+    @api.post('/hub/control/next')
+    def hub_control_next():
+        token, _ = hub_auth()
+        body([])
+        return jsonify(control.next(token))
+
+    @api.post('/hub/control/<command>/result')
+    def hub_control_result(command):
+        token, _ = hub_auth()
+        value = body(['attempt_token', 'state'])
+        if value['state'] not in ('sent', 'failed', 'unknown', 'expired'):
+            raise APIError('invalid_body', 400)
+        return jsonify(control.result(token, command, installation_secret(value['attempt_token']), value['state']))
 
     app.register_blueprint(api)

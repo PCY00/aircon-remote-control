@@ -221,3 +221,135 @@ def test_model_request_rejects_non_image_product_file(tmp_path: Path) -> None:
 
     assert response.status_code == 422
     assert "product_photo must use one of" in response.json()["detail"]
+
+
+def test_cool_state_uses_coolix_temperature_codes() -> None:
+    from app.devices.catalog import DeviceProfileCatalog
+    from app.devices.commands import DeviceCommandResolver
+
+    resolver = DeviceCommandResolver(DeviceProfileCatalog(PROFILE_ROOT))
+
+    def frame(temperature: int, fan: str = "auto") -> list[str]:
+        command = resolver.resolve(PROFILE_ID, {
+            "action": "set_state", "power": True, "mode": "cool",
+            "temperature_c": temperature, "fan": fan,
+        })
+        assert command["frames_hex"][0] == command["frames_hex"][1]
+        return command["frames_hex"][0]
+
+    # Plain Gray code gave f0 0f (27 C) and the fan-only code e0 1f (28 C).
+    assert frame(27) == ["b2", "4d", "bf", "40", "90", "6f"]
+    assert frame(28) == ["b2", "4d", "bf", "40", "80", "7f"]
+    # Measured captures still match.
+    assert [frame(temperature)[4] for temperature in (17, 18, 19, 20)] == ["00", "10", "30", "20"]
+    for temperature in range(17, 31):
+        for fan in ("auto", "low", "medium", "high"):
+            assert int(frame(temperature, fan)[4], 16) >> 4 != 0xE
+
+
+def test_economy_rebuilds_current_cool_state_and_records_it(tmp_path: Path) -> None:
+    app = create_app(make_settings(tmp_path), MockReceiver())
+
+    with TestClient(app) as client:
+        device_id = register_air_conditioner(client)
+        client.post(f"/api/v1/devices/{device_id}/commands", json={
+            "action": "set_state", "power": True, "mode": "cool",
+            "temperature_c": 26, "fan": "low",
+        })
+        response = client.post(
+            f"/api/v1/devices/{device_id}/commands",
+            json={"action": "execute", "command_id": "economy"},
+        )
+
+    assert response.status_code == 200
+    result = response.json()
+    # Eco frame, then the current 26 C setpoint with fan auto (not the captured 17 C).
+    assert result["resolved_command"]["frames_hex"] == [
+        ["b2", "4d", "e0", "1f", "03", "fc"],
+        ["b2", "4d", "bf", "40", "d0", "2f"],
+        ["b2", "4d", "bf", "40", "d0", "2f"],
+    ]
+    assert result["device"]["last_desired_state"] == {
+        "power": True, "mode": "cool", "temperature_c": 26, "fan": "auto",
+        "confirmation": "inferred_from_ir_command",
+    }
+    assert result["device"]["last_command"]["command_id"] == "economy"
+
+
+def test_economy_is_rejected_unless_cooling(tmp_path: Path) -> None:
+    app = create_app(make_settings(tmp_path), MockReceiver())
+
+    with TestClient(app) as client:
+        device_id = register_air_conditioner(client)
+        economy = {"action": "execute", "command_id": "economy"}
+        unknown_state = client.post(f"/api/v1/devices/{device_id}/commands", json=economy)
+        client.post(
+            f"/api/v1/devices/{device_id}/commands",
+            json={"action": "set_state", "power": False},
+        )
+        powered_off = client.post(f"/api/v1/devices/{device_id}/commands", json=economy)
+        client.post(
+            f"/api/v1/devices/{device_id}/commands",
+            json={"action": "set_state", "power": True, "mode": "dry"},
+        )
+        drying = client.post(f"/api/v1/devices/{device_id}/commands", json=economy)
+        transmissions = client.get("/api/v1/ir/transmissions").json()["items"]
+        device = client.get("/api/v1/devices").json()["items"][0]
+
+    for response in (unknown_state, powered_off, drying):
+        assert response.status_code == 422
+        assert response.json()["detail"] == "economy requires the air conditioner to be cooling"
+    assert [item["command"]["command_id"] for item in transmissions] == ["power_off", "mode_dry"]
+    assert device["last_desired_state"]["mode"] == "dry"
+
+
+def test_register_rejects_blank_name_or_room_and_strips_padding(tmp_path: Path) -> None:
+    app = create_app(make_settings(tmp_path), MockReceiver())
+
+    with TestClient(app) as client:
+        blank_name = client.post("/api/v1/devices", json={
+            "name": "   ", "room": "거실", "profile_id": PROFILE_ID,
+        })
+        blank_room = client.post("/api/v1/devices", json={
+            "name": "거실 에어컨", "room": "  ", "profile_id": PROFILE_ID,
+        })
+        padded = client.post("/api/v1/devices", json={
+            "name": "  거실 에어컨 ", "room": " 거실 ", "profile_id": PROFILE_ID,
+        })
+
+    assert blank_name.status_code == 422
+    assert blank_room.status_code == 422
+    assert padded.status_code == 201
+    assert (padded.json()["name"], padded.json()["room"]) == ("거실 에어컨", "거실")
+
+
+def test_model_request_accepts_empty_optional_file_parts(tmp_path: Path) -> None:
+    app = create_app(make_settings(tmp_path), MockReceiver())
+    boundary = "----aircon-test-boundary"
+
+    def part(name: str, value: bytes, filename: str | None = None) -> bytes:
+        disposition = f'form-data; name="{name}"'
+        headers = f"Content-Disposition: {disposition}"
+        if filename is not None:
+            headers += f'; filename="{filename}"\r\nContent-Type: application/octet-stream'
+        return f"--{boundary}\r\n{headers}\r\n\r\n".encode() + value + b"\r\n"
+
+    # What a browser sends for FormData(form) with the two optional inputs left empty.
+    body = b"".join((
+        part("device_type", b"air_conditioner"),
+        part("brand", b"Brand"),
+        part("model", b"Model"),
+        part("product_photo", b"\xff\xd8\xffjpeg-data", "p.jpg"),
+        part("remote_photo", b"", ""),
+        part("manual", b"", ""),
+    )) + f"--{boundary}--\r\n".encode()
+
+    with TestClient(app) as client:
+        response = client.post(
+            "/api/v1/device-requests",
+            content=body,
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+        )
+
+    assert response.status_code == 201
+    assert set(response.json()["files"]) == {"product_photo"}

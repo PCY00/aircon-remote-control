@@ -1,0 +1,25 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] updated dashboard health, MQTT, sensors and SSE [read-only]
+HEALTH=ok
+API_VERSION=0.7.0
+MQTT_CONNECTED=true
+SENSOR_COUNT=2
+SENSOR_KINDS=door_contact,temperature_humidity
+ZIGBEE_DEVICE_COUNT=3
+PERMIT_JOIN=false
+AUTOMATION_COUNT=1
+RULE_ENABLED=true
+RULE_DELAY_SECONDS=300
+WARNING_ACTIVE=false
+AUTOMATION_EVENT_COUNT=20
+UI_ASSET_REVISION=automations:20261013-1,sensors:20261013-1
+KIOSK_CURSOR_CSS=true
+SSE_HTTP=200 text/event-stream
+SSE_READY=true
+SSE_KEEPALIVE=true
+SSE_SENSOR_EVENTS_OBSERVED=0
+IR_COMMANDS_SENT=0
+DASHBOARD_SMOKE=passed
+
+EXIT_CODE=0

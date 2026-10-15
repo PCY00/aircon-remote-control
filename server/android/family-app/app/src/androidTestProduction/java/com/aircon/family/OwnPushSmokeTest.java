@@ -20,22 +20,26 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         boolean enabled=prefs.getBoolean("enabled",false);
         String home=new String(Base64.decode(InstrumentationRegistry.getArguments()
             .getString("home_name_b64",""),Base64.DEFAULT),StandardCharsets.UTF_8);
-        await("새 집 만들기");
+        awaitStart();
         try {
             // Reproduce only this client's off state; no unregister, account or server change.
             prefs.edit().putBoolean("enabled",false).commit();
-            openHome(home);click("이 휴대폰에 시험 알림 보내기");
+            openHome(home);click("설정");click("시험 알림 보내기");
             await("이 휴대폰 알림을 켜주세요");
             screenshot("14-a50-notification-off-guidance");click("닫기");
             prefs.edit().putBoolean("enabled",enabled).commit();
-            click("받을 알림 선택");await("알림 설정");await("받고 싶은 알림");
-            assertNotNull(find("문 열림·닫힘"));assertNotNull(find("온습도 측정"));
-            assertNotNull(find("자동화 경고 발생·해제"));
-            screenshot("15-a50-notification-choices");
-            click("집 목록으로");await("새 집 만들기");openHome(home);
-            click("설정");click("가족 관리");await("소유자");
-            screenshot("22-a50-redesigned-members-redacted");click("집으로 돌아가기");
-            await("우리 집 한눈에");click("설정");click("이 집 삭제");await("이 집을 삭제할까요?");
+            await("알림 종류별 중요도");
+            for(String label:new String[]{"안전","보안","기기","환경","정기 보고","자동화","가족"})
+                assertNotNull("Level row "+label,find(label));
+            assertNotNull(find("방해 금지 시간"));
+            // Opening a level shows its choices; cancelling changes nothing on this phone or the server.
+            String before=PushManager.level(prefs,AlertLevels.SECURITY);
+            click("보안");await("보안 · 문·움직임");
+            screenshot("15-a50-notification-choices");click("취소");
+            assertEquals(before,PushManager.level(prefs,AlertLevels.SECURITY));
+            click("가족 관리");await("소유자");
+            screenshot("22-a50-redesigned-members-redacted");click("뒤로");
+            await("집 바꾸기");click("이 집 삭제");await("이 집을 삭제할까요?");
             AccessibilityNodeInfo input=null;
             for(AccessibilityNodeInfo n:nodes(automation.getRootInActiveWindow()))
                 if("android.widget.EditText".contentEquals(n.getClassName())) input=n;
@@ -43,8 +47,8 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
             assertTrue(input.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT,value));click("집 삭제");
             Thread.sleep(300);assertNotNull("Wrong name must keep deletion confirmation open",find("이 집을 삭제할까요?"));
             screenshot("16-a50-home-delete-confirmation");click("취소");
-            await(home);await("소유자 · 우리 가족의 스마트홈");
-            Bundle result=new Bundle();result.putString("notification_guidance","off_state_guidance_choices_and_wrong_name_delete_guard_passed_no_server_deletion");
+            await(home);await("이 집 삭제");
+            Bundle result=new Bundle();result.putString("notification_guidance","off_state_guidance_level_choices_and_wrong_name_delete_guard_passed_no_server_deletion");
             InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
         } finally {
             prefs.edit().putBoolean("enabled",enabled).commit();
@@ -52,7 +56,7 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
     }
     private void openHome(String name) throws Exception { openApprovedHome(name); }
     @Test public void registerRealInstallation() throws Exception {
-        await("새 집 만들기");openPhoneNotifications();
+        awaitStart();openPhoneNotifications();
         Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
         if(!PushManager.prefs(c).getBoolean("enabled",false))click("이 휴대폰에서 받기");
         else click("알림 연결 확인");
@@ -68,15 +72,11 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
         String encoded=InstrumentationRegistry.getArguments().getString("home_name_b64","");
         String home=new String(Base64.decode(encoded,Base64.DEFAULT),StandardCharsets.UTF_8);
-        await("새 집 만들기");AccessibilityNodeInfo card=await(home).getParent();
-        AccessibilityNodeInfo open=null;
-        for(AccessibilityNodeInfo n:nodes(card)) if("집 열기".contentEquals(n.getText()==null?"":n.getText())) open=n;
-        assertNotNull(open);assertTrue(open.performAction(AccessibilityNodeInfo.ACTION_CLICK));
-        await(home);await("소유자 · 우리 가족의 스마트홈");
+        openApprovedHome(home);
         com.google.firebase.auth.FirebaseUser user=com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
         assertNotNull(user);
         String auth=com.google.android.gms.tasks.Tasks.await(user.getIdToken(false),20,java.util.concurrent.TimeUnit.SECONDS).getToken();
-        ApiClient api=new ApiClient(PushManager.prefs(c).getString("origin",""),false);
+        ApiClient api=new ApiClient(c,PushManager.prefs(c).getString("origin",""),false);
         org.json.JSONArray homes=api.request(auth,"GET","/v1/me",null).getJSONArray("homes");
         String homeId=null;
         for(int index=0;index<homes.length();index++) {
@@ -101,7 +101,8 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         boolean posted=false;
         while(System.currentTimeMillis()<deadline) {
             for(android.service.notification.StatusBarNotification n:c.getSystemService(NotificationManager.class).getActiveNotifications())
-                if(n.getId()==10 && "시험 알림이 도착했어요.".contentEquals(n.getNotification().extras.getCharSequence("android.text",""))) posted=true;
+                if((n.getNotification().flags & android.app.Notification.FLAG_GROUP_SUMMARY)==0
+                        && "시험 알림이 도착했어요.".contentEquals(n.getNotification().extras.getCharSequence("android.text",""))) posted=true;
             if(posted && PushManager.prefs(c).getLong("last_received",0)>before
                     && PushManager.prefs(c).getLong("last_received",0)>=backgroundAt) break;
             Thread.sleep(300);
@@ -115,7 +116,7 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         Bundle result=new Bundle();result.putString("fcm_receipt","real_data_message_callback_and_own_notification_posted_in_background");
         InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
         c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP));
-        await("새 집 만들기");openPhoneNotifications();await("최근 알림 수신 완료");
+        awaitStart();openPhoneNotifications();await("최근 알림 수신 완료");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Thread.sleep(350);
         await("최근 알림 수신 완료");
@@ -124,7 +125,7 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
 
     @Test public void receiveRealFCMWhileScreenOff() throws Exception {
         Context c=InstrumentationRegistry.getInstrumentation().getTargetContext();
-        await("새 집 만들기");
+        awaitStart();
         android.content.SharedPreferences prefs=PushManager.prefs(c);
         assertTrue("Explicit notification registration is required",prefs.getBoolean("enabled",false));
         com.google.firebase.auth.FirebaseUser user=com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser();
@@ -133,7 +134,7 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         // Use the same SDK and authenticated API as the app. No credentials leave the phone.
         String auth=com.google.android.gms.tasks.Tasks.await(user.getIdToken(false),20,
             java.util.concurrent.TimeUnit.SECONDS).getToken();
-        ApiClient api=new ApiClient(prefs.getString("origin",""),false);
+        ApiClient api=new ApiClient(c,prefs.getString("origin",""),false);
         String homeName=new String(Base64.decode(InstrumentationRegistry.getArguments()
             .getString("home_name_b64",""),Base64.DEFAULT),StandardCharsets.UTF_8);
         org.json.JSONArray homes=api.request(auth,"GET","/v1/me",null).getJSONArray("homes");
@@ -162,7 +163,8 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         boolean posted=false;
         while(System.currentTimeMillis()<deadline) {
             for(android.service.notification.StatusBarNotification n:c.getSystemService(NotificationManager.class).getActiveNotifications())
-                if(n.getId()==10 && "시험 알림이 도착했어요.".contentEquals(n.getNotification().extras.getCharSequence("android.text",""))) posted=true;
+                if((n.getNotification().flags & android.app.Notification.FLAG_GROUP_SUMMARY)==0
+                        && "시험 알림이 도착했어요.".contentEquals(n.getNotification().extras.getCharSequence("android.text",""))) posted=true;
             if(posted && prefs.getLong("last_received",0)>before && prefs.getLong("last_received",0)>=screenOffAt) break;
             Thread.sleep(300);
         }
@@ -175,7 +177,7 @@ public class OwnPushSmokeTest extends OwnFamilySmokeTest {
         InstrumentationRegistry.getInstrumentation().sendStatus(0,result);
         ownShell("input keyevent 224");
         c.startActivity(new Intent(c,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP));
-        await("새 집 만들기");openPhoneNotifications();await("최근 알림 수신 완료");
+        awaitStart();openPhoneNotifications();await("최근 알림 수신 완료");
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();Thread.sleep(350);
         await("최근 알림 수신 완료");screenshot("12-a50-fcm-screen-off-receipt");
     }

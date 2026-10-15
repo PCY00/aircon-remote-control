@@ -122,7 +122,12 @@ def install(payload: dict, *, apply: bool) -> None:
     temporary.replace(ledger)
     if not previous:
         subprocess.run(['sh', str(hooks['termux/20-start-central'])], check=True, env=environment)
-    time.sleep(2)
+    # runsvdir discovers newly created service directories asynchronously.
+    deadline = time.monotonic()+15
+    while not (service/'supervise/ok').exists():
+        if time.monotonic() >= deadline:
+            raise RuntimeError('runit has not discovered the new service; inspect before retrying.')
+        time.sleep(0.25)
     subprocess.run(['sv-enable', 'aircon-central'], check=True, env=environment)
     deadline = time.monotonic()+40
     while time.monotonic() < deadline:

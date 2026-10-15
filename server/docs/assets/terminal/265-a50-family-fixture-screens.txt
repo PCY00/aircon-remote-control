@@ -1,0 +1,10 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - [fixture port preflight]
+ISOLATED_FIXTURE_PORT_AVAILABLE=TRUE
+
+EXIT_CODE=0
+$ SSH [verified host key] python - < screenshot fixture [fictional accounts, hub, aircon; isolated temp DB]
+ISOLATED_APK_BACKEND=READY BIND=loopback PORT=8765 AUTO_STOP_SECONDS=2400 PRODUCTION_DATABASE=UNTOUCHED FICTIONAL_HUB_INVENTORY_EVENTS=TRUE
+
+EXIT_CODE=0

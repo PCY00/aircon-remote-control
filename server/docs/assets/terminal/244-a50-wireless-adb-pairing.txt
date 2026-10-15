@@ -1,0 +1,10 @@
+# Actual Wi-Fi ADB pairing attempt; identifiers removed
+# Pairing code entered in a private local prompt, passed through stdin
+
+$ adb pair [REDACTED_PHONE_IP]:[REDACTED_PAIR_PORT]
+Enter pairing code: * daemon not running; starting now at tcp:5037
+* daemon started successfully
+Successfully paired to [REDACTED_PAIRING_ENDPOINT] [guid=[REDACTED_DEVICE_ID]
+
+PAIRING_STATUS=paired
+PROCESS_EXIT_CODE=0

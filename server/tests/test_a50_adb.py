@@ -3,15 +3,24 @@
 import importlib.util
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-spec = importlib.util.spec_from_file_location(
-    "a50_adb", Path(__file__).parents[1] / "scripts/android/a50_adb.py"
-)
+SCRIPTS = Path(__file__).parents[1] / "scripts/android"
+sys.path.insert(0, str(SCRIPTS))
+spec = importlib.util.spec_from_file_location("a50_adb", SCRIPTS / "a50_adb.py")
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+import a50_ssh  # noqa: E402
+
+TOKEN = "UNIT_TEST_TOKEN_00000000000000000000000000"
+REQUEST = (
+    "am broadcast -a com.aircon.a50manager.RECOVER "
+    "-n com.aircon.a50manager/.RecoveryReceiver "
+    "--es token " + TOKEN
+)
 
 
 def test_discovery_selects_only_paired_device_tls_service():
@@ -40,6 +49,25 @@ def client(tmp_path):
         )
     )
     return module.A50ADB(config)
+
+
+def connection(tmp_path):
+    key, known_hosts = tmp_path / "id_unit", tmp_path / "known_hosts_unit"
+    key.touch()
+    known_hosts.touch()
+    path = tmp_path / "connection.json"
+    path.write_text(
+        json.dumps(
+            {
+                "identity_file": str(key),
+                "known_hosts_file": str(known_hosts),
+                "port": 8022,
+                "user": "u0_a1",
+                "host": "192.0.2.1",
+            }
+        )
+    )
+    return path
 
 
 def test_connected_wrong_device_identity_is_rejected(tmp_path, monkeypatch):
@@ -75,27 +103,46 @@ def test_ssh_recovery_uses_verified_local_connection_without_requested_command(
     tmp_path, monkeypatch, process_exit
 ):
     target = client(tmp_path)
-    connection = tmp_path / "connection.json"
-    connection.write_text("{}")
-    target.config["manager_rpc_token"] = "UNIT_TEST_TOKEN_00000000000000000000000000"
+    connection(tmp_path)
+    target.config["manager_rpc_token"] = TOKEN
     calls = []
 
     def run(command, **kwargs):
-        calls.append(command)
+        calls.append((command, kwargs))
         return subprocess.CompletedProcess(
             command, process_exit, b"Broadcast completed: result=1", b""
         )
 
     monkeypatch.setattr(module.subprocess, "run", run)
     assert target.recover_over_ssh()
-    assert calls[0][-3:] == [
-        "--connection",
-        str(connection),
-        "am broadcast -a com.aircon.a50manager.RECOVER "
-        "-n com.aircon.a50manager/.RecoveryReceiver "
-        "--es token UNIT_TEST_TOKEN_00000000000000000000000000",
-    ]
-    assert Path(calls[0][1]).name == "a50_ssh.py"
+    command, kwargs = calls[0]
+    # ssh itself is the direct child, so the 20 s timeout kill reaches it.
+    assert command[0] == "ssh"
+    assert command[-1] == REQUEST
+    assert command[-2] == "u0_a1@192.0.2.1"
+    assert "StrictHostKeyChecking=yes" in command
+    assert "ServerAliveInterval=5" in command and "ServerAliveCountMax=2" in command
+    assert kwargs["timeout"] == 20
+
+
+def test_ssh_recovery_with_incomplete_local_details_sends_nothing(tmp_path, monkeypatch):
+    target = client(tmp_path)
+    (tmp_path / "connection.json").write_text("{}")
+    target.config["manager_rpc_token"] = TOKEN
+    monkeypatch.setattr(module.subprocess, "run", lambda *a, **k: pytest.fail("Unexpected SSH"))
+    assert not target.recover_over_ssh()
+    assert not target.ssh_recovery_requested
+
+
+def test_interactive_ssh_detects_dead_peer(tmp_path, monkeypatch):
+    path = connection(tmp_path)
+    calls = []
+    monkeypatch.setattr(a50_ssh.subprocess, "call", lambda command: calls.append(command) or 0)
+    monkeypatch.setattr(sys, "argv", ["a50_ssh.py", "--connection", str(path), "echo ok"])
+    assert a50_ssh.main() == 0
+    assert calls[0][0] == "ssh" and calls[0][-1] == "echo ok"
+    assert "ConnectTimeout=10" in calls[0]
+    assert "ServerAliveInterval=5" in calls[0] and "ServerAliveCountMax=2" in calls[0]
 
 
 def test_ssh_recovery_refuses_missing_connection_config(tmp_path, monkeypatch):
@@ -121,14 +168,17 @@ def test_recovery_requires_accepted_reply_and_expected_process_exit(
     tmp_path, monkeypatch, process_exit, reply
 ):
     target = client(tmp_path)
-    (tmp_path / "connection.json").write_text("{}")
-    target.config["manager_rpc_token"] = "UNIT_TEST_TOKEN_00000000000000000000000000"
-    monkeypatch.setattr(
-        module.subprocess,
-        "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, process_exit, reply, b""),
-    )
+    connection(tmp_path)
+    target.config["manager_rpc_token"] = TOKEN
+    calls = []
+
+    def run(*args, **kwargs):
+        calls.append(args)
+        return subprocess.CompletedProcess(args, process_exit, reply, b"")
+
+    monkeypatch.setattr(module.subprocess, "run", run)
     assert not target.recover_over_ssh()
+    assert len(calls) == 1
 
 
 def test_accepted_rpc_is_retried_until_adb_is_actually_available(tmp_path, monkeypatch):
@@ -157,3 +207,93 @@ def test_accepted_rpc_is_retried_until_adb_is_actually_available(tmp_path, monke
     monkeypatch.setattr(target, "verify", lambda endpoint: endpoint == "192.0.2.1:43210")
     assert target.connect(timeout=60, rediscover=True) == "192.0.2.1:43210"
     assert requests == [5, 35]
+
+
+def test_rediscovery_persists_only_cached_endpoint(tmp_path, monkeypatch):
+    target = client(tmp_path)
+    saved = json.loads(target.config_path.read_text())
+    saved.update(
+        cached_endpoint="192.0.2.1:40000", ssh_recovery_enabled=True, manager_rpc_token=TOKEN
+    )
+    target.config_path.write_text(json.dumps(saved))
+    target = module.A50ADB(target.config_path)
+    # A caller's temporary in-memory override must never be written back to adb.json.
+    target.config["ssh_recovery_enabled"] = False
+
+    def run(*args, **kwargs):
+        reply = b""
+        if args == ("mdns", "services"):
+            reply = b"adb-EXPECTED-a _adb-tls-connect._tcp 192.0.2.1:41111\n"
+        elif args[:3] == ("-s", "192.0.2.1:40000", "get-state"):
+            reply = b"offline\n"
+        return subprocess.CompletedProcess(args, 0, reply, b"")
+
+    monkeypatch.setattr(target, "run", run)
+    monkeypatch.setattr(target, "verify", lambda endpoint: endpoint == "192.0.2.1:41111")
+    assert target.connect(timeout=5) == "192.0.2.1:41111"
+    persisted = json.loads(target.config_path.read_text())
+    assert persisted == dict(saved, cached_endpoint="192.0.2.1:41111")
+    assert persisted["ssh_recovery_enabled"] is True
+    assert target.config["cached_endpoint"] == "192.0.2.1:41111"
+
+
+def test_connect_can_suppress_recovery_for_one_call(tmp_path, monkeypatch):
+    target = client(tmp_path)
+    target.config["ssh_recovery_enabled"] = True
+    before = target.config_path.read_text()
+    elapsed = [0]
+    monkeypatch.setattr(module.time, "monotonic", lambda: elapsed[0])
+    monkeypatch.setattr(
+        module.time, "sleep", lambda seconds: elapsed.__setitem__(0, elapsed[0] + seconds)
+    )
+    monkeypatch.setattr(target, "recover_over_ssh", lambda: pytest.fail("Unexpected recovery"))
+    monkeypatch.setattr(
+        target, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0, b"", b"")
+    )
+    with pytest.raises(module.ConnectionError, match="not discovered"):
+        target.connect(timeout=60, rediscover=True, allow_ssh_recovery=False)
+    assert target.config["ssh_recovery_enabled"] is True
+    assert target.config_path.read_text() == before
+
+
+def missing_ssh(tmp_path, calls):
+    """Point recovery at an ssh client that does not exist, so the real launch fails."""
+    binary = str(tmp_path / "missing-client" / "ssh.exe")
+    return lambda connection, command=None: calls.append(command) or [binary, command]
+
+
+def test_missing_ssh_client_is_a_failed_recovery_attempt(tmp_path, monkeypatch):
+    target = client(tmp_path)
+    connection(tmp_path)
+    target.config["manager_rpc_token"] = TOKEN
+    target.ssh_recovery_requested = True
+    calls = []
+    monkeypatch.setattr(module, "ssh_command", missing_ssh(tmp_path, calls))
+    assert not target.recover_over_ssh()
+    assert calls == [REQUEST]
+    assert not target.ssh_recovery_requested
+
+
+def test_missing_ssh_client_does_not_abort_discovery(tmp_path, monkeypatch):
+    target = client(tmp_path)
+    connection(tmp_path)
+    target.config.update(ssh_recovery_enabled=True, manager_rpc_token=TOKEN)
+    elapsed = [0]
+    calls = []
+    monkeypatch.setattr(module.time, "monotonic", lambda: elapsed[0])
+    monkeypatch.setattr(
+        module.time, "sleep", lambda seconds: elapsed.__setitem__(0, elapsed[0] + seconds)
+    )
+    monkeypatch.setattr(module, "ssh_command", missing_ssh(tmp_path, calls))
+
+    def run(*args, **kwargs):
+        reply = b""
+        if args == ("mdns", "services") and elapsed[0] >= 10:
+            reply = b"adb-EXPECTED-a _adb-tls-connect._tcp 192.0.2.1:43210\n"
+        return subprocess.CompletedProcess(args, 0, reply, b"")
+
+    monkeypatch.setattr(target, "run", run)
+    monkeypatch.setattr(target, "verify", lambda endpoint: endpoint == "192.0.2.1:43210")
+    assert target.connect(timeout=60, rediscover=True) == "192.0.2.1:43210"
+    assert calls == [REQUEST]
+    assert not target.ssh_recovery_requested

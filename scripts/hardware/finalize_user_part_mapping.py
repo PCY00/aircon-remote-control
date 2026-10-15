@@ -1,7 +1,8 @@
 """Keep the research mapping intact and publish final selection notes separately."""
 from pathlib import Path
 import json
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current/manufacturing/assembly')
+from hw_paths import kicad_root
+OUT=kicad_root()/'artwork-current/manufacturing/assembly'
 rows=json.loads(Path('tmp/user-bom-audit-20260920/part-mapping.json').read_text(encoding='utf8'))
 notes={
  'F1':'BNstar exact MPN; 1.25x2.0mm pads at +/-1.4mm are an engineering adaptation to maximum terminal width, not a manufacturer-recommended land; request JLC DFM review.',

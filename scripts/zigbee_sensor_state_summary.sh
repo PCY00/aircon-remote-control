@@ -18,15 +18,33 @@ if [[ -z "$mqtt_password" ]]; then
     exit 1
 fi
 
+# The broker password rides in the docker CLI environment (-e NAME propagates it
+# without putting the value on the command line) and reaches the client through
+# its default-options file, so it never appears in any host or container argv.
+mqtt_client() {
+    local client="$1"
+    shift
+    MQTT_PW="$mqtt_password" docker exec -e MQTT_PW "$mosquitto_container" sh -c '
+        umask 077
+        dir="$(mktemp -d)" || exit 1
+        printf "%s %s\n" -P "$MQTT_PW" >"$dir/$0"
+        XDG_CONFIG_HOME="$dir" "$0" -h 127.0.0.1 -p 1883 -u zigbee2mqtt "$@"
+        rc=$?
+        rm -rf -- "$dir"
+        exit "$rc"
+    ' "$client" "$@"
+}
+
+mqtt_sub() {
+    mqtt_client mosquitto_sub "$@"
+}
+
 summarize_device() {
     local device_name="$1"
     local device_kind="$2"
     local payload
 
-    if ! payload="$(docker exec "$mosquitto_container" mosquitto_sub \
-        -h 127.0.0.1 -p 1883 \
-        -u zigbee2mqtt -P "$mqtt_password" \
-        -t "zigbee2mqtt/$device_name" -C 1 -W 3 2>/dev/null)"; then
+    if ! payload="$(mqtt_sub -t "zigbee2mqtt/$device_name" -C 1 -W 3 2>/dev/null)"; then
         echo "DEVICE=$device_name"
         echo "PAYLOAD_AVAILABLE=false"
         return

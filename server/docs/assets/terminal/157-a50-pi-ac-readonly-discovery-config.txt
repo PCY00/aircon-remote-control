@@ -1,0 +1,12 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] read-only registered profiles and binding; no physical commands
+REGISTERED_AIRCON_COUNT=1
+PROFILE_IDS=["air_conditioner/Carrier/CS-A061GS"]
+H2_BOUND_COUNT=1
+READONLY_SOCKET_PORT_8001_PRESENT=True
+UNIT=ExecStart={ path=[HOME]/aircon-controller/scripts/run_pi.sh ; argv[]=[HOME]/aircon-controller/scripts/run_pi.sh ; ignore_errors=no ; start_time=[Sun 2026-10-11 21:40:50 KST] ; stop_time=[n/a] ; pid=1699 ; code=(null) ; status=0/0 }
+EnvironmentFiles=[HOME]/aircon-controller/runtime/app.env (ignore_errors=yes)
+
+
+EXIT_CODE=0

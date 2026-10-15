@@ -1,0 +1,8 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] verify_control.py [read-only Pi API, owned checksums and active services]
+VERIFIED_LOCAL_API_SUPPORTED_AIRCON_COUNT=1
+PI_AGENT_AND_ORIGINAL_WEB_SERVICE=active CODE_CHECKSUMS=PASS
+PHYSICAL_COMMANDS_SENT=0
+
+EXIT_CODE=0

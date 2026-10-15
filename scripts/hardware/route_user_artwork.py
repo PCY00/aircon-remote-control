@@ -1,10 +1,10 @@
 """Route the current user's placement; no component moves or old Rev A geometry."""
-from pathlib import Path
 import argparse,json,os,subprocess
 import pcbnew as p
-ROOT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2')
+from hw_paths import kicad_root, route_tools
+ROOT=kicad_root()
 OUT=ROOT/'artwork-current';PCB=OUT/'IR_ESP32H2.kicad_pcb'
-ROUTER=ROOT.parent/'KeyRing/tmp/route_tools'
+ROUTER=route_tools()
 os.environ['KIPRJMOD']=str(OUT)
 def v(x,y):return p.VECTOR2I(p.FromMM(x),p.FromMM(y))
 def xy(i):return (p.ToMM(i.GetPosition().x),p.ToMM(i.GetPosition().y))

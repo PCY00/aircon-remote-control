@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import re
 import secrets
 import time
 import uuid
+from collections.abc import Callable
 from copy import deepcopy
 from datetime import UTC, datetime
 from threading import Event, Lock
@@ -24,7 +26,11 @@ from app.settings import Settings
 
 LOGGER = logging.getLogger(__name__)
 MAX_PERMIT_JOIN_SECONDS = 120
+PERMIT_JOIN_COOLDOWN_SECONDS = 300
 H2_IR_MODEL = "AIRCON_H2_IR_01"
+# One device command waits at most this long for H2 results; the central agent's
+# local request timeout (20 s) assumes it, so multi-step commands share it.
+H2_RESULT_TIMEOUT_SECONDS = 18.0
 H2_COMMAND_NAMES = {
     "power_off": "POWER_OFF",
     "mode_auto": "MODE_AUTO",
@@ -73,6 +79,39 @@ def _now() -> str:
     return datetime.now(UTC).isoformat()
 
 
+class PermitJoinCooldown:
+    """Refuse a second open within the cooldown unless joining was closed first."""
+
+    def __init__(
+        self,
+        seconds: float = PERMIT_JOIN_COOLDOWN_SECONDS,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        self._seconds = seconds
+        self._clock = clock
+        self._opened_at: float | None = None
+
+    def retry_after_seconds(self) -> int:
+        """0 when opening is allowed, otherwise the seconds left in the cooldown."""
+        if self._opened_at is None:
+            return 0
+        remaining = self._seconds - (self._clock() - self._opened_at)
+        return max(1, math.ceil(remaining)) if remaining > 0 else 0
+
+    def mark_opened(self) -> None:
+        self._opened_at = self._clock()
+
+    def mark_closed(self) -> None:
+        self._opened_at = None
+
+
+def _permit_join_end_seconds(value: object) -> int | None:
+    """Zigbee2MQTT 2.x publishes ``permit_join_end`` as epoch milliseconds."""
+    if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(value):
+        return None
+    return int(value / 1000 if value > 10**11 else value)
+
+
 class SensorBridge(Protocol):
     """Lifecycle and status boundary used by FastAPI."""
 
@@ -91,7 +130,8 @@ class SensorBridge(Protocol):
     def require_h2_device(self, friendly_name: str) -> dict[str, object]: ...
 
     def send_h2_command(
-        self, friendly_name: str, command: dict[str, object]
+        self, friendly_name: str, command: dict[str, object],
+        timeout_seconds: float = H2_RESULT_TIMEOUT_SECONDS,
     ) -> dict[str, object]: ...
 
 
@@ -136,9 +176,10 @@ class DisabledSensorBridge:
         raise ZigbeeGatewayUnavailableError("Zigbee MQTT bridge is disabled")
 
     def send_h2_command(
-        self, friendly_name: str, command: dict[str, object]
+        self, friendly_name: str, command: dict[str, object],
+        timeout_seconds: float = H2_RESULT_TIMEOUT_SECONDS,
     ) -> dict[str, object]:
-        del friendly_name, command
+        del friendly_name, command, timeout_seconds
         raise ZigbeeGatewayUnavailableError("Zigbee MQTT bridge is disabled")
 
 
@@ -215,7 +256,8 @@ class PahoSensorBridge:
                 if isinstance(event, Event):
                     event.set()
             for pending in self._pending_ir.values():
-                pending["status"] = "disconnected"
+                if pending["status"] is None:
+                    pending["status"] = "disconnected"
                 event = pending["event"]
                 if isinstance(event, Event):
                     event.set()
@@ -261,8 +303,9 @@ class PahoSensorBridge:
             event = Event()
             self._pending_requests[transaction] = {"event": event, "response": None}
 
+        # Target the coordinator only so routers do not also admit joiners.
         payload = json.dumps(
-            {"time": duration_seconds, "transaction": transaction},
+            {"time": duration_seconds, "device": "coordinator", "transaction": transaction},
             separators=(",", ":"),
         )
         result = self._client.publish(
@@ -326,7 +369,8 @@ class PahoSensorBridge:
         return deepcopy(matches[0])
 
     def send_h2_command(
-        self, friendly_name: str, command: dict[str, object]
+        self, friendly_name: str, command: dict[str, object],
+        timeout_seconds: float = H2_RESULT_TIMEOUT_SECONDS,
     ) -> dict[str, object]:
         self.require_h2_device(friendly_name)
         ir_request = h2_request_from_command(command)
@@ -353,7 +397,7 @@ class PahoSensorBridge:
                 raise ZigbeeGatewayRequestError("failed to publish H2 IR command") from exc
             if getattr(result, "rc", mqtt.MQTT_ERR_SUCCESS) != mqtt.MQTT_ERR_SUCCESS:
                 raise ZigbeeGatewayRequestError("failed to publish H2 IR command")
-            if not event.wait(timeout=18):
+            if not event.wait(timeout=timeout_seconds):
                 raise ZigbeeGatewayRequestError(
                     "H2 result timed out; IR may have been sent. "
                     "Check the appliance before retrying"
@@ -418,7 +462,8 @@ class PahoSensorBridge:
             self._connected = False
             self._last_disconnected_at = _now()
             for pending in self._pending_ir.values():
-                pending["status"] = "disconnected"
+                if pending["status"] is None:
+                    pending["status"] = "disconnected"
                 event = pending["event"]
                 if isinstance(event, Event):
                     event.set()
@@ -431,6 +476,16 @@ class PahoSensorBridge:
         _userdata: object,
         message: mqtt.MQTTMessage,
     ) -> None:
+        # paho re-raises callback exceptions, which ends its network thread without
+        # on_disconnect while status() keeps reporting connected.
+        try:
+            self._handle_message(message)
+        except Exception:
+            LOGGER.exception("Failed to handle an MQTT message")
+            with self._lock:
+                self._last_error = "failed to handle an MQTT message"
+
+    def _handle_message(self, message: mqtt.MQTTMessage) -> None:
         payload_bytes = bytes(message.payload)
         if message.topic == f"{self._service.base_topic}/bridge/info":
             self._handle_bridge_info(payload_bytes)
@@ -477,9 +532,7 @@ class PahoSensorBridge:
         with self._lock:
             self._bridge_info = {
                 "permit_join": bool(decoded.get("permit_join", False)),
-                "permit_join_end": (
-                    int(raw_end) if isinstance(raw_end, int | float) else None
-                ),
+                "permit_join_end": _permit_join_end_seconds(raw_end),
             }
             self._last_message_at = _now()
 
@@ -571,7 +624,10 @@ class PahoSensorBridge:
             if (pending is None or topic != f"{self._service.base_topic}/{pending['friendly_name']}"
                 or result["command"] != pending["command"]):
                 return True
-            if status != "accepted":
+            # request_id is fresh per call, so "duplicate" means a retried copy of
+            # this request reached the node while the original is still queued; keep
+            # waiting for its sent/failed. The first terminal status wins.
+            if status not in {"accepted", "duplicate"} and pending["status"] is None:
                 pending["status"] = status
                 event = pending["event"]
                 if isinstance(event, Event):

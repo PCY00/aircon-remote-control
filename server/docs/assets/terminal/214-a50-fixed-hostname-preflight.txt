@@ -1,0 +1,18 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - < read-only current tunnel and central readiness checks [no secrets]
+READ_ONLY_PREFLIGHT=TRUE
+cloudflared version 2026.9.3 (built 2026.09.30-07:36 UTC)
+CENTRAL_READY_STATUS=200
+CENTRAL_READY_BODY={"database":"ok","status":"ready"}
+
+TUNNEL_CURRENT_LINK_MATCH=True
+TUNNEL_MANAGED_MISMATCH_COUNT=0
+TUNNEL_MANAGED_FILE_COUNT=8
+TUNNEL_MODE=quick-test
+TUNNEL_STATUS=connected
+TUNNEL_SERVICE_RUNNING=True
+CLOUDFLARE_LOCAL_CERT_PRESENT=False
+REMOTE_CHANGES=NONE
+
+EXIT_CODE=0

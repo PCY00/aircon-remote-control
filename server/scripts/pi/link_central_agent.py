@@ -36,7 +36,7 @@ assert active.stdout.strip()==b'active'
 print(json.dumps({'clock':time.time(),'linger':linger.stdout.strip()==b'Linger=yes',
  'config_exists':(Path.home()/'.config/aircon-central-agent').exists()}))
 """
-PROVISION = """import json,os,sys
+PROVISION = """import json,os,sys,time
 from pathlib import Path
 try:
     os.umask(0o077)
@@ -47,11 +47,14 @@ try:
     with output.open('x',encoding='utf-8') as stream:
         output.chmod(0o600)
         result=Households(db).provision_hub()
-        json.dump(result,stream);stream.flush();os.fsync(stream.fileno())
+        # Durable record = hub identity only; token and claim code stay in the transient hand-off.
+        record={'hub_id':result['hub_id'],'created_at':time.time()}
+        json.dump(record,stream);stream.flush();os.fsync(stream.fileno())
     print(json.dumps(result))
 except Exception:
     sys.exit(1)
 """
+PROVISION_RECORD_FIELDS = {"hub_id", "created_at"}
 CONFIGURE_PI = """import base64,json,os,sys
 from pathlib import Path
 try:
@@ -118,7 +121,7 @@ def native(home, test, *extra, apply=False):
 
 
 def first_pairing_available(phone, pi):
-    return (phone["version"] in {"0.3.1", "0.4.0"} and not phone["hubs"]
+    return (phone["version"] in {"0.3.1", "0.4.0", "0.5.0", "0.5.1", "0.6.0", "0.7.0"} and not phone["hubs"]
             and not phone["credential_exists"] and not pi["config_exists"])
 
 
@@ -171,7 +174,10 @@ def main():
         or credential["claim_expires_at"] <= time.time() + 120
     ):
         raise RuntimeError("Private provisioning result invalid; preserve and inspect")
-    phone.log("HUB_PROVISIONED=PASS SERVER_PRIVATE_COPY=0600 CLAIM_LIFETIME_SECONDS=600")
+    phone.log(
+        "HUB_PROVISIONED=PASS SERVER_PRIVATE_RECORD=hub_id_only MODE=0600 "
+        "CLAIM_LIFETIME_SECONDS=600"
+    )
     encoded = base64.b64encode(
         json.dumps(
             {"endpoint": endpoint.rstrip("/"), "hub_token": credential["hub_token"]}

@@ -6,6 +6,16 @@ final class ApiErrorMessages {
         if (!(failure instanceof ApiClient.Failure))
             return "서버에 연결할 수 없어요. 인터넷 연결과 서버 주소를 확인해 주세요.";
         ApiClient.Failure error=(ApiClient.Failure)failure;
+        if(error.code.equals("server_identity_invalid")) return "서버 신원을 확인하지 못했어요. 주소가 맞는지 소유자에게 확인해 주세요.";
+        if(error.code.equals("server_identity_changed")) return "서버 신원이 바뀌었어요. 주소를 보낸 사람이 소유자인지 확인하세요.";
+        switch(error.code) {
+            case "control_offline": return "Pi가 연결되지 않았어요. Pi와 서버 연결을 확인해 주세요.";
+            case "control_forbidden": return "집 소유자와 가족만 에어컨을 조작할 수 있어요.";
+            case "control_device_unavailable": return "이 에어컨의 Pi 연결을 확인해 주세요.";
+            case "control_busy": return "앞선 명령의 결과를 기다리고 있어요. 잠시 후 확인해 주세요.";
+            case "control_rate_limit": return "명령을 너무 빠르게 보냈어요. 잠시 후 다시 눌러 주세요.";
+            case "control_request_conflict": return "요청 정보를 확인하지 못했어요. 화면을 새로고침해 주세요.";
+        }
         if (error.status==409) {
             switch(error.code) {
                 case "installation_not_registered": return "이 휴대폰의 알림 등록이 완료되지 않았어요. 알림 설정에서 알림을 켜고 연결을 확인해 주세요.";

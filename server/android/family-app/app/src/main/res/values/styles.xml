@@ -1,11 +1,28 @@
 <resources>
-    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+    <!-- Dark smart-home palette; FamilyActivity uses the same values for views built in code. -->
+    <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#2D4FC1</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar">true</item>
-        <item name="android:statusBarColor">#F7F8FB</item>
-        <item name="android:navigationBarColor">#F7F8FB</item>
+        <item name="android:colorPrimary">#162133</item>
+        <item name="android:colorPrimaryDark">#0F1724</item>
+        <item name="android:colorAccent">#37A8DD</item>
+        <item name="android:colorEdgeEffect">#37A8DD</item>
+        <item name="android:colorBackground">#0F1724</item>
+        <item name="android:colorBackgroundFloating">#162133</item>
+        <item name="android:windowBackground">@color/family_background</item>
+        <item name="android:textColorPrimary">#E6EDF7</item>
+        <item name="android:textColorSecondary">#9AA8BC</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:statusBarColor">#0F1724</item>
+        <item name="android:navigationBarColor">#0F1724</item>
         <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:alertDialogTheme">@style/FamilyDialog</item>
+    </style>
+    <style name="FamilyDialog" parent="android:style/Theme.Material.Dialog.Alert">
+        <item name="android:colorAccent">#37A8DD</item>
+        <item name="android:colorBackground">#162133</item>
+        <item name="android:colorBackgroundFloating">#162133</item>
+        <item name="android:textColorPrimary">#E6EDF7</item>
+        <item name="android:textColorSecondary">#9AA8BC</item>
     </style>
 </resources>

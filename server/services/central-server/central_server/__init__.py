@@ -1,3 +1,3 @@
-"""Independent central-service foundation; household and push APIs come later."""
+"""Household authentication, notifications and short-lived appliance commands."""
 
-VERSION = '0.4.0'
+VERSION = '0.7.0'

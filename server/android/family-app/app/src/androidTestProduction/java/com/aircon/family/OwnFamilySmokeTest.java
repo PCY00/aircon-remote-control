@@ -80,16 +80,26 @@ public class OwnFamilySmokeTest {
         }
         throw new AssertionError("Own-family enabled action did not accept click: "+text);
     }
-    protected void openApprovedHome(String name) throws Exception {
-        AccessibilityNodeInfo card=await(name).getParent();AccessibilityNodeInfo open=null;
-        for(AccessibilityNodeInfo node:nodes(card))if("집 열기".contentEquals(node.getText()==null?"":node.getText()))open=node;
-        assertNotNull("Approved house must have an open action",open);
-        long deadline=System.currentTimeMillis()+20000;
-        while(!open.isEnabled()&&System.currentTimeMillis()<deadline){Thread.sleep(200);card=await(name).getParent();for(AccessibilityNodeInfo n:nodes(card))if("집 열기".contentEquals(n.getText()==null?"":n.getText()))open=n;}
-        assertTrue(open.isEnabled());assertTrue(open.performAction(AccessibilityNodeInfo.ACTION_CLICK));
-        await(name);await("소유자 · 우리 가족의 스마트홈");await("우리 집 한눈에");
+    /** The app opens the last-used home on the 홈 tab, or onboarding when the account has no home yet. */
+    protected void awaitStart() throws Exception {
+        long deadline = System.currentTimeMillis() + 20000;
+        while (System.currentTimeMillis() < deadline) {
+            if (find("홈") != null || find("새 집 만들기") != null) return;
+            Thread.sleep(200);
+        }
+        throw new AssertionError("Own-family start screen did not appear");
     }
-    protected void openPhoneNotifications() throws Exception {click("설정");await("연결 및 계정");click("알림 설정");await("받고 싶은 알림");}
+    /** Switches through 설정 → 집 바꾸기 so it works whichever home was opened last. */
+    protected void openApprovedHome(String name) throws Exception {
+        awaitStart();
+        assertNotNull("Approved house required (onboarding shown)",find("홈"));
+        click("설정");click("집 바꾸기");await("새 집 만들기");
+        AccessibilityNodeInfo row=await(name);
+        assertEquals("Approved house must be owned",name+"\n소유자",row.getText()==null?"":row.getText().toString());
+        click(name);
+        await("설정");click("홈");await(name);await("집 새로고침");
+    }
+    protected void openPhoneNotifications() throws Exception {click("설정");await("이 휴대폰 알림");await("알림 종류별 중요도");}
     protected void screenshot(String name) throws Exception {
         Bitmap original = automation.takeScreenshot();
         assertNotNull("Native capture unavailable", original);
@@ -121,8 +131,13 @@ public class OwnFamilySmokeTest {
         String encoded = InstrumentationRegistry.getArguments().getString("home_name_b64", "");
         String home = new String(Base64.decode(encoded, Base64.DEFAULT), StandardCharsets.UTF_8);
         assertTrue("Explicit test home name required", home.length() > 0 && home.length() <= 80);
-        await("새 집 만들기");
-        if (find(home) == null) {
+        awaitStart();
+        boolean reuse = false;
+        if (find("홈") != null) {
+            click("설정"); click("집 바꾸기"); await("새 집 만들기");
+            reuse = find(home) != null;
+        }
+        if (!reuse) {
             click("새 집 만들기");
             await("확인");
             AccessibilityNodeInfo input = null;
@@ -137,27 +152,24 @@ public class OwnFamilySmokeTest {
             Bundle metadata = new Bundle(); metadata.putString("home_action", "created");
             InstrumentationRegistry.getInstrumentation().sendStatus(0, metadata);
         } else {
-            AccessibilityNodeInfo card = find(home).getParent();
-            AccessibilityNodeInfo open = null;
-            for (AccessibilityNodeInfo node : nodes(card)) {
-                if ("집 열기".contentEquals(node.getText() == null ? "" : node.getText())) open = node;
-            }
-            assertNotNull("Existing named home card missing open button", open);
-            assertTrue(open.performAction(AccessibilityNodeInfo.ACTION_CLICK));
+            click(home);
             Bundle metadata = new Bundle(); metadata.putString("home_action", "reused");
             InstrumentationRegistry.getInstrumentation().sendStatus(0, metadata);
+            await("설정"); click("홈");
         }
         await(home);
-        await("소유자 · 우리 가족의 스마트홈");
-        await("아직 도착한 기록이 없어요");
+        await("집 새로고침");
         screenshot("08-a50-real-test-home");
+        click("알림");
+        await("전체");
         click("설정");
         click("가족 관리");
         await("가족 관리");
         await("소유자");
         screenshot("09-a50-real-owner-members-redacted");
-        click("집으로 돌아가기");
+        click("뒤로");
+        await("집 바꾸기");
+        click("홈");
         await(home);
-        await("소유자 · 우리 가족의 스마트홈");
     }
 }

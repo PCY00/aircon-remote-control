@@ -45,7 +45,13 @@ Set-Location C:\smart-home-project\server
 
 이 문서는 [메인 설치 가이드](../README.md)의 **맨 마지막에 있는 선택 단계**를 자세히 설명한다. 먼저 Raspberry Pi의 Zigbee 센서와 웹 대시보드가 동작하도록 메인 가이드 1~9단계를 끝낸다. A50 서버가 없어도 집 안 제어와 Tailscale 접속은 가능하다.
 
-남는 Galaxy A50은 가족 계정과 알림을 처리하는 중앙 서버다. Pi에서 새로 발생한 문·온습도·경고 기록을 받아 가족 앱에서 조회하고, 선택한 알림을 Firebase Cloud Messaging(FCM)으로 보낸다. **가족 앱에는 현재 에어컨 조작 기능이 없다.** 냉방·끄기 명령은 Pi의 웹 대시보드에서 사용한다.
+남는 Galaxy A50은 가족 계정과 알림을 처리하는 중앙 서버다. Pi에서 새로 발생한 문·온습도·경고 기록을 받아 가족 앱에서 조회하고, 선택한 알림을 Firebase Cloud Messaging(FCM)으로 보낸다. **가족 앱 0.5.2에는 냉방 17–30°C·바람 자동/약/중/강, 자동·제습·송풍, 풍향 고정·스윙·절전·터보·표시등과 전원 끄기가 있다.** 집 소유자와 가족만 조작하며 조회 전용 계정은 조작하지 못한다. 기존 Pi 웹 대시보드도 그대로 사용할 수 있다. [앱 제어 연결·업데이트 순서](docs/aircon-app-control.md).
+
+### 앱부터 집 안 기기까지 이어지는 연결
+
+[![도메인·Cloudflare·A50·Pi와 FCM을 나눈 연결 그림](docs/architecture/connection-flow.svg)](docs/architecture/connection-flow.svg)
+
+**제어는 앱 → Cloudflare → A50 → Pi → H2 → 에어컨, 알림은 센서 → Pi → A50 → FCM → 휴대폰으로 이어진다.** Pi는 먼저 중앙 서버에 접속해 자기 집 명령을 가져간다. 도메인은 고정 주소, Cloudflare는 외부 연결 입구, A50은 실제 중앙 서버다. [각 부분의 역할과 연결 순서](docs/connection-flow.md)에 쉬운 설명을 넣었다. 고정 주소 연결 상태는 그림 상단에 표시한다.
 
 ```text
 Zigbee 센서 → Pi의 기존 웹앱·센서 DB → Pi 전용 연결 서비스
@@ -57,7 +63,9 @@ Zigbee 센서 → Pi의 기존 웹앱·센서 DB → Pi 전용 연결 서비스
                               가족 Android 앱의 알림·기록
 ```
 
-현재는 A50 Android 11, 가족 앱 0.4.0, 중앙 서버 0.4.0/DB 스키마 4의 **시험 구성**이다. 사용한 A50에는 최신 보안 업데이트가 제공되지 않는다. 공개 인터넷에서 오래 운영할 서버나 안전이 중요한 원격 제어 장치로 완성된 상태가 아니다. Cloudflare Quick Tunnel은 테스트용이며 주소와 가동 시간이 고정되지 않는다. 공유기 포트포워딩으로 Pi나 A50의 내부 포트를 직접 열지 않는다.
+현재는 A50 Android 11, 가족 앱 0.6.1(공간별 홈·알림 중요도)·중앙 서버 0.7.0/DB 스키마 7·Pi 연결 서비스 0.7.0의 **시험 구성**이다. 2026-10-16에 Pi가 기기 목록(이름·공간 포함, 사용자 승인)을 A50으로 보내도록 서버와 Pi 연결 서비스를 배포했다. 2026-10-15 보안 점검 수정(서버 지문 확인, 허브별 요청 제한, Pi API의 Host·출처 검사, MQTT 앱 전용 계정)을 Pi와 A50에 배포했다. 연결 실패와 빈 집 목록을 구분하고 별도 에어컨 조작 화면에서 설정을 보낸다. 자동 확인과 실제 서버·Pi 배포를 마쳤으며 새 앱의 실기기 화면과 물리 반응 확인은 별도로 기록한다. 사용한 A50에는 최신 보안 업데이트가 제공되지 않는다. 공개 인터넷에서 오래 운영할 서버나 안전이 중요한 원격 제어 장치로 완성된 상태가 아니다. 2026년 10월 15일 Cloudflare 고정 터널과 Pi의 접속 주소를 연결했다. 고정 터널 재시작 후에도 주소가 같은 것을 확인했으며, A50 전체 재부팅은 이번 작업에서 시험하지 않았다. 공유기 포트포워딩으로 Pi나 A50의 내부 포트를 직접 열지 않는다.
+
+서버가 다시 켜진 뒤 앱에서 집이 보이지 않으면 새 집을 만들기 전에 [서버 주소와 집 목록 확인 순서](docs/troubleshooting.md)를 따른다. 임시 주소가 바뀌어도 기존 집 등록이 삭제된다는 뜻은 아니다.
 
 ## 1. 무엇을 준비하나
 
@@ -69,9 +77,9 @@ Zigbee 센서 → Pi의 기존 웹앱·센서 DB → Pi 전용 연결 서비스
 | Firebase 프로젝트와 Google 계정 | 앱 Google 로그인과 FCM. 앱 패키지 이름은 `com.aircon.family` |
 | 앱 전용 서명 키와 Android 설정 파일 | [가족 앱 소스](android/family-app/). 실제 파일은 Git 제외 폴더 `.deploy/family-app/`에만 보관 |
 | FCM 전송용 서비스 계정 JSON | A50 서버에서 Google에 알림을 요청하는 **별도 개인 키**. 앱의 `google-services.json`과 다름 |
-| 외부 HTTPS 경로 | 현재 [A50 시험용 터널](services/central-tunnel/) 사용. 영구 주소는 아직 없음 |
+| 외부 HTTPS 경로 | [Cloudflare 고정 터널](services/central-tunnel/) 사용. [도메인 연결 과정과 실제 결과](docs/fixed-server-address.md) |
 
-이 저장소에 실제 비밀번호·개인 키·Google 서비스 계정 JSON·운영 주소는 없다. Git에서 제외한 `.deploy/`의 값은 **각자 자신의 장비와 Firebase 프로젝트로 채워야 한다.** 다른 사람의 프로젝트 ID, 앱 서명 지문, 집 이름, SSH 주소를 그대로 복사하지 않는다. 아래 명령은 `server` 폴더를 연 Windows PowerShell에서 실행한다. 이 폴더를 `C:\smart-home-reader`로 옮겼다면 그 경로에서 실행한다. Pi와 A50에서 직접 실행할 명령은 따로 표시한다.
+이 저장소에 실제 비밀번호·개인 키·Google 서비스 계정 JSON은 없다. 문서의 도메인은 이 프로젝트의 접속 구조를 설명하는 예시이며, 따라 할 때는 **자신이 산 도메인과 자신의 장비·Firebase 프로젝트로 채워야 한다.** 비공개 설정은 Git에서 제외한 `.deploy/`에 보관한다. 다른 사람의 프로젝트 ID, 앱 서명 지문, 집 이름, SSH 주소를 그대로 복사하지 않는다. 아래 명령은 `server` 폴더를 연 Windows PowerShell에서 실행한다. 이 폴더를 `C:\smart-home-reader`로 옮겼다면 그 경로에서 실행한다. Pi와 A50에서 직접 실행할 명령은 따로 표시한다.
 
 ## 2. A50에 원격 관리 통로 만들기
 
@@ -109,7 +117,9 @@ Firebase Console에서 본인의 프로젝트를 만들고 Authentication의 Goo
 
 ## 4. 다른 휴대폰에서 접속할 HTTPS 주소 만들기
 
-현재 저장소는 [Cloudflare Quick Tunnel](services/central-tunnel/README.md)을 A50에서 시작한다. A50 내부 API를 HTTPS로 이어 주지만, 터널 주소를 아는 것만으로 집 데이터에 접근하게 만들지는 않는다. Google 로그인과 서버의 가족 권한 검사는 그대로 적용한다. 다만 Cloudflare가 HTTPS를 종료하는 외부 중계자이고, 이 임시 주소는 재시작 때 바뀔 수 있다. 운영용 고정 주소가 필요한 사람은 여기서 멈추고 별도 설계를 해야 한다.
+고정 주소는 [도메인 연결 과정](docs/fixed-server-address.md)과 [고정 터널 설치 명령](services/central-tunnel/README.md)을 따른다. A50이 Cloudflare에 먼저 연결해 통로를 유지하고, 앱은 도메인의 HTTPS 주소로 접속한다. Google 로그인과 서버의 가족 권한 검사는 계속 적용한다. Cloudflare는 HTTPS 요청을 처리하는 외부 중계자이며, 집·가족·기록을 저장하는 실제 중앙 서버는 A50이다.
+
+아래 명령은 도메인 없이 먼저 시험하는 **Quick Tunnel 방식**이다. 임시 주소는 재시작 때 바뀔 수 있다. 고정 터널과 동시에 새로 설치할 필요는 없다.
 
 ```powershell
 .\.venv\Scripts\python.exe scripts/android/a50_record.py --label tunnel-package-install --script scripts/android/prepare_a50_tunnel.sh --timeout 300
@@ -119,7 +129,7 @@ Firebase Console에서 본인의 프로젝트를 만들고 Authentication의 Goo
 .\.venv\Scripts\python.exe scripts/android/verify_a50_tunnel.py
 ```
 
-실제 주소는 Git 제외 폴더의 `.deploy/a50/tunnel-endpoint.json`에 둔다. 블로그나 이슈에 복사하지 않는다. 터널이 다시 뜨면 앱의 연결 주소도 새 주소로 바꿔야 한다.
+확인한 주소 사본은 Git 제외 폴더의 `.deploy/a50/tunnel-endpoint.json`에 둔다. 고정 터널은 같은 도메인을 계속 사용한다. 기존 임시 주소를 쓰던 가족 앱은 ‘연결 설정’에서 고정 주소를 한 번 저장하고 같은 Google 계정으로 다시 로그인한다. 집이나 허브를 새로 만들 필요는 없다.
 
 ## 5. 가족 앱 빌드·로그인
 

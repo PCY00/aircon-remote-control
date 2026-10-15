@@ -56,6 +56,7 @@ from pathlib import Path
 private=Path.home()/'.config/aircon-central/pi-central-hub.json'
 assert stat.S_IMODE(private.stat().st_mode)==0o600
 saved=json.loads(private.read_text())
+print('PROVISIONING_RECORD_FIELDS='+json.dumps(sorted(saved)))
 db=Path.home()/'.local/share/aircon-central/central.sqlite3'
 with closing(sqlite3.connect(db.as_uri()+'?mode=ro',uri=True)) as c:
  assert c.execute('PRAGMA integrity_check').fetchone()==('ok',)
@@ -76,7 +77,12 @@ with closing(sqlite3.connect(db.as_uri()+'?mode=ro',uri=True)) as c:
  print('PHONE_NOTIFICATION_CHOICES_ONLY='+json.dumps(choices))
 with urllib.request.urlopen('http://127.0.0.1:8001/health/ready',timeout=3) as response:
  assert response.status==200
-print('PAIRED_A50_DATABASE_AND_READINESS=PASS PRIVATE_PROVISIONING_MODE=0600')
+# Pairings made before the hub_id-only record still hold the plaintext hub token: scrub, re-run.
+leftover=sorted(set(saved)-{'hub_id','created_at'})
+assert not leftover, ('Provisioning record still holds '+','.join(leftover)
+                      +'; keep only hub_id and created_at')
+print('PAIRED_A50_DATABASE_AND_READINESS=PASS PRIVATE_PROVISIONING_MODE=0600 '
+      'PROVISIONING_RECORD=hub_id_only')
 """
 
 

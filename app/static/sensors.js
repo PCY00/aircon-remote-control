@@ -177,10 +177,12 @@
     return now >= start || now < end;
   }
 
-  function climateRefreshAllowed(automatic, now = new Date()) {
+  function climateRefreshAllowed(automatic, now = new Date(), scheduled = false) {
     if (!automatic) return true;
+    // The interval timer itself is the schedule: comparing its tick with the previous
+    // post-network timestamp skipped ticks whenever this request was a little faster.
     return settings.enabled && !isPauseTime(now)
-      && (lastClimateRefreshAt === null
+      && (scheduled || lastClimateRefreshAt === null
         || now.getTime() - lastClimateRefreshAt >= settings.intervalMinutes * 60 * 1000);
   }
 
@@ -581,13 +583,14 @@
     editorForm.elements.display_name.value = meta.displayName;
     const roomSelect = editorForm.elements.room;
     roomSelect.replaceChildren();
-    roomNames().forEach((room) => {
+    // 서버에 저장된 공간이 이 브라우저의 공간 탭에 없어도 선택지에 남겨, 이름만 바꿔 저장할 때 공간이 지워지지 않게 한다.
+    [...new Set([...roomNames(), meta.room])].forEach((room) => {
       const option = document.createElement('option');
       option.value = room;
       option.textContent = room;
       roomSelect.append(option);
     });
-    roomSelect.value = roomNames().includes(meta.room) ? meta.room : '공간 미지정';
+    roomSelect.value = meta.room;
     editorForm.elements.icon.value = meta.icon;
     root.querySelector('[data-sensor-editor-id]').textContent = `Zigbee 식별자 · ${deviceId}`;
     editorForm.elements.display_name.focus();
@@ -670,6 +673,12 @@
     }, 3000);
   }
 
+  // Zigbee2MQTT 2.x may report permit_join_end in milliseconds; never show more than the allowed window.
+  function joinRemainingSeconds(status) {
+    const remaining = Math.max(0, Number(status?.remaining_seconds) || 0);
+    return Math.min(remaining, Number(status?.max_duration_seconds) || 120);
+  }
+
   async function refreshJoinPanel({ silent = false } = {}) {
     try {
       const [status, devices] = await Promise.all([
@@ -678,7 +687,7 @@
       ]);
       joinStatus = status;
       joinDeadlineMs = status.permit_join
-        ? Date.now() + Math.max(0, Number(status.remaining_seconds) || 0) * 1000
+        ? Date.now() + joinRemainingSeconds(status) * 1000
         : 0;
       zigbeeDevices = Array.isArray(devices.items) ? devices.items : [];
       renderJoinStatus();
@@ -702,14 +711,19 @@
         method: 'POST',
         body: JSON.stringify({ duration_seconds: duration })
       });
-      joinDeadlineMs = Date.now() + Math.max(0, Number(joinStatus.remaining_seconds) || 0) * 1000;
+      joinDeadlineMs = Date.now() + joinRemainingSeconds(joinStatus) * 1000;
       if (announcer) announcer.textContent = `Zigbee 새 기기 연결을 ${duration}초 동안 허용했어요`;
     } catch (error) {
       if (announcer) announcer.textContent = `Zigbee 연결 허용 실패: ${error.message}`;
     } finally {
       joinRequestInFlight = false;
-      renderJoinStatus();
-      startJoinTimers();
+      // The manager may have been closed while the POST was pending; keep the "closing blocks joining" promise.
+      if (!managerDialog.open && joinStatus?.permit_join) {
+        await closeJoin({ silent: true });
+      } else {
+        renderJoinStatus();
+        startJoinTimers();
+      }
     }
   }
 
@@ -720,8 +734,9 @@
     }
     joinRequestInFlight = true;
     renderJoinStatus();
+    const requestClose = () => apiCall('/api/v1/zigbee/join', { method: 'DELETE' });
     try {
-      joinStatus = await apiCall('/api/v1/zigbee/join', { method: 'DELETE' });
+      joinStatus = await requestClose().catch(() => requestClose());
       joinDeadlineMs = 0;
       if (!silent && announcer) announcer.textContent = 'Zigbee 새 기기 연결을 닫았어요';
     } catch (error) {
@@ -746,7 +761,7 @@
     if (!settings.enabled) return;
     autoRefreshTimer = window.setInterval(() => {
       updatePolicyText();
-      if (!document.hidden && !isPauseTime()) refreshSensors({ automatic: true });
+      if (!document.hidden && !isPauseTime()) refreshSensors({ automatic: true, scheduled: true });
     }, settings.intervalMinutes * 60 * 1000);
   }
 
@@ -775,7 +790,7 @@
     }
   }
 
-  async function refreshSensors({ automatic = false, force = false } = {}) {
+  async function refreshSensors({ automatic = false, force = false, scheduled = false } = {}) {
     if (refreshInFlight) return;
     if (automatic && isPauseTime() && !force) return;
     refreshInFlight = true;
@@ -790,7 +805,7 @@
       // SSE may have updated or discovered a sensor while these GETs were in flight.
       const currentById = new Map(sensors.map((sensor) => [sensor.device_id, sensor]));
       // Reconnect/pairing may refresh door state, but must not bypass the climate policy.
-      const allowClimate = climateRefreshAllowed(automatic);
+      const allowClimate = climateRefreshAllowed(automatic, new Date(), scheduled);
       (Array.isArray(list.items) ? list.items : []).forEach((sensor) => {
         if (sensor.kind === 'temperature_humidity' && !allowClimate) return;
         const current = currentById.get(sensor.device_id);

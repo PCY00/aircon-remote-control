@@ -32,6 +32,8 @@ ProtectSystem=strict
 ProtectHome=read-only
 ReadWritePaths=/home/air/aircon-controller/runtime/kiosk
 ReadWritePaths=/run/user/1000
+# Chromium runs as the docker-group user; keep the Docker daemon out of reach.
+InaccessiblePaths=-/run/docker.sock
 
 [Install]
 WantedBy=multi-user.target

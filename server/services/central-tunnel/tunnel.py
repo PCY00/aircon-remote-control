@@ -29,7 +29,8 @@ def quick_url(line: str) -> str | None:
     return None
 
 
-def save_endpoint(state: Path, *, status: str, url: str | None, pid: int) -> None:
+def save_endpoint(state: Path, *, status: str, url: str | None, pid: int,
+                  mode: str = "quick-test") -> None:
     state.mkdir(parents=True, exist_ok=True, mode=0o700)
     path = state / "endpoint.json"
     temporary = path.with_suffix(".new")
@@ -40,7 +41,7 @@ def save_endpoint(state: Path, *, status: str, url: str | None, pid: int) -> Non
                 "url": url,
                 "supervisor_pid": pid,
                 "updated_at": time.time(),
-                "mode": "quick-test",
+                "mode": mode,
             }
         ),
         encoding="utf-8",
@@ -78,13 +79,49 @@ def record_failure(state: Path, service: Path, *, status: int, sig: int, now: fl
     return min(len(failures), 5)
 
 
-def run() -> int:
+def fixed_command(config_path: Path) -> tuple[list[str], str]:
+    """Read one private, remotely managed tunnel credential without putting it in argv."""
+    value = json.loads(config_path.read_text(encoding="utf-8"))
+    hostname = value.get("hostname", "")
+    if set(value) != {"hostname", "token_file"} or not re.fullmatch(
+        r"(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
+        r"[a-z]{2,63}", hostname
+    ):
+        raise ValueError("Invalid fixed tunnel configuration")
+    token_file = Path(value["token_file"])
+    if not token_file.is_absolute() or token_file.is_symlink() or not token_file.is_file():
+        raise ValueError("Private tunnel token file required")
+    if config_path.stat().st_mode & 0o077 or token_file.stat().st_mode & 0o077:
+        raise ValueError("Tunnel configuration and credential must be owner-only")
+    if not token_file.read_text(encoding="ascii").strip():
+        raise ValueError("Empty tunnel credential")
+    return (["cloudflared", "tunnel", "--no-autoupdate", "--protocol", "http2",
+             "--metrics", "127.0.0.1:19344", "run", "--token-file", str(token_file)],
+            "https://" + hostname)
+
+
+def run(*, state: Path | None = None, config_path: Path | None = None) -> int:
     os.umask(0o077)
-    save_endpoint(STATE, status="starting", url=None, pid=os.getpid())
+    state = state if state is not None else STATE
+    mode = "fixed" if config_path is not None else "quick-test"
+
+    def save(status, url=None):
+        save_endpoint(state, status=status, url=url, pid=os.getpid(), mode=mode)
+
+    save("starting")
+    try:
+        command, configured_endpoint = fixed_command(config_path) if config_path else (
+            ["cloudflared", "tunnel", "--no-autoupdate", "--protocol", "http2",
+             "--metrics", "127.0.0.1:19343", "--url", "http://127.0.0.1:8001"], None
+        )
+    except (OSError, ValueError, TypeError):
+        save("failed")
+        print("TUNNEL_PRIVATE_CONFIG_INVALID", flush=True)
+        return 1
     logger = logging.getLogger("tunnel")
     logger.setLevel(logging.INFO)
     handler = RotatingFileHandler(
-        STATE / "cloudflared.log", maxBytes=1048576, backupCount=3, encoding="utf-8"
+        state / "cloudflared.log", maxBytes=1048576, backupCount=3, encoding="utf-8"
     )
     logger.addHandler(handler)
     stopping = False
@@ -107,7 +144,7 @@ def run() -> int:
     # Wait for the separately managed central API before opening the requested route.
     for _ in range(30):
         if stopping:
-            save_endpoint(STATE, status="stopped", url=None, pid=os.getpid())
+            save("stopped")
             return 0
         try:
             with urllib.request.urlopen(
@@ -119,37 +156,34 @@ def run() -> int:
             time.sleep(1)
     else:
         print("TUNNEL_ORIGIN_NOT_READY", flush=True)
-        save_endpoint(STATE, status="failed", url=None, pid=os.getpid())
+        save("failed")
         return 1
+    # A stop that arrived during the final probe found no child to terminate.
+    if stopping:
+        save("stopped")
+        return 0
     child = subprocess.Popen(
-        [
-            "cloudflared",
-            "tunnel",
-            "--no-autoupdate",
-            "--protocol",
-            "http2",
-            "--metrics",
-            "127.0.0.1:19343",
-            "--url",
-            "http://127.0.0.1:8001",
-        ],
+        command,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
         encoding="utf-8",
         errors="replace",
     )
-    print("TUNNEL_START mode=quick-test origin=loopback protocol=http2", flush=True)
-    endpoint = None
+    if stopping:  # Signal arrived while spawning, before the handler could see the child.
+        child.terminate()
+        signal.alarm(10)
+    print(f"TUNNEL_START mode={mode} origin=loopback protocol=http2", flush=True)
+    endpoint = configured_endpoint
     try:
         for line in child.stdout:
             logger.info("%s", line.rstrip()[:4096])
-            candidate = quick_url(line)
+            candidate = quick_url(line) if config_path is None else None
             if candidate:
                 endpoint = candidate
-                save_endpoint(STATE, status="connecting", url=endpoint, pid=os.getpid())
+                save("connecting", endpoint)
             if "Registered tunnel connection" in line and endpoint:
-                save_endpoint(STATE, status="connected", url=endpoint, pid=os.getpid())
+                save("connected", endpoint)
                 print("TUNNEL_CONNECTED endpoint_saved_privately=TRUE", flush=True)
         code = child.wait(timeout=15)
     finally:
@@ -161,7 +195,7 @@ def run() -> int:
                 child.kill()
                 child.wait(timeout=5)
         signal.alarm(0)
-        save_endpoint(STATE, status="stopped" if stopping else "failed", url=None, pid=os.getpid())
+        save("stopped" if stopping else "failed")
     # Even an unexpected clean child exit must not restart indefinitely.
     return 0 if stopping else (code or 1)
 

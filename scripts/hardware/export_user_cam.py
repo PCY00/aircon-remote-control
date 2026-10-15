@@ -1,8 +1,8 @@
 """Export final current-user PCB using a shared KiCad drill/place origin."""
-from pathlib import Path
 import hashlib,json,subprocess
-OUT=Path(r'C:\Users\kksp1\OneDrive\Desktop\설계-하드웨어\kicad\IR_ESP32H2\artwork-current')
-CLI=Path(r'C:\Users\kksp1\AppData\Local\Programs\KiCad\10.0\bin\kicad-cli.exe')
+from hw_paths import kicad_cli, kicad_root
+OUT=kicad_root()/'artwork-current'
+CLI=kicad_cli()
 PCB=OUT/'IR_ESP32H2.kicad_pcb';SCH=OUT/'IR_ESP32H2.kicad_sch'
 CAM=OUT/'manufacturing/gerber';CHECKS=OUT/'checks'
 CAM.mkdir(parents=True,exist_ok=True)

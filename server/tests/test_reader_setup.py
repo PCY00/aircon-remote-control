@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -126,7 +127,7 @@ def test_fresh_phone_config_is_utf8_and_only_created_once(tmp_path, monkeypatch)
     assert before == {p.name: p.read_bytes() for p in phone.iterdir()}
 
 
-@pytest.mark.parametrize("version", ["0.3.1", "0.4.0"])
+@pytest.mark.parametrize("version", ["0.3.1", "0.4.0", "0.5.0"])
 def test_supported_first_pairing_still_rejects_all_existing_credentials(version):
     sys.path.insert(0, str(ROOT / "scripts/pi"))
     module = load("reader_link", "scripts/pi/link_central_agent.py")
@@ -172,3 +173,93 @@ def test_pi_command_uses_reader_config_and_requires_known_host_file(tmp_path, mo
     known.unlink()
     with pytest.raises(RuntimeError, match="host record missing"):
         session.command()
+
+
+def phone_argv(tmp_path, endpoint="127.0.0.1:12345"):
+    key, known, adb = [tmp_path / name for name in ("key", "known", "adb.exe")]
+    for path in [key, known, adb]:
+        path.write_text("fixture")
+    return [
+        "setup",
+        "phone",
+        "--host",
+        "127.0.0.1",
+        "--user",
+        "fixture",
+        "--identity-file",
+        str(key),
+        "--known-hosts-file",
+        str(known),
+        "--adb",
+        str(adb),
+        "--endpoint",
+        endpoint,
+        "--root",
+        str(tmp_path),
+    ]
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        subprocess.CalledProcessError(
+            1, ["PRIVATE_FIXTURE_PATH/adb.exe", "-s", "PRIVATE_FIXTURE_IP:5555", "shell"]
+        ),
+        subprocess.TimeoutExpired(["PRIVATE_FIXTURE_PATH/adb.exe", "-s", "PRIVATE_FIXTURE_IP"], 10),
+        FileNotFoundError(2, "No such file", "PRIVATE_FIXTURE_PATH/adb.exe"),
+    ],
+)
+def test_connections_adb_failure_hides_endpoint_and_path(tmp_path, monkeypatch, capsys, failure):
+    module = load("reader_connections_adb_failure", "scripts/reader/setup_connections.py")
+    monkeypatch.setattr(sys, "argv", phone_argv(tmp_path))
+
+    def run(command, **kwargs):
+        if command[0] == "ssh-keygen":
+            return subprocess.CompletedProcess(command, 0, stdout=b"known entry", stderr=b"")
+        raise failure
+
+    monkeypatch.setattr(module.subprocess, "run", run)
+    with pytest.raises(SystemExit):
+        module.main()
+    output = capsys.readouterr()
+    assert "PRIVATE_FIXTURE" not in output.out + output.err
+    assert "reconnect wireless debugging" in output.err
+    assert not (tmp_path / ".deploy").exists()
+
+
+@pytest.mark.parametrize("endpoint", ["127.0.0.1", "127.0.0.1:port", "not-an-ip:5555"])
+def test_connections_malformed_endpoint_is_a_usage_error(tmp_path, monkeypatch, endpoint):
+    module = load("reader_connections_endpoint", "scripts/reader/setup_connections.py")
+    monkeypatch.setattr(sys, "argv", phone_argv(tmp_path, endpoint))
+
+    def run(command, **kwargs):
+        return subprocess.CompletedProcess(command, 0, stdout=b"known", stderr=b"")
+
+    monkeypatch.setattr(module.subprocess, "run", run)
+    with pytest.raises(SystemExit):
+        module.main()
+    assert not (tmp_path / ".deploy").exists()
+
+
+def test_connections_ssh_keygen_timeout_hides_host_and_path(tmp_path, monkeypatch, capsys):
+    module = load("reader_connections_keygen", "scripts/reader/setup_connections.py")
+    monkeypatch.setattr(sys, "argv", phone_argv(tmp_path))
+
+    def run(command, **kwargs):
+        raise subprocess.TimeoutExpired(["ssh-keygen", "-F", "PRIVATE_FIXTURE_HOST"], 10)
+
+    monkeypatch.setattr(module.subprocess, "run", run)
+    with pytest.raises(SystemExit):
+        module.main()
+    output = capsys.readouterr()
+    assert "PRIVATE_FIXTURE" not in output.out + output.err
+
+
+def test_family_tools_download_is_checked_against_a_pinned_gradle_digest():
+    sys.path.insert(0, str(ROOT / "scripts/android"))
+    module = load("family_tools_pinned", "scripts/android/prepare_family_tools.py")
+    assert re.fullmatch(r"[0-9a-f]{64}", module.GRADLE_8_13_BIN_SHA256)
+    source = (ROOT / "scripts/android/prepare_family_tools.py").read_text(encoding="utf-8")
+    download = source[source.index('url = "https://services.gradle.org/distributions/gradle-8.13-bin.zip"') :]
+    # The archive is compared with the pinned digest, not with a file from the download origin.
+    assert 'url + ".sha256"' not in download and "!= GRADLE_8_13_BIN_SHA256" in download

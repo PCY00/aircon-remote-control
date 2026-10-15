@@ -16,7 +16,43 @@
 장치 번호는 오버레이 구성에 따라 달라질 수 있으므로 번호보다 `ir-ctl --features` 결과를
 최종 근거로 사용한다.
 
-`run_pi.sh`는 `AIRCON_HOST`가 지정되지 않으면 `tailscale ip -4`로 주소를 조회한다. 주소가 없으면 시작에 실패하고 systemd가 5초 후 다시 시도한다. 따라서 `0.0.0.0`, LAN 주소와 공용 인터페이스에 자동으로 열리지 않는다.
+`run_pi.sh`는 `AIRCON_HOST`가 지정되지 않으면 `tailscale ip -4`로 주소를 조회한다. 주소가 없으면 시작에 실패하고 systemd가 5초 후 다시 시도한다. 따라서 `0.0.0.0`, LAN 주소와 공용 인터페이스에 자동으로 열리지 않는다. 조회한 주소는 `AIRCON_HOST`로 내보내 앱의 허용 Host 목록에 포함시키고, `--limit-concurrency 64`로 동시에 열 수 있는 연결 수를 제한한다(초과분은 503).
+
+## 브라우저 경계 보호 (로그인 없는 서비스)
+
+이 서비스는 설계상 로그인이 없고 Tailnet 안에서만 열린다. 대신 앱이 다음을 직접 거른다.
+
+- Host 허용 목록: 바인딩 주소(`AIRCON_HOST`), `127.0.0.1`, `localhost`, `::1`, 그리고
+  `AIRCON_ALLOWED_HOSTS`(쉼표 구분, 예: Tailscale MagicDNS 이름)에 적은 이름만 받는다.
+  포트는 비교하지 않는다. 연결이 실제로 도착한 서버 주소도 허용한다. 그 밖의 Host는
+  HTTP 400 `{"detail": "Host header is not this service"}`로 거부한다(DNS 리바인딩 차단).
+  MagicDNS 이름으로 접속하려면 `runtime/app.env`에 `AIRCON_ALLOWED_HOSTS=<이름>`을 적고
+  서비스를 재시작한다. 키오스크(`http://<Tailscale IP>:8001/?kiosk=1`), 가족의 IP 접속,
+  `run_local.ps1`의 loopback, 중앙 에이전트(`control_origin`)는 그대로 동작한다.
+- 교차 사이트 변경 차단: GET/HEAD/OPTIONS가 아닌 요청에 `Origin`이 있으면 스킴·호스트·
+  포트가 요청 자신의 출처(`http://<Host 헤더>`)와 같거나, 허용 호스트 + 서비스 포트
+  (`AIRCON_PORT`)여야 한다. 같은 주소라도 포트가 다른 다른 서비스(예: 키오스크에서 연
+  Zigbee2MQTT 화면 `127.0.0.1:8080`)는 다른 출처로 본다. `Sec-Fetch-Site: cross-site`면
+  Origin이 없어도 거부한다 (HTTP 403 JSON). `curl`, 테스트 클라이언트, 에이전트처럼 두 헤더가 없는 요청은 그대로
+  허용한다. SSE(`/api/v1/events`)와 GET은 영향이 없다. FastAPI 0.141 이상은
+  `application/json`이 아닌 본문을 JSON으로 읽지 않으므로 단순 폼 요청으로 JSON API를
+  호출할 수 없다(`pyproject.toml` 하한).
+- 본문 크기: 모든 경로 1 MiB. `POST /api/v1/device-requests`는 `Content-Length`가 없으면
+  411, `AIRCON_MAX_UPLOAD_BYTES × 3 + 64 KiB`를 넘으면 413이다. 저장 총량은
+  `AIRCON_DEVICE_REQUEST_QUOTA_BYTES`(기본 200 MiB)를 넘으면 507, 같은 프로세스에서
+  시간당 20건을 넘으면 429 `Retry-After`를 돌려준다. 403·411·413으로 거부된 요청은
+  이 횟수에 들어가지 않는다.
+- 실시간 스트림: `/api/v1/events` 구독은 32개까지이며 초과하면 503 `Retry-After: 30`이다.
+- Zigbee 가입 열기(`POST /api/v1/zigbee/join`)는 Coordinator만 대상으로 하고, 한 번 열면
+  닫기(`DELETE`) 전에는 5분 동안 다시 열 수 없다(429). 열기·닫기 요청은 요청한 클라이언트
+  주소와 함께 로그에 남는다.
+- `air` 사용자는 Zigbee 스택 때문에 `docker` 그룹에 속한다. 이 호스트 설정은 그대로
+  두되, `aircon-controller.service`와 `aircon-kiosk.service`에
+  `InaccessiblePaths=-/run/docker.sock`을 넣어 웹앱과 키오스크 프로세스에서는 Docker
+  소켓이 보이지 않게 한다(unit 변경 후 `daemon-reload` 필요).
+- 웹앱은 Zigbee2MQTT 계정을 공유하지 않고 `aircon-controller` 브로커 계정을 쓴다.
+  권한은 `deploy/zigbee/mosquitto/acl.conf`로 제한하며 `scripts/setup_app_mqtt.sh`가
+  계정과 `runtime/app.env`를 만든다. 자세한 재배포 순서는 `deploy/zigbee/README.md`.
 
 ## 자동 실행
 

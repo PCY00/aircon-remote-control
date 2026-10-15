@@ -1,0 +1,35 @@
+# Actual paired-device management update; private values removed
+
+$ adb [verified A50] push [locally signed APK]
+[REDACTED]\OneDrive\Desktop\개발\에어컨_원격_제어\tmp\a50-manager-build\a50-manager.apk: 1 file pushed, 0 skipped. 91.1 MB/s (29154 bytes in 0.000s)
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm install -r /data/local/tmp/a50-manager.apk
+Success
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm grant [own package] WRITE_SECURE_SETTINGS
+EXIT_CODE=0
+
+$ adb [verified A50] shell dumpsys deviceidle whitelist +com.aircon.a50manager
+Added: com.aircon.a50manager
+EXIT_CODE=0
+
+$ adb [verified A50] shell am start [own management UI]
+Starting: Intent { cmp=com.aircon.a50manager/.MainActivity }
+EXIT_CODE=0
+
+$ adb [verified A50] shell am broadcast [own read-only live status]
+Broadcasting: Intent { act=com.aircon.a50manager.STATUS flg=0x400000 cmp=com.aircon.a50manager/.StatusReceiver }
+Broadcast completed: result=0, data="enabled=true;permission=true;wifi_adb=1;approval=true;approval_state=NON_SYSTEM_WINDOW;service_connected=true;inspection_count=2;last_approval=APPROVED_KNOWN_WIFI;interactive=true;last=무선 디버깅 유지 중"
+EXIT_CODE=0
+
+$ adb [verified A50] shell pm path com.aircon.a50manager
+package:[REDACTED_INSTALLED_APK_PATH]
+EXIT_CODE=0
+
+$ adb [verified A50] shell sha256sum [installed own APK]
+7e0ac56fa44df9fa9cef8751c323208e0e5bfc7dbad2d91f5dfaaec6e9b202f1  [REDACTED_INSTALLED_APK_PATH]
+EXIT_CODE=0
+
+LOCAL_DEVICE_APK_SHA256_MATCH=YES

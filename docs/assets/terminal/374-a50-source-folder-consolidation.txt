@@ -1,0 +1,48 @@
+# Root Raspberry Pi project / server A50 project: 2026-10-05
+# Compared the published main before changing the layout.
+SERVER_FILES_BEFORE=177
+ROOT_SAME_CONTENT=145 ROOT_DIFFERENT_CONTENT=18 SERVER_ONLY=14
+
+# The first consolidation stopped at an intentionally changed reader builder.
+RuntimeError: Preserve a differing root source before consolidation: scripts/reader/make_reader_bundle.py
+# Confirmed only the three added test/pytest source entries, then continued.
+ROOT_A50_FILES_CONSOLIDATED=153 VERIFIED_BACKUPS=TRUE
+MISSING_TEST_SOURCES_MOVED=2 DOCUMENT_LINK_FILES_UPDATED=10
+
+# Source backups first shared the private configuration scan location.
+ValueError: Private configured value found in examples/mobile-app/adb.example.json
+# Preserved those public-source backups in ignored tmp, leaving the scan enabled.
+SOURCE_BACKUPS_PRESERVED_IN_IGNORED_TMP=TRUE
+BUNDLE_PRIVATE_VALUES_FOUND=0 PRIVATE_METADATA_COUNT=0 IMAGE_COUNT=15
+
+# Root Pi project checks (existing Windows H2 IR compiler limitation excluded)
+$ .venv/Scripts/python.exe -m pytest -q tests --ignore=tests/test_h2_ir_firmware.py
+97 passed in 20.18s
+
+# server folder checks
+$ ..\.venv\Scripts\python.exe -m pytest -q
+119 passed, 2 skipped in 10.02s
+
+# Updated architecture code references
+ARCHITECTURE_SVGS=2 A0_PDF=1 COMPONENTS=31
+CODE_SOURCE_REFERENCES=50 ALL_EXIST=TRUE
+A0_MM=1189x841 BODY_FONT_PX=12 TEXT_BOUNDS=PASS NO_RASTER_IMAGES=TRUE
+A0_PDF_PAGES=1 RASTER_IMAGE_COUNT=0 KOREAN_TEXT_PRESENT=True
+
+# Atomic publication of the reviewed layout
+ROOT_A50_CODE_FILES_REMAINING=0 ROOT_FILES_REMOVED=140
+SERVER_SOURCE_FILES=178 GITHUB_MAIN_COMMIT=9a4dad8bff3aac852323e028d54831034f548172
+PUBLIC_CHANGED_FILES=163 PI_APP_FIRMWARE_CONFIG_CHANGED=FALSE
+GITHUB_VERSION=smart-home-reader-v0.4.0-r1 OLD_VERSION_PRESERVED=TRUE
+REMOTE_REFS_MATCH=TRUE WORKING_BRANCH_PRESERVED=TRUE
+
+# Actual public GitHub ZIP download
+GIT_CHECKOUT_LINE_ENDINGS_CONFIRMED=scripts/reader/render_tistory_markdown.ps1 CRLF_TO_LF
+CHAPTER_FLOW=9/9 COMMAND_REFERENCES_PRESENT=49
+BUNDLE_PRIVATE_VALUES_FOUND=0 PRIVATE_METADATA_COUNT=0 IMAGE_COUNT=15
+GITHUB_DOWNLOAD_CRC=PASS SERVER_FILES=180
+PUBLIC_SOURCE_HASHES=178/178 MATCH_GIT_CANONICAL_CONTENT
+SERVER_README_LOCAL_LINKS=PASS VERSION_FOLDER=server
+PUBLIC_DOWNLOAD_COMMAND_REFERENCES_AND_PRIVACY=PASS
+PUBLIC_ARCHIVE_ROOT_A50_CODE_FILES=0 PI_CODE_AND_README_REMAIN=TRUE
+DESKTOP_TISTORY_BUNDLE_UPDATED=TRUE CLEAN_LAYOUT_VERSION_LINK=TRUE COPY_MATCH=PASS
