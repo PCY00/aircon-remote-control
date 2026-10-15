@@ -1,0 +1,9 @@
+# Actual executed checks; private values excluded
+
+$ git ls-remote origin refs/heads/main
+5e8f9698374565780be09d9796dc8d6764fdd1e6  refs/heads/main
+
+$ gh api repos/PCY00/aircon-remote-control/commits/main --jq .sha
+5e8f9698374565780be09d9796dc8d6764fdd1e6
+
+GITHUB_MAIN_MATCHES_PUBLISHED_COMMIT=PASS
