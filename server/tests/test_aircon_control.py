@@ -30,12 +30,12 @@ def test_schema_four_upgrade_preserves_runtime_household_hub_and_notification_se
         before={table:conn.execute('SELECT * FROM '+table).fetchall() for table in
                 ('runtime_metadata','users','homes','memberships','hubs','installations','notification_preferences')}
         for table in ('control_commands','control_devices','control_hubs','server_identity',
-                      'hub_inventory','hub_devices','notification_levels'):
+                      'hub_inventory','hub_devices','notification_levels','quiet_hours'):
             conn.execute('DROP TABLE '+table)
         conn.execute('PRAGMA user_version=4')
     initialize(db); initialize(db)
     with sqlite3.connect(db) as conn:
-        assert conn.execute('PRAGMA user_version').fetchone() == (7,)
+        assert conn.execute('PRAGMA user_version').fetchone() == (8,)
         for table,rows in before.items():
             assert conn.execute('SELECT * FROM '+table).fetchall() == rows
         assert conn.execute('PRAGMA integrity_check').fetchone() == ('ok',)

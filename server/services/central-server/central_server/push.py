@@ -12,10 +12,13 @@ from central_server.households import APIError, Households, identifier, token_di
 from central_server.preferences import (
     LEGACY,
     PUSHED,
+    QUIET_FIELDS,
     alert_category,
     category,
+    held_back,
     level,
     levels,
+    quiet_hours,
     read,
 )
 
@@ -26,6 +29,7 @@ PENDING_JOBS_PER_HOME = 500
 def discard_installations(conn, ids):
     for installation in ids:
         conn.execute("DELETE FROM notification_levels WHERE installation_id=?", (installation,))
+        conn.execute("DELETE FROM quiet_hours WHERE installation_id=?", (installation,))
         conn.execute("DELETE FROM notification_preferences WHERE installation_id=?", (installation,))
         conn.execute("DELETE FROM push_jobs WHERE installation_id=?", (installation,))
         conn.execute("DELETE FROM installations WHERE id=?", (installation,))
@@ -61,8 +65,11 @@ def enqueue(conn, home, now, *, event=None, installation=None, user=None, expire
     rows = conn.execute(query, params).fetchall()
     queued = 0
     for row in rows:
-        if level(conn, row["id"], row["user_id"], selected) not in PUSHED:
+        chosen = level(conn, row["id"], row["user_id"], selected)
+        if chosen not in PUSHED:
             continue  # quiet and off stay in the home's history only
+        if held_back(conn, row["id"], row["user_id"], selected, chosen, now):
+            continue  # web app quiet hours; checked first so a held-back report keeps its interval
         if selected == "report":
             preference = conn.execute(
                 "SELECT * FROM notification_preferences WHERE installation_id=? AND user_id=?",
@@ -170,6 +177,21 @@ class PushStore(Households):
                 },
             )
             return {"status": "saved", "preferences": read(conn, installation, user)}
+
+    def set_quiet_hours(self, user, installation, secret, chosen):
+        with self.transaction(write=True) as conn:
+            self.proven(conn, user, installation, secret)
+            # One row per phone: a previous account's hours are replaced, never mixed in.
+            conn.execute(
+                "INSERT INTO quiet_hours(installation_id,user_id,enabled,start_minute,end_minute,"
+                "utc_offset_minutes) VALUES (?,?,?,?,?,?) ON CONFLICT(installation_id) DO UPDATE SET "
+                "user_id=excluded.user_id,enabled=excluded.enabled,start_minute=excluded.start_minute,"
+                "end_minute=excluded.end_minute,utc_offset_minutes=excluded.utc_offset_minutes",
+                (installation, user, int(chosen["enabled"]), chosen["start_minute"],
+                 chosen["end_minute"], chosen["utc_offset_minutes"]),
+            )
+            saved = quiet_hours(conn, installation, user)
+            return {"status": "saved", "quiet_hours": {key: saved[key] for key in QUIET_FIELDS}}
 
     def set_levels(self, user, installation, secret, chosen, interval):
         with self.transaction(write=True) as conn:
@@ -331,6 +353,14 @@ class PushStore(Households):
             if not allowed:
                 conn.execute(
                     "UPDATE push_jobs SET state='cancelled',last_error='authority_changed' "
+                    "WHERE message_id=? AND installation_id=?",
+                    job,
+                )
+            elif held_back(conn, job[1], row["user_id"], selected, chosen, self.clock()):
+                # Quiet hours began (or were saved) after queueing: the alert is dropped, not delayed.
+                allowed = False
+                conn.execute(
+                    "UPDATE push_jobs SET state='cancelled',last_error='quiet_hours' "
                     "WHERE message_id=? AND installation_id=?",
                     job,
                 )

@@ -1,0 +1,50 @@
+# Actual executed commands and output; private details removed
+
+$ python -m pytest -q [from server/]
+729 passed, 4 skipped in 96.53s (0:01:36)
+
+$ node --test [from server/services/central-server/webapp-tests/; summary]
+1..96
+# tests 96
+# suites 0
+# pass 96
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 471.8246
+
+$ python scripts/reader/make_reader_bundle.py --check-only [initial attempt; relevant error only]
+ValueError: Missing or excluded link in docs/connection-flow.md
+
+$ python scripts/reader/make_reader_bundle.py --check-only [after fixing the code link and including web tools]
+CHAPTER_FLOW=9/9 COMMAND_REFERENCES_PRESENT=49
+BUNDLE_PRIVATE_VALUES_FOUND=0 PRIVATE_METADATA_COUNT=0 IMAGE_COUNT=35
+BUNDLE_SOURCE_FILES=309
+
+$ python -m pytest -q tests/test_reader_bundle.py [after the documentation changes]
+..................................                                       [100%]
+34 passed in 1.89s
+
+$ python scripts/architecture/render_connection_flow.py --status connected [from server/]
+CONNECTION_FLOW_SVG_AND_PNG_CREATED status=connected
+
+$ python [public README local-link check]
+PUBLIC_READMES_REVIEWED=27 LOCAL_LINKS=220
+README_MISSING_LINKS=[]
+
+$ python scripts/sanitize_blog_images.py docs/assets server/docs/assets
+IMAGE_COUNT=666
+PRIVATE_METADATA_COUNT=0
+UNCHECKED_COUNT=0
+
+$ python [publication privacy scan: changed files]
+PUBLIC_CHANGED_FILES=118 IMAGES=16 PRIVATE_FINDINGS=0
+
+$ python [compare staged Git blobs with server/MANIFEST.json]
+STAGED_MANIFEST_ENTRIES=624 MISMATCHES=0
+
+$ python [compare generated connection diagram and vendored SDK in the public copy]
+DIAGRAM_GENERATOR_MATCH=TRUE
+PUBLIC_COPY_PINNED_SDK=PASS
+REVIEWED_SOURCE_PUBLIC_COPY_MATCH=TRUE

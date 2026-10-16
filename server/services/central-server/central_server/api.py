@@ -16,7 +16,8 @@ from central_server.limits import Limiter
 from central_server.push import PushStore
 from central_server.control import ALLOWED_ACTIONS, Controls
 from central_server.inventory import BODY_BYTES, Inventory, validate
-from central_server.preferences import CATEGORIES, CHOICES, INTERVALS
+from central_server.preferences import (CATEGORIES, CHOICES, INTERVALS, MINUTES_PER_DAY,
+                                        OFFSET_LIMIT, QUIET_FIELDS)
 
 
 def register(app, database, identity_verifier):
@@ -178,6 +179,21 @@ def register(app, database, identity_verifier):
             raise APIError('invalid_notification_preferences', 400)
         return jsonify(push.set_levels(g.user, installation_id(installation),
                        installation_secret(value['secret']), levels, interval))
+
+    @api.put('/installations/<installation>/quiet-hours')
+    @user_route
+    def quiet_hours(installation):
+        # Used by the home-screen web app: iOS shows every web push, so the server holds back
+        # 'alert' deliveries in this window. Minutes are phone-local; the offset maps them to UTC.
+        value = body(['secret', *QUIET_FIELDS])
+        minutes = (value['start_minute'], value['end_minute'])
+        offset = value['utc_offset_minutes']
+        if (type(value['enabled']) is not bool
+                or any(type(item) is not int or not 0 <= item < MINUTES_PER_DAY for item in minutes)
+                or type(offset) is not int or not -OFFSET_LIMIT <= offset <= OFFSET_LIMIT):
+            raise APIError('invalid_quiet_hours', 400)
+        return jsonify(push.set_quiet_hours(g.user, installation_id(installation),
+                       installation_secret(value['secret']), {key: value[key] for key in QUIET_FIELDS}))
 
     @api.get('/homes')
     @user_route

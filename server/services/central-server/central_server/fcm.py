@@ -56,6 +56,14 @@ class FCMSender:
                 "priority": priority,
                 "ttl": str(ttl) + "s",
             },
+            # Web push (iPhone home-screen web app): same data, RFC 8030 Urgency and TTL headers.
+            # FCM ignores this block for Android tokens.
+            "webpush": {
+                "headers": {
+                    "Urgency": "high" if level in ("urgent", "alert") else "normal",
+                    "TTL": str(ttl),
+                },
+            },
         }
         try:
             if not self.credentials.valid:

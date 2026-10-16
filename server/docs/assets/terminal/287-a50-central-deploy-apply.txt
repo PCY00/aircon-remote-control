@@ -1,0 +1,99 @@
+# Actual executed commands and output; private details removed
+
+LOCAL_RELEASE=v0.8.0-c6e72c5f3fe6dbfb
+SOURCE_SHA256=7f54359480e1cbe7777e5841968f5737e014117799b04d7f2c051874e5fd9c12 requirements.txt
+SOURCE_SHA256=50a1c1c5e2401c0fc48a47ab40876c379ca4dc313bcccb5a874023c3b0ad4fb2 .env.example
+SOURCE_SHA256=84d77aa06fed6a5d993df5fb2e465a20c18b77d2d9f131817e087e6c3bd40f9b central_server/__init__.py
+SOURCE_SHA256=c98126a2d6fab87e3da1904e17189e1023a58845a36e2306fa6f68dd4d9cacda central_server/__main__.py
+SOURCE_SHA256=989fad5dead78246664ce11d5925a79d55dc34798f5612e8994c7c5332d48ffe central_server/admin.py
+SOURCE_SHA256=4d30b0d11e686405965840171db355d33fc8a6e8c15c5037db012a8df34155e9 central_server/api.py
+SOURCE_SHA256=cf66b1638d29330516b83d0e0b721bae8d4d6901757fc43661c176e5b7a6ba46 central_server/auth.py
+SOURCE_SHA256=cb3d2de4218c5e9033bbbc93af99c885c76566eb6f3427e31e573c4b55b156e4 central_server/control.py
+SOURCE_SHA256=707a3703fa57443425da027c5c279f50eb7248075d3c4b373bb926fa6860ed81 central_server/fcm.py
+SOURCE_SHA256=8d410306c714b8a5d0dba3d1e032e395807e1d66f85ac7955f1f3ba4796df6d3 central_server/households.py
+SOURCE_SHA256=b54905599123c0f613009a9d4a80c44f0abbcf9ababfeb406f1f4d9758d1b19b central_server/identity.py
+SOURCE_SHA256=0b549075aa462d834defaf1dad5e4aec3eb7bccac557db36d1f0e8663ccdff14 central_server/inventory.py
+SOURCE_SHA256=49661626beb2275b6ab89310eb5bba630dc1aab171ab469025577cd9fa11c5ef central_server/limits.py
+SOURCE_SHA256=7a99cd7a6f46e6b43b9be833e608cafbf5978ead619c6252cd52773bfea30af1 central_server/preferences.py
+SOURCE_SHA256=f40887a7ea89f006cc68a2301929b8a7f4b36f0c8145fed0079323714816036a central_server/push.py
+SOURCE_SHA256=6feb9af4cf4511a0abce18632ffaeb0df87c7778cc4f41f303aa5406c4641606 central_server/push_schema.py
+SOURCE_SHA256=2b76e9f1400e063f42946a0c82d6be9dd68b8dfeb31e9abc6c65bc0b3bcb9a7b central_server/restart_guard.py
+SOURCE_SHA256=0676a8e7b25b772ec306c229427d96a72539367d5724a3a9b7e46551dcafc1fb central_server/schema.py
+SOURCE_SHA256=00e3a3fc0d409f5f513ed7cbace475d4ba74a008715281b2611d83af5d960454 central_server/storage.py
+SOURCE_SHA256=a5e2e450642150220cfae9e6d7008f1c1af8694dfd1db2cc67df65add3f04a6d central_server/web.py
+SOURCE_SHA256=68c97108a4f56315e60d017f947c85c742cd3a093fa3429047b2ac33de931fce central_server/web_app.py
+SOURCE_SHA256=951629ff6aabbdbe7c50856f72bb2d60e54899222b309a116f9e1fd5dba504fa central_server/webapp/app.css
+SOURCE_SHA256=6d557e99ff6d2252d3372b6ce07eebbf776b7162cc5743b38c9e6d69d4740f12 central_server/webapp/apple-touch-icon.png
+SOURCE_SHA256=c56cc53eab96679e9b0c7631591497d58358f304fd6aa5fba1ae266c34bb3168 central_server/webapp/icon-192.png
+SOURCE_SHA256=41ae0301b61942a0c216e5e20eadcfacc6e00befe91f9306434125379ea9be05 central_server/webapp/icon-512.png
+SOURCE_SHA256=97593f1d3c587efa472f50dd3a6ef905c246dc000a87baa6b493d873f7f1956c central_server/webapp/icon-maskable-512.png
+SOURCE_SHA256=354d1ccaa4cbf516bb9cd93ae0df8d49b5d66d9eea8e1836b6f5696cb01b6ff1 central_server/webapp/index.html
+SOURCE_SHA256=a257255c6c9b1ef732e968db7183c1833f6ed3bc3b4a8fda8b6061f9efae8486 central_server/webapp/js/api.js
+SOURCE_SHA256=ad234756ea05d2ab411bb15a9a973d0b861e19fb03762aed507c8ff1746ef5e4 central_server/webapp/js/app.js
+SOURCE_SHA256=38971d3ff32fca1f03186fba6a38db4e9d750f6c706dbb25804f568d5c66eeb1 central_server/webapp/js/auth.js
+SOURCE_SHA256=49551f1cb8db9397455f27a10784169f30e617128b158c7e80c6fb6fc0c2fc35 central_server/webapp/js/context.js
+SOURCE_SHA256=9213ec9952e2b2627000a8b9effac34e61154a1cb2889ba755b6fe1019868ea9 central_server/webapp/js/dial.js
+SOURCE_SHA256=53edb8651151847353d0139baf9a09c88d3bdf03f1015431c2a2abe5581fd54b central_server/webapp/js/icons.js
+SOURCE_SHA256=c4d32caa9482650d176845c1734765b309dc0d02fd076c4e98f79cf86eac4a7d central_server/webapp/js/logic/aircon.js
+SOURCE_SHA256=99c5c3d64046a7e553a3c7f16ff38c8229335f085bd72d4fc8d812cbef6ba65d central_server/webapp/js/logic/alerts.js
+SOURCE_SHA256=4892b640a93604fd1357d792ad76df69881738e206c54e7b7beff5cf418adda6 central_server/webapp/js/logic/attention.js
+SOURCE_SHA256=0ba37111722a3fe35d04fd53d39ab7d621da41fd81b8881749e036123e1ad54d central_server/webapp/js/logic/dev.js
+SOURCE_SHA256=611b0d9acb1f3ea83c0d1f42dd8cd7339c83f36882b3533e819705c46df95a86 central_server/webapp/js/logic/device.js
+SOURCE_SHA256=f4469e1af34a90833a37d7d13766edcf15ef94857f4fef9fee3d6f74f973fb16 central_server/webapp/js/logic/errors.js
+SOURCE_SHA256=1f42b1b1c58542df92c0fc13c8435744732bbad1f6ec8a944c1e27a2efc02ccc central_server/webapp/js/logic/homes.js
+SOURCE_SHA256=d0f545c96f8d753cd766f53c585d3e30b3ee415b6048bdce37b04e3c7579bf68 central_server/webapp/js/logic/ids.js
+SOURCE_SHA256=c1ca16f2bf04991d3a75e7aa37a6ca10565ff622c874fb942df0dc78d3be5e34 central_server/webapp/js/logic/plain.js
+SOURCE_SHA256=508cb5846b118e508597b99b331b30dae47a0c7d8a8d29d9ad56f4c5ac8a771b central_server/webapp/js/logic/pushstate.js
+SOURCE_SHA256=66ae1cc135ce90ae29b461ec1031a9130e743d38e86ed77578ee290761843f19 central_server/webapp/js/logic/timeline.js
+SOURCE_SHA256=692a20c6c1c051699c270d8e11f3a8a0ed66e1593a8ce9be2c6bfb394dbaf234 central_server/webapp/js/push.js
+SOURCE_SHA256=5ba866a12bd6a306431108c060a99afe7d30865b99e82fe113850abff7f6b171 central_server/webapp/js/store.js
+SOURCE_SHA256=2c465db490dff5c23fa8fb317442f9bb70a4b0fc0fc38e0695e441425231cbae central_server/webapp/js/ui.js
+SOURCE_SHA256=aaf079dae95593d9bcad9b35dac90de3ae0a32455192e27809761aeebbdf68b8 central_server/webapp/js/views/alerts.js
+SOURCE_SHA256=866bbc626193f7a1702dccaeee63f2cdbc33d35627a3c2e461512b487a086dcb central_server/webapp/js/views/device.js
+SOURCE_SHA256=454010816c676cef85b43858306142993c513796f3239cf7d1feacc7bc0a0a2f central_server/webapp/js/views/home.js
+SOURCE_SHA256=faee39fbd079e7495df428ff6dd6e42464121e55650487a38b8f1ed39c8a08d3 central_server/webapp/js/views/settings.js
+SOURCE_SHA256=b7854f84170b53e6e7389d83fa1a0f44c1c4fb5955371711f675e758c09eea94 central_server/webapp/js/views/start.js
+SOURCE_SHA256=7e9bebaae9e4d6ba932f3df4338524b080de394551cb38144814afeea81f7643 central_server/webapp/manifest.webmanifest
+SOURCE_SHA256=17f37715d49a256337bc3a695bc694d7b16adc7b3d1d3ae2d83790705d42e98b central_server/webapp/sw.js
+SOURCE_SHA256=39a50952b5def557337b2290069c7d7371f3515ad46c44a43b9c520f734d8d14 central_server/webapp/vendor/firebase-app.js
+SOURCE_SHA256=0f99fc82c189cc62a37ef58558bbe91a54b83d47a8592b03144e3dc15c678b5c central_server/webapp/vendor/firebase-auth.js
+SOURCE_SHA256=61812e6268be19a6b26ff8322202d058f94b1083af6e46cc1e42d58c98bdf683 central_server/webapp/vendor/firebase-messaging.js
+SOURCE_SHA256=d8f1ab4967bf894d8b42c9ba8d90f718f679b347bdb68c20a1f3aba479468acc central_server/webapp/vendor/README.md
+SOURCE_SHA256=a102d07c9540811fc9d262da236f978984f2f3f670682764ef4a298a97606c69 termux/20-start-central
+SOURCE_SHA256=043f156e7cfdb26be46e8e79d4dfecdff2269fda0e25a160c6109d62fdc0c77b termux/finish
+SOURCE_SHA256=6cdfb1dfb78ada4e4f10d0864e0d62669b67a33aca67a4559ee8e0a96e29e569 termux/log-run
+SOURCE_SHA256=2b9d9214a979f960f6902b9f9983733069687641f4bea8f34f6d8f56009b8d37 termux/run
+$ SSH [verified host key] python - < locally versioned apply_a50_central.py [checked source manifest; apply]
+EXISTING_SSH_SERVICES_DISABLED=PASS
+PLAN_VERSION=v0.8.0-c6e72c5f3fe6dbfb
+PLAN_FILES=62
+BIND=loopback PORT=8001 DATABASE=outside_release LOG_LIMIT=1MiB_x4
+Requirement already satisfied: Flask==3.1.3 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 1)) (3.1.3)
+Requirement already satisfied: waitress==3.0.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 2)) (3.0.2)
+Requirement already satisfied: blinker==1.9.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 3)) (1.9.0)
+Requirement already satisfied: click==8.5.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 4)) (8.5.0)
+Requirement already satisfied: itsdangerous==2.2.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 5)) (2.2.0)
+Requirement already satisfied: Jinja2==3.1.6 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 6)) (3.1.6)
+Requirement already satisfied: MarkupSafe==3.0.3 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 7)) (3.0.3)
+Requirement already satisfied: Werkzeug==3.1.9 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 8)) (3.1.9)
+Requirement already satisfied: PyJWT==2.15.1 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 9)) (2.15.1)
+Requirement already satisfied: cryptography==50.0.2 in /data/data/com.termux/files/usr/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 10)) (50.0.2)
+Requirement already satisfied: cffi==2.1.1 in /data/data/com.termux/files/usr/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 11)) (2.1.1)
+Requirement already satisfied: pycparser==3.0 in /data/data/com.termux/files/usr/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 12)) (3.0)
+Requirement already satisfied: google-auth==2.59.1 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 13)) (2.59.1)
+Requirement already satisfied: requests==2.34.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 14)) (2.34.2)
+Requirement already satisfied: pyasn1-modules==0.4.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 15)) (0.4.2)
+Requirement already satisfied: pyasn1==0.6.4 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 16)) (0.6.4)
+Requirement already satisfied: charset-normalizer==3.5.2 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 17)) (3.5.2)
+Requirement already satisfied: idna==3.20 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 18)) (3.20)
+Requirement already satisfied: urllib3==2.8.0 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 19)) (2.8.0)
+Requirement already satisfied: certifi==2026.7.22 in ./services/aircon-central/.venv/lib/python3.14/site-packages (from -r /data/data/com.termux/files/home/services/aircon-central/releases/v0.8.0-c6e72c5f3fe6dbfb/requirements.txt (line 20)) (2026.7.22)
+No broken requirements found.
+ok: down: /data/data/com.termux/files/usr/var/service/aircon-central: 1s, normally up
+CONSISTENT_DATABASE_BACKUP=PASS
+READINESS={"database":"ok","status":"ready"}
+run: /data/data/com.termux/files/usr/var/service/aircon-central: (pid 3129) 2s; run: log: (pid 16790) 402472s
+CODE_AND_HOOK_SHA256_MATCH=TRUE
+CENTRAL_DEPLOYMENT=PASS
+
+EXIT_CODE=0

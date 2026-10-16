@@ -1,0 +1,19 @@
+{
+  "id": "/app/",
+  "name": "가족 스마트홈",
+  "short_name": "스마트홈",
+  "description": "가족만 연결되는 우리 집 스마트홈",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "/app/",
+  "scope": "/app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0F1724",
+  "theme_color": "#0F1724",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

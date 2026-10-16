@@ -1,6 +1,6 @@
 # 가족 앱에서 에어컨 조작하기
 
-　알림을 받던 가족 앱에 에어컨 조작 화면을 추가했다. 현재 가족 앱은 0.6.2(공간별 홈과 어두운 다이얼 화면)이고 중앙 서버는 0.7.0, 중앙 저장소는 스키마 7이다. Pi에 등록된 Carrier CS-A061GS 에어컨에 H2 IR 송신 장치가 연결된 구성을 사용한다. 0.5.1의 앱 명령 연결에는 H2 재기록이 필요 없었다. 2026-10-13에 찾은 27·28°C 신호와 Zigbee 재접속 오류는 H2 펌웨어에도 수정이 있어 별도 반영이 필요하다. 이번 서버·앱 배포에서는 H2를 다시 기록하지 않았다.
+　알림을 받던 가족 앱에 에어컨 조작 화면을 추가했다. 현재 가족 앱은 0.6.2(공간별 홈과 어두운 다이얼 화면)이고 중앙 서버는 0.8.0, 중앙 저장소는 스키마 8이다. iPhone 홈 화면 웹앱도 같은 제어 API를 사용한다. Pi에 등록된 Carrier CS-A061GS 에어컨에 H2 IR 송신 장치가 연결된 구성을 사용한다. 0.5.1의 앱 명령 연결에는 H2 재기록이 필요 없었다. 2026-10-13에 찾은 27·28°C 신호와 Zigbee 재접속 오류는 H2 펌웨어에도 수정이 있어 별도 반영이 필요하다. 이번 서버·앱 배포에서는 H2를 다시 기록하지 않았다.
 
 ## 버튼과 실행 결과
 
@@ -33,7 +33,7 @@
 
 ```mermaid
 flowchart LR
-    A[가족 앱] -->|Google 로그인 · 명령 요청| B[A50 · 현재 집 권한]
+    A[Android 앱 / iPhone 웹앱] -->|Google 로그인 · 명령 요청| B[A50 · 현재 집 권한]
     B --> C[30초 만료 대기열]
     D[해당 집 Pi] -->|기존 HTTPS · 전용 허브 키| C
     D --> E[실행 기록을 먼저 저장]
@@ -57,7 +57,7 @@ flowchart LR
 
 ```powershell
 # 기존 서버 코드·터널과 등록 상태 확인
-.venv/Scripts/python.exe scripts/android/verify_a50_tunnel.py
+.venv/Scripts/python.exe scripts/android/verify_a50_tunnel.py --fixed --hostname roomrelay.top
 .venv/Scripts/python.exe scripts/pi/verify_central_agent.py
 
 # 로컬에서 확인하고 앱 만들기
@@ -78,14 +78,14 @@ flowchart LR
 .venv/Scripts/python.exe scripts/pi/configure_control.py --apply
 
 # 반영 결과 확인
-.venv/Scripts/python.exe scripts/android/verify_a50_tunnel.py
+.venv/Scripts/python.exe scripts/android/verify_a50_tunnel.py --fixed --hostname roomrelay.top
 .venv/Scripts/python.exe scripts/pi/verify_central_agent.py
 .venv/Scripts/python.exe scripts/pi/verify_control.py
 ```
 
 　중앙 서버 배포 도구가 기존 DB를 일관된 상태로 백업하고 새 테이블만 추가한다. 집·가족·허브·FCM 설치·알림 선택은 유지한다. Pi 연결 설정 도구는 실행 중인 웹 서비스의 실제 사설 주소·8001 포트와 H2 연결을 먼저 읽는다. `control_origin`과 현재 중앙 HTTPS 주소만 비공개 설정에 넣고 기존 허브 키를 유지한다. 이전 설정도 비공개 백업으로 남긴다. 미리보기 이후 설정이 바뀌면 실제 반영을 중단한다.
 
-　2026-10-15의 중앙 서버 0.6.0/스키마 6은 서버 신원 키(`server_identity` 테이블 1개, 키 1개)와 허브 이벤트 속도 제한·집별 이벤트 보존 상한·계정별 집·초대·설치 등록 상한을 추가한다. 5→6 갱신은 기존 집·가족·허브·알림 선택·명령 데이터를 유지하며 같은 배포 도구로 백업 뒤 반영한다. `scripts/pi/verify_control.py`는 스키마 5를 전제하므로 반영 뒤 6으로 맞춘다. 앱의 주소 고정과 지문 비교 방법은 [중앙 서버 README](../services/central-server/README.md)의 `python -m central_server.admin identity` 설명을 따른다.
+　2026-10-15의 중앙 서버 0.6.0/스키마 6은 서버 신원 키(`server_identity` 테이블 1개, 키 1개)와 허브 이벤트 속도 제한·집별 이벤트 보존 상한·계정별 집·초대·설치 등록 상한을 추가한다. 5→6 갱신은 기존 집·가족·허브·알림 선택·명령 데이터를 유지하며 같은 배포 도구로 백업 뒤 반영한다. 현재 `scripts/pi/verify_control.py`로 서버와 Pi의 연결 상태를 확인한다. 앱의 주소 고정과 지문 비교 방법은 [중앙 서버 README](../services/central-server/README.md)의 `python -m central_server.admin identity` 설명을 따른다.
 
 　2026-10-16의 중앙 서버 0.7.0/스키마 7은 Pi가 보내는 기기 목록(`PUT /v1/hub/inventory`, 가족은 `GET /v1/homes/<home>/devices`)과 휴대폰별 알림 종류·중요도(`PUT /v1/installations/<id>/notification-levels`)를 추가한다. 6→7 갱신은 기존 휴대폰의 문·온습도·경고 선택을 보안·정기 보고·자동화 중요도로 옮기고 나머지 데이터를 그대로 둔다. 같은 날 Pi 연결 서비스 0.7.0이 에어컨·문 센서·온습도 센서 3개의 목록을 보내는 것을 A50 DB에서 확인했다. 형식은 저장소 루트의 `docs/decisions/0019-capability-inventory-and-alert-levels.md`에 정리했다.
 

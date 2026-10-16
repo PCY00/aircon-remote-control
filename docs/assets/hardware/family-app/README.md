@@ -1,5 +1,7 @@
 # 가족 앱 공개용 캡처
 
+이 폴더는 2026년 10월 초의 이전 버전 시험 기록이다. 최신 Android 0.6.2 세로 화면과 iPhone 웹앱 화면은 각각 [`server/docs/assets/hardware/family-app`](../../../../server/docs/assets/hardware/family-app/README.md), [`family-web`](../../../../server/docs/assets/hardware/family-web/README.md)에 정리했다.
+
 2026-10-02, 실제 Firebase 콘솔과 실제 A50 화면에서 캡처했다.
 
 - 00: 사용자 승인 후 Android 앱·SHA-1/SHA-256 등록 상태. 계정·앱 ID·지문 값 제거.

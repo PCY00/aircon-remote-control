@@ -54,6 +54,12 @@ EXTENSIONS = {
     ".jpg",
     ".jpeg",
     ".svg",
+    # Home-screen web app served by the central server (central_server/webapp/).
+    ".html",
+    ".js",
+    ".mjs",
+    ".css",
+    ".webmanifest",
 }
 LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9.-]+\.[A-Za-z]{2,})")
@@ -143,6 +149,8 @@ def sources():
         "scripts/android",
         "scripts/pi",
         "scripts/reader",
+        "scripts/web",
+        "scripts/architecture",
         "services/central-server",
         "services/central-tunnel",
         "services/pi-central-agent",
@@ -407,7 +415,7 @@ def build(output):
         "# 스마트홈 블로그 따라 하기 자료\n\n"
         "[전체 목차](docs/blog/mobile-app/README.md)와 "
         "[시작 안내](docs/blog/mobile-app/00-reader-start.md)부터 읽으세요.\n\n"
-        f"서버와 앱 소스 {VERSION}, 본인 설정을 만드는 도구, 글과 공개용 화면을 포함합니다. "
+        f"중앙 서버 {VERSION}, Android 앱과 Pi 연결 소스, 본인 설정 도구와 공개용 화면을 포함합니다. 각 구성의 버전은 README를 참고하세요. "
         "실제 계정 설정과 개인 키 및 APK는 포함하지 않습니다. "
         "본인 Firebase 프로젝트와 서명으로 앱을 만드세요. "
         "Pi 기록 연결 글은 기존 Pi 센서 프로그램의 기록이 있는 환경에서 사용합니다.\n"

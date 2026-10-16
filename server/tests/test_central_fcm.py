@@ -45,17 +45,18 @@ def recipient():
 
 
 @pytest.mark.parametrize(
-    "category,alert,level,priority",
+    "category,alert,level,priority,urgency",
     [
-        ("other", "other", "alert", "HIGH"),
-        ("climate", "report", "alert", "NORMAL"),
-        ("climate", "report", "urgent", "HIGH"),
-        ("door", "security", "alert", "HIGH"),
-        ("other", "safety", "urgent", "HIGH"),
+        ("other", "other", "alert", "HIGH", "high"),
+        ("climate", "report", "alert", "NORMAL", "high"),
+        ("climate", "report", "urgent", "HIGH", "high"),
+        ("door", "security", "alert", "HIGH", "high"),
+        ("other", "safety", "urgent", "HIGH", "high"),
+        ("other", "environment", "quiet", "HIGH", "normal"),  # never queued; header still defined
     ],
 )
 def test_http_v1_is_data_only_and_contains_no_home_or_sensor_details(
-    category, alert, level, priority
+    category, alert, level, priority, urgency
 ):
     item, calls = sender(200)
     chosen = {"category": category, "alert_category": alert, "level": level}
@@ -63,7 +64,7 @@ def test_http_v1_is_data_only_and_contains_no_home_or_sensor_details(
     url, options = calls[0]
     message = options["json"]["message"]
     assert url == item.url and options["allow_redirects"] is False
-    assert set(message) == {"token", "data", "android"}
+    assert set(message) == {"token", "data", "android", "webpush"}
     assert set(message["data"]) == {
         "message_id", "binding", "recipient", "kind", "category", "alert_category", "level"
     }
@@ -71,6 +72,10 @@ def test_http_v1_is_data_only_and_contains_no_home_or_sensor_details(
     assert all(isinstance(value, str) for value in message["data"].values())
     assert "private-home" not in str(message) and "sensor" not in str(message)
     assert message["android"]["priority"] == priority
+    # Web push (iPhone home-screen app) carries the same data plus only Urgency and TTL headers.
+    ttl = int(message["android"]["ttl"].removesuffix("s"))
+    assert message["webpush"] == {"headers": {"Urgency": urgency, "TTL": str(ttl)}}
+    assert 0 < ttl <= 300
 
 
 @pytest.mark.parametrize(

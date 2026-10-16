@@ -1,5 +1,7 @@
 # A50 중앙 API의 HTTPS 통로
 
+현재 통로는 Android 앱 0.6.2, iPhone 웹앱 `/app/`, 중앙 API `/v1/`와 웹 로그인 보조 경로 `/__/auth/`를 같은 A50 중앙 서버 0.8.0으로 전달한다. 실제 집·가족 권한은 A50이 확인한다. FCM 알림은 별도 배달 경로다. 실제 iPhone 로그인·수신은 아직 확인하지 않았다.
+
 ## 고정 주소 연결
 
 2026년 10월 15일 `roomrelay.top`의 고정 연결을 준비했다. 고정 터널은 `fixed.py`를 진입점으로 사용하고, 기존 Quick Tunnel과 별도 서비스로 실행한다. 실제 접속 확인 결과와 따라 할 순서는 [고정 주소 안내](../../docs/fixed-server-address.md)에 기록한다. 전체 요청 방향은 [연결 그림과 설명](../../docs/connection-flow.md)에서 본다.

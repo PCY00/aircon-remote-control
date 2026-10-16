@@ -57,7 +57,9 @@ def install(payload: dict, *, apply: bool) -> None:
     managed = {}
     for name, encoded in payload['files'].items():
         relative = Path(name)
-        if relative.is_absolute() or '..' in relative.parts:
+        # Release names are relative POSIX paths (nested web app files included): no root,
+        # drive, backslash or '..' may place a file outside the release directory.
+        if relative.is_absolute() or relative.anchor or '..' in relative.parts or '\\' in name:
             raise RuntimeError('Invalid source path')
         target = release/relative
         content = base64.b64decode(encoded)

@@ -275,7 +275,7 @@ def test_schema_six_upgrade_backfills_levels_and_preserves_every_row(tmp_path):
     before = {table: rows(db, "SELECT * FROM " + table) for table in tables}
     initialize(db)
     initialize(db)
-    assert SCHEMA_VERSION == 7 and rows(db, "PRAGMA user_version") == [(7,)] and ready(db)
+    assert SCHEMA_VERSION == 8 and rows(db, "PRAGMA user_version") == [(8,)] and ready(db)
     assert {table: rows(db, "SELECT * FROM " + table) for table in tables} == before
     assert set(rows(db, "SELECT installation_id,user_id,category,level FROM notification_levels")) == {
         ("p1", "u1", "security", "alert"), ("p1", "u1", "report", "off"), ("p1", "u1", "automation", "alert"),

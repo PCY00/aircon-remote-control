@@ -38,6 +38,55 @@ LEVEL_STATEMENTS = (
 )
 
 
+# Schema 8: iOS shows every web push it receives, so the home-screen web app cannot hide an alert
+# during quiet hours. The server holds back 'alert' deliveries instead; urgent and 'other' (tests)
+# always go. The Android app does not use this table and keeps handling quiet hours on the phone.
+QUIET_STATEMENTS = (
+    """CREATE TABLE quiet_hours (
+        installation_id TEXT PRIMARY KEY REFERENCES installations(id),
+        user_id TEXT NOT NULL REFERENCES users(id),
+        enabled INTEGER NOT NULL CHECK(enabled IN (0,1)),
+        start_minute INTEGER NOT NULL CHECK(start_minute BETWEEN 0 AND 1439),
+        end_minute INTEGER NOT NULL CHECK(end_minute BETWEEN 0 AND 1439),
+        utc_offset_minutes INTEGER NOT NULL CHECK(utc_offset_minutes BETWEEN -840 AND 840))""",
+)
+QUIET_FIELDS = ("enabled", "start_minute", "end_minute", "utc_offset_minutes")
+MINUTES_PER_DAY = 1440
+OFFSET_LIMIT = 840  # UTC-14:00 .. UTC+14:00
+
+
+def in_quiet_window(start, end, offset, now):
+    """True when the phone-local minute of epoch time `now` lies in [start, end).
+
+    start > end wraps past midnight; start == end is an empty window, never the whole day.
+    """
+    if start == end:
+        return False
+    minute = (int(now // 60) + offset) % MINUTES_PER_DAY
+    return start <= minute < end if start < end else (minute >= start or minute < end)
+
+
+def quiet_hours(conn, installation, user):
+    """This account's saved quiet hours on the phone, or None; another account's row never counts."""
+    row = conn.execute(
+        "SELECT enabled,start_minute,end_minute,utc_offset_minutes FROM quiet_hours "
+        "WHERE installation_id=? AND user_id=?",
+        (installation, user),
+    ).fetchone()
+    return None if row is None else {
+        "enabled": bool(row[0]), "start_minute": row[1], "end_minute": row[2],
+        "utc_offset_minutes": row[3]}
+
+
+def held_back(conn, installation, user, selected, chosen, now):
+    """An 'alert' delivery inside enabled quiet hours waits for no one: it is not sent at all."""
+    if selected == "other" or chosen != "alert":
+        return False
+    saved = quiet_hours(conn, installation, user)
+    return bool(saved and saved["enabled"] and in_quiet_window(
+        saved["start_minute"], saved["end_minute"], saved["utc_offset_minutes"], now))
+
+
 def category(kind):
     """Legacy FCM category: old app builds drop values they do not know."""
     if kind in ("sensor.door_changed", "sensor.open", "sensor.closed"):

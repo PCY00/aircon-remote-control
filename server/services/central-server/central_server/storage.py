@@ -10,12 +10,13 @@ from pathlib import Path
 
 from central_server.schema import STATEMENTS
 from central_server.push_schema import PUSH_STATEMENTS
-from central_server.preferences import STATEMENTS as PREFERENCE_STATEMENTS, LEVEL_STATEMENTS
+from central_server.preferences import (STATEMENTS as PREFERENCE_STATEMENTS, LEVEL_STATEMENTS,
+                                        QUIET_STATEMENTS)
 from central_server.control import STATEMENTS as CONTROL_STATEMENTS
 from central_server.identity import STATEMENTS as IDENTITY_STATEMENTS, ensure_key
 from central_server.inventory import STATEMENTS as INVENTORY_STATEMENTS
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 
 def initialize(path: Path) -> None:
@@ -38,6 +39,8 @@ def initialize(path: Path) -> None:
             expected.add('server_identity')
         if version >= 7:
             expected.update({'hub_inventory', 'hub_devices', 'notification_levels'})
+        if version >= 8:
+            expected.add('quiet_hours')
         if version >= 2 and tables != expected:
             raise RuntimeError('Unrecognized existing database; preserve and inspect.')
         connection.execute('PRAGMA journal_mode=WAL')
@@ -70,6 +73,10 @@ def initialize(path: Path) -> None:
                 connection.execute(statement)
             # Creates the level table and copies each phone's three saved switches into it.
             for statement in LEVEL_STATEMENTS:
+                connection.execute(statement)
+        if version < 8:
+            # Server-side quiet hours for the home-screen web app; starts empty for every phone.
+            for statement in QUIET_STATEMENTS:
                 connection.execute(statement)
             connection.execute(f'PRAGMA user_version={SCHEMA_VERSION}')
         ensure_key(connection)  # once per install; the row survives every later start

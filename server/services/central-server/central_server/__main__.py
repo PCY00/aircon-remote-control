@@ -15,6 +15,7 @@ from central_server.auth import FirebaseIdentity
 from central_server.inventory import BODY_BYTES
 from central_server.storage import initialize
 from central_server.web import create_app
+from central_server.web_app import web_config
 
 
 def main():
@@ -37,9 +38,13 @@ def main():
     config_path = Path.home()/'.config/aircon-central/config.json'
     try:
         config = json.loads(config_path.read_text()) if config_path.exists() else {}
-        if not isinstance(config, dict) or set(config)-{'firebase_project_id', 'fcm_service_account_file'}:
+        if not isinstance(config, dict) or set(config)-{'firebase_project_id', 'fcm_service_account_file',
+                                                        'web_app'}:
             raise ValueError('Invalid private configuration')
         project = os.environ.get('A50_FIREBASE_PROJECT_ID') or config.get('firebase_project_id')
+        # Optional public Firebase web settings for /app/config.json; without them the /app/
+        # files still load but the web app reports that sign-in is not configured.
+        web = web_config(config.get('web_app'))
         verifier = FirebaseIdentity(project) if project else None
         sender = None
         if config.get('fcm_service_account_file'):
@@ -56,9 +61,11 @@ def main():
         logging.info('FCM_SENDER_CONFIGURED')
     else:
         logging.info('FCM_SENDER_NOT_CONFIGURED')
+    logging.info('WEB_APP_CONFIGURED' if web and project else 'WEB_APP_NOT_CONFIGURED')
     # Waitress refuses a body of max_request_body_size bytes or more. Its cap fits the 32 KiB
     # device-list route; Flask keeps every other route at 16 KiB (MAX_CONTENT_LENGTH).
-    serve(create_app(database, identity_verifier=verifier, push_sender_ready=sender is not None), host='127.0.0.1', port=8001, threads=2,
+    serve(create_app(database, identity_verifier=verifier, push_sender_ready=sender is not None,
+                     firebase_project=project, web_config=web), host='127.0.0.1', port=8001, threads=2,
           connection_limit=32, channel_timeout=15, max_request_header_size=16384,
           max_request_body_size=BODY_BYTES+1, expose_tracebacks=False)
 

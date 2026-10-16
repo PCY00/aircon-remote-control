@@ -1,6 +1,64 @@
 # A50 중앙 서버 실행 기반
 
-현재 0.7.0/스키마 7은 Pi가 보내는 기기 목록과 알림 종류별 중요도를 추가한다(결정 기록 0019). 6→7 갱신은 기존 집·가족·허브·설치·기록·명령 데이터를 그대로 두고 표 3개(`hub_inventory`, `hub_devices`, `notification_levels`)를 만든다. 휴대폰마다 저장해 둔 문·온습도·경고 선택은 같은 뜻의 보안·정기 보고·자동화 중요도로 옮긴다. 배포 전 일관 백업은 이전과 같이 만든다.
+0.8.0/스키마 8은 iPhone 가족을 위한 홈 화면 웹앱을 추가한다(결정 기록 0020). 7→8 갱신은 기존 데이터를 그대로 두고 빈 표 1개(`quiet_hours`)만 만든다. 2026-10-16에 A50에 배포해 기존 집·허브·가족·설치와 서버 지문이 유지되는 것을 확인했다. 웹 설정을 넣은 뒤 `/app/config.json`과 Google 로그인 페이지 진입까지 확인했다. 실제 iPhone 로그인·홈 화면 추가·푸시 수신은 남아 있다. [설치 순서](../../docs/ios-web-app.md).
+
+## 홈 화면 웹앱 (0.8.0)
+
+- `GET /app`은 `/app/`으로 308 이동한다. `GET /app/`은 `central_server/webapp/index.html`을 준다.
+- `GET /app/<파일>`은 `central_server/webapp/` 안의 파일만 준다. 확장자는 `.html` `.js` `.mjs` `.css` `.webmanifest` `.json` `.png` `.svg` `.ico` `.txt`만 받는다. `..`, 절대 경로, 역슬래시, 점으로 시작하는 이름, 폴더, 폴더 밖을 가리키는 링크는 모두 404 `not_found`다.
+- 파일은 `Cache-Control: no-cache`로 보내고 내용 해시 ETag와 Last-Modified를 붙인다. 바뀌지 않았으면 304다. `/app/sw.js`에는 `Service-Worker-Allowed: /app/`를 붙인다.
+- `/app/` 아래 응답의 콘텐츠 보안 정책은 스크립트를 같은 출처와 Firebase 로그인 로더 `https://apis.google.com`에서만 허용한다. 스타일·작업자는 같은 출처만, 연결은 같은 출처와 Firebase 로그인·FCM 등록 주소만, 그림은 같은 출처·`data:`·Google 프로필 사진 주소만 허용한다. `Referrer-Policy: same-origin`도 붙인다. 다른 경로의 헤더는 바꾸지 않았다.
+- `GET /app/config.json`은 비공개 설정의 웹 Firebase 값과 서버 버전을 `no-store`로 돌려준다. 웹 설정이나 프로젝트 ID가 없으면 503 `web_not_configured`다.
+
+### 로그인 도우미 전달
+
+Safari는 사이트마다 저장소를 나누므로 로그인 도메인을 웹앱과 같은 도메인으로 두고 Firebase의 로그인 도우미 화면을 이 서버가 대신 가져온다.
+
+- `GET /__/auth/*`와 `GET /__/firebase/init.json`은 `https://<프로젝트 ID>.firebaseapp.com`의 같은 경로와 쿼리로 전달한다. 대상 호스트는 설정한 프로젝트 ID로만 정하고 요청에서 받지 않는다. 프로젝트 ID가 없거나 형식이 틀리면 503 `auth_helper_not_configured`다.
+- 경로는 영문·숫자·`_./-`만 받고 `..`은 거절한다. Firebase로는 Accept, Accept-Language, If-None-Match, If-Modified-Since와 고정 User-Agent만 보낸다. 쿠키와 Authorization은 보내지 않고 Firebase가 준 쿠키도 저장하지 않는다. 프록시 환경 변수는 쓰지 않고 리디렉션은 따라가지 않는다.
+- 응답은 상태 코드와 본문, Content-Type, Cache-Control, ETag, Last-Modified, Content-Security-Policy(Firebase가 보낸 경우)만 돌려준다. Firebase 처리 화면은 Google 스크립트를 불러오므로 서버 기본 보안 정책은 붙이지 않고 nosniff만 붙인다.
+- 연결 5초, 읽기 10초, 본문 전체 20초 제한이고 본문은 2MiB까지다. 실패하면 502 `auth_helper_unavailable`이다. 서버 기록에는 정해진 결과 이름만 남긴다. 주소와 쿼리(OAuth 코드가 들어 있음)는 남기지 않는다.
+- 요청 주소(`CF-Connecting-IP`, 없으면 연결 주소)마다 분당 120회까지다. 넘으면 429 `rate_limited`와 `Retry-After`다.
+
+### 비공개 설정의 `web_app`
+
+`~/.config/aircon-central/config.json`에 선택 항목 `web_app`을 더할 수 있다. Firebase 콘솔에서 웹 앱을 등록하면 받는 값이다. 브라우저에 공개되는 값이지만 저장소에는 넣지 않는다. 프로젝트 ID는 기존 `firebase_project_id`를 쓴다.
+
+```json
+{
+  "firebase_project_id": "[PROJECT_ID]",
+  "fcm_service_account_file": "[서비스_계정_JSON_경로]",
+  "web_app": {
+    "api_key": "[WEB_API_KEY]",
+    "app_id": "[WEB_APP_ID]",
+    "messaging_sender_id": "[SENDER_ID]",
+    "auth_domain": "[웹앱을_여는_도메인]"
+  }
+}
+```
+
+- 네 값 모두 빈 값이 아닌 문자열이다. `auth_domain`에는 `https://`, 포트, 경로 없이 소문자 호스트 이름만 쓴다.
+- 형식이 틀리면 서버가 시작하지 않고 `STARTUP_CONFIGURATION_FAILED`만 기록한다. `web_app`이 없으면 `/app/` 파일은 열리지만 `/app/config.json`은 503이다. 시작할 때 `WEB_APP_CONFIGURED` 또는 `WEB_APP_NOT_CONFIGURED`를 기록한다.
+- 환경 변수는 새로 쓰지 않는다.
+
+### 서버가 처리하는 방해 금지 시간
+
+iOS는 받은 웹 푸시를 모두 화면에 보여준다. 그래서 웹앱의 방해 금지 시간은 서버가 처리한다. Android 앱은 이 경로를 쓰지 않고 지금처럼 휴대폰에서 처리한다.
+
+- `PUT /v1/installations/<id>/quiet-hours`. 본문은 `secret`, `enabled`(true/false), `start_minute`, `end_minute`(0~1439), `utc_offset_minutes`(-840~840) 다섯 개다. 키가 빠지거나 더 있으면 400 `invalid_body`, 값의 종류나 범위가 틀리면 400 `invalid_quiet_hours`다. 설치 증명이 맞지 않으면 404다.
+- 응답은 `{"status": "saved", "quiet_hours": {...}}`이고 secret은 돌려주지 않는다. 휴대폰마다 한 줄이다. 그 휴대폰이 다른 계정으로 로그인해 저장하면 이전 값을 바꾸고, 저장하기 전에는 이전 계정의 값을 적용하지 않는다.
+- 켜져 있고 휴대폰 기준 지금 분((UTC 분 + 차이) mod 1440)이 시작 이상 끝 미만이면 중요도가 `alert`인 알림은 보내지 않는다. 시작이 끝보다 크면 자정을 넘기고, 둘이 같으면 적용하지 않는다. 긴급(`urgent`)과 기타(연결 시험 등)는 항상 보낸다.
+- 기록을 받을 때 대기열에 넣지 않고, 이미 대기 중인 알림도 보내기 직전에 다시 확인해 `quiet_hours`로 취소한다. 미뤘다가 나중에 보내지 않는다. 이 시간에 보내지 않은 정기 보고는 최소 간격 계산에 넣지 않는다.
+- 설치 등록을 정리할 때 이 값도 함께 지운다.
+
+### 웹 푸시와 배포 도구
+
+- FCM 메시지마다 `webpush` 블록을 더한다. 헤더는 `Urgency`(긴급·알림은 `high`)와 `TTL`(초)뿐이다. 데이터는 Android와 같고 기기 이름·공간·수치는 넣지 않는다.
+- `deploy_a50_central.py`는 `central_server/webapp/` 아래 파일을 하위 폴더까지 함께 보낸다. 점으로 시작하는 이름과 `__pycache__`는 뺀다.
+- 줄바꿈(CRLF→LF) 정리는 텍스트 파일(`.py` `.js` `.mjs` `.css` `.html` `.json` `.webmanifest` `.svg` `.txt` `.md`, `.env.example`, Termux 훅)에만 한다. PNG·ICO 같은 바이너리는 바이트를 그대로 보낸다. PNG 파일 머리에 CR LF 바이트가 들어 있어 바꾸면 그림이 깨지기 때문이다.
+- 장비 설치기는 루트·드라이브·역슬래시·`..`이 들어간 파일 이름을 거절한다.
+
+0.7.0/스키마 7은 Pi가 보내는 기기 목록과 알림 종류별 중요도를 추가한다(결정 기록 0019). 6→7 갱신은 기존 집·가족·허브·설치·기록·명령 데이터를 그대로 두고 표 3개(`hub_inventory`, `hub_devices`, `notification_levels`)를 만든다. 휴대폰마다 저장해 둔 문·온습도·경고 선택은 같은 뜻의 보안·정기 보고·자동화 중요도로 옮긴다. 배포 전 일관 백업은 이전과 같이 만든다.
 
 ## 기기 목록과 알림 중요도 (0.7.0)
 
@@ -43,7 +101,7 @@ $HOME/services/aircon-central/.venv/bin/python -m central_server.admin identity
 
 0.6.0은 스키마 6이다. 5→6 갱신은 기존 데이터를 그대로 두고 서버 신원 키 표 하나만 추가한다(2026-10-15 A50 배포에서 집·가족·허브·기록 수 유지 확인). 0.5.1부터 집별 에어컨 명령 대기열로 온도·풍량·운전 모드·풍향·부가 기능과 전원 끄기를 전달한다. 소유자·가족만 요청하고 조회 전용은 거절한다. 해당 집의 전용 허브 키로만 명령을 받아가며, 전달 전에 현재 가족 권한과 기기 연결을 다시 확인한다. 명령은 30초 만료이며 한 번 전달한 명령은 다시 전달하지 않는다. IR 송신 결과를 받지 못하면 결과 불명으로 남긴다. 4→5 갱신은 집·가족·허브·알림 선택을 유지한 채 테이블 3개만 추가하며, 0.5.0→0.5.1은 같은 스키마 5를 사용한다. [제어 연결과 확인 범위](../../docs/aircon-app-control.md). 아래 0.4.0 내용은 이전 단계의 기록이다.
 
-현재 0.4.0/스키마 4: 설치별 알림 종류·온습도 최소 간격, 설치 증명 기반 선택 저장, 전송 직전 선택 재검사, 소유자 이름 확인 후 집·가족 권한·허브·초대·대기 전송 비활성화를 포함한다. 3→4 일관 백업 후 반영, 기존 집 2·설치 2 보존과 실제 A50 0.3.0 수신을 확인했다. 집 삭제의 실사용 데이터 제거는 시험하지 않았다. [상세 재현과 검증](../../docs/blog/mobile-app/08-notification-choices-and-home-management.md). 아래는 기존 구축 단계의 기록이다.
+0.4.0/스키마 4 당시 기록: 설치별 알림 종류·온습도 최소 간격, 설치 증명 기반 선택 저장, 전송 직전 선택 재검사, 소유자 이름 확인 후 집·가족 권한·허브·초대·대기 전송 비활성화를 포함한다. 3→4 일관 백업 후 반영, 기존 집 2·설치 2 보존과 실제 A50 0.3.0 수신을 확인했다. 집 삭제의 실사용 데이터 제거는 시험하지 않았다. [상세 재현과 검증](../../docs/blog/mobile-app/08-notification-choices-and-home-management.md). 아래는 기존 구축 단계의 기록이다.
 
 버전 0.3.1. 집·가족 권한과 Firebase Google ID 토큰 검증 API, 설치별 FCM 등록·영구 전송 대기열을 포함한다. A50의 실제 Google 계정 설치 등록·전송 키 연결·백그라운드와 화면 꺼짐 조건의 실제 FCM 수신 및 알림 게시를 확인했다. 전용 키로 Pi를 소유자 집에 연결하고, 실제 Pi발 연결 시험 알림·자동 전송 시작·연결 서비스 재시작 후 진행 위치 보존도 검증했다. 실제 물리 문 변화·다른 가족 단말·장시간 시험은 검증 전이다.
 중앙 서버가 Pi의 원본 DB를 직접 수정하거나 Pi의 MQTT에 직접 접속하지 않는다. 0.5.0의 명령은 Pi 연결 서비스가 기존 에어컨 API로 전달한다.
@@ -85,7 +143,7 @@ current 링크를 사용한다. DB·로그·비밀정보는 릴리스 전송 목
 | 대상 | 경로 |
 | --- | --- |
 | 읽기용 배포 기록 | ~/services/aircon-central/deployment.json |
-| 릴리스 소스 | ~/services/aircon-central/releases/v0.3.0-소스해시/ |
+| 릴리스 소스 | ~/services/aircon-central/releases/v<버전>-<소스해시>/ |
 | 실행 소스 링크 | ~/services/aircon-central/current |
 | 가상환경 | ~/services/aircon-central/.venv/ |
 | 영구 DB | ~/.local/share/aircon-central/central.sqlite3 |
@@ -141,7 +199,7 @@ python scripts/android/verify_a50_central.py --exercise-recovery --reboot
 2026-10-02 후속 작업: [별도 시험용 HTTPS 터널](../central-tunnel/README.md)을 A50에 구성했다.
 이 API의 루프백 바인딩·Firebase 검증·가구별 권한은 유지한다.
 실제 A50의 배포 APK로 사용자 Google 로그인·API 연결·집 등록·소유자 화면·클라이언트 재실행을 확인했다.
-고정 운영 주소·실제 Pi 연결은 후속 항목이다. FCM의 현재 구현·검증 범위는 아래 항목을 따른다.
+이후 고정 주소와 Pi 연결을 마쳤다. 현재는 중앙 서버 0.8.0이며 실제 iPhone 로그인·푸시 수신은 남아 있다. 아래는 초기 단계의 설명이다.
 
 - [Flask의 Waitress 배포 안내](https://flask.palletsprojects.com/en/stable/deploying/waitress/)
 - [Waitress 설정](https://docs.pylonsproject.org/projects/waitress/en/stable/api.html)
@@ -152,10 +210,10 @@ python scripts/android/verify_a50_central.py --exercise-recovery --reboot
 
 Authentication의 Google 제공자를 설정한 실제 Firebase 프로젝트 ID는 장비의
 ~/.config/aircon-central/config.json에 {"firebase_project_id":"[PROJECT_ID]"}로 기록한다.
-이 파일과 서비스 계정 키는 배포 소스에 넣지 않는다. 현재 검증은 공개 인증서만 사용한다.
+이 파일과 서비스 계정 키는 배포 소스에 넣지 않는다. 공개 인증서로 사용자 토큰을 확인하며, 실제 Android Google 로그인도 확인했다. iPhone 계정 로그인은 남아 있다.
 미설정은 인증된 사용자 API도 503이며 임의 사용자 헤더·query ID로 우회할 수 없다.
 
-프로젝트 루트에서 아래 SSH 기록 도구를 사용한다.
+저장소의 `server/` 폴더에서 아래 SSH 기록 도구를 사용한다.
 
 ```text
 python scripts/android/a50_record.py --label auth-dependencies --script scripts/android/prepare_a50_auth.sh --timeout 300
@@ -171,10 +229,10 @@ POST /members/{target}/revoke, GET /hubs, POST /hubs/claim,
 POST /hubs/{hub}/revoke, GET /events 및 /events/{id}.
 앞에서 별도 절대 경로를 적지 않은 하위 경로는 /v1/homes/{home} 아래다.
 요청 스키마·역할·24시간/한 번 초대는 central_server/api.py 및 블로그 3편을 따른다.
-공개 소유자 승격·제어 명령 API는 없다. member/viewer는 현재 같은 조회 범위다.
+공개 소유자 승격 API는 없다. 현재 owner와 member는 에어컨 제어 API를 쓸 수 있고 viewer는 조회만 한다. 제어 경로는 `/v1/homes/{home}/control/commands`다.
 
 운영자 SSH에서 current 디렉터리로 이동해 서버 가상환경 Python으로 아래를 실행한다.
-실제 허브 키 발급은 다음 Pi 연결 작업에서 수행하며 현재 운영 DB에는 허브가 없다.
+첫 설치에서 허브 키를 한 번 발급해 집에 연결한다. 현재 시험 환경의 Pi는 이미 연결돼 있으므로 아래 발급·첫 연결을 반복하지 않는다.
 
 ```sh
 cd ~/services/aircon-central/current
@@ -192,7 +250,7 @@ POST /v1/hub/events는 기기 토큰과 event_id/kind/payload만 받으며 집�
 수정해 앞으로 복구하거나, 새 데이터가 생겼는지 검토한 뒤 명시적으로 백업 복원을 결정한다.
 
 Google 서명 검증은 Firebase 계정의 전역 토큰 폐기 확인을 포함하지 않는다.
-집별 가족 제외는 현재 DB 권한으로 즉시 차단한다. 실제 Google 계정 로그인은 APK에서 검증해야 한다.
+집별 가족 제외는 현재 DB 권한으로 즉시 차단한다. 실제 Android 계정 로그인과 이전 버전의 FCM 수신은 확인했고, 최신 휴대폰·iPhone의 수신은 추가 확인이 필요하다.
 
 ## 설치별 FCM 운영 (0.3.0)
 

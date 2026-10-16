@@ -2,8 +2,8 @@
 
 ## 대상
 
-- SSH 호스트명: `AC`
-- 프로젝트 경로 제안: `/home/air/aircon-controller`
+- SSH 호스트명: 본인이 등록하고 확인한 SSH 별칭
+- 프로젝트 경로 예: `/home/<PI_USER>/aircon-controller`
 - 웹/API 포트: `8001`
 - 외부 접근: Tailscale IPv4 주소의 `8001` 포트
 
@@ -38,7 +38,7 @@
 .\scripts\deploy.ps1
 ```
 
-출력된 대상과 파일 목록을 검토하고 사용자에게 Pi 업데이트 승인을 받은 뒤에만 실제 전송을 실행한다.
+출력된 대상과 파일 목록을 확인하고 프로젝트의 변경 안내·승인 규칙에 따라 실제 전송한다. 요청한 통상 배포는 사전 안내 후 진행하며 삭제·초기화·보안 설정 변경 등은 별도 확인한다.
 
 ```powershell
 .\scripts\deploy.ps1 -Apply

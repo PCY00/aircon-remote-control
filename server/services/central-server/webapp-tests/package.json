@@ -1,0 +1,10 @@
+{
+  "name": "family-webapp-tests",
+  "private": true,
+  "type": "module",
+  "description": "Node tests for the family web app's pure logic and service worker (not served).",
+  "scripts": {
+    "test": "node --test",
+    "mock": "node mock_server.js"
+  }
+}

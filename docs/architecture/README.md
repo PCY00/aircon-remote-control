@@ -1,6 +1,12 @@
 # 스마트홈 소프트웨어 아키텍처
 
-## 현재 SW 컴포넌트 그림 (2026-10-14)
+## 현재 앱·도메인·서버 연결 (2026-10-16)
+
+[![Android·iPhone과 A50·Pi의 연결](../../server/docs/architecture/connection-flow.svg)](../../server/docs/architecture/connection-flow.svg)
+
+Android 0.6.2, 중앙 서버 0.8.0·DB 스키마 8과 iPhone 홈 화면 웹앱을 반영했다. A50이 웹 화면과 로그인 보조 경로를 제공하고 웹앱 방해 금지 시간을 적용하는 일, Pi의 기기 목록·공간 전송을 함께 표시했다. 실제 iPhone 로그인·푸시 수신은 남아 있다. [쉬운 연결 설명](../../server/docs/connection-flow.md) · [PNG](../../server/docs/architecture/connection-flow.png).
+
+## SW 컴포넌트 그림 (2026-10-14 당시)
 
 [SVG](smart-home-sw-components.svg) · [PNG](smart-home-sw-components.png)
 
@@ -36,9 +42,9 @@ SVG는 가로 1189mm, 세로 841mm의 A0다. `viewBox="0 0 1682 1189"`, 본문 `
 
 **에어컨 제어:** 휴대폰·PC·터치 화면 → Tailscale → Pi 웹/API → DeviceService → MQTT → Zigbee2MQTT 외부 변환기 → Zigbee → ESP32-H2 → IR → 에어컨. MQTT의 센서 보고와 H2 명령은 같은 브로커를 쓰지만 서로 다른 메시지다. H2는 Wi-Fi·FCM에 연결하는 기기가 아니다. Pi GPIO IR은 선택할 수 있는 별도 송신 경로다. 기기에 H2 연결이 있으면 그 경로를 사용한다.
 
-**가족 알림:** Zigbee 센서 → Pi SensorService·센서 DB·자동화 기록 → Pi 연결 서비스 → HTTPS 통로 → A50 허브 인증·이벤트 저장 → 현재 가족과 휴대폰별 알림 선택 → 영구 전송 대기열 → FCM → 가족 APK → Android 알림. 알림을 눌러 자세한 기록을 보는 과정은 Google 로그인 토큰을 사용하는 중앙 API 조회다.
+**가족 알림:** Zigbee 센서 → Pi SensorService·센서 DB·자동화 기록 → Pi 연결 서비스 → HTTPS 통로 → A50 허브 인증·이벤트 저장 → 현재 가족과 휴대폰별 알림 선택 → 영구 전송 대기열 → FCM → Android 앱 또는 iPhone 홈 화면 웹앱. 웹앱 방해 금지 시간은 A50이 보내기 전에 적용한다. 자세한 기록은 로그인 후 중앙 API에서 읽으며, 실제 iPhone 수신은 아직 확인하지 않았다.
 
-**가족 앱 제어(0.5.0 추가, 0.5.1 조작 확대):** 가족 APK → Google 로그인·현재 집 역할 확인 → A50 `Controls`·30초 만료 대기열 → 해당 Pi가 전용 허브 키로 조회 → 실행 기록 저장 → 기존 Pi 에어컨 API → H2 IR 송신 → 결과 보고·앱 조회. 냉방 온도·바람, 자동·제습·송풍, 풍향·부가 기능과 끄기는 같은 경로를 사용한다. 에어컨 명령은 FCM으로 보내지 않는다. 결과가 불명확한 물리 명령은 자동 재전송하지 않는다.
+**가족 앱 제어:** Android 앱 또는 iPhone 웹앱 → Google 로그인·현재 집 역할 확인 → A50 `Controls`·30초 만료 대기열 → 해당 Pi가 전용 허브 키로 조회 → 실행 기록 저장 → 기존 Pi 에어컨 API → H2 IR 송신 → 결과 보고·앱 조회. 냉방 온도·바람, 자동·제습·송풍, 풍향·부가 기능과 끄기는 같은 경로를 사용한다. 에어컨 명령은 FCM으로 보내지 않는다. 결과가 불명확한 물리 명령은 자동 재전송하지 않는다.
 
 ## 컴포넌트와 실제 코드
 
@@ -57,6 +63,8 @@ SVG는 가로 1189mm, 세로 841mm의 A0다. `viewBox="0 0 1682 1189"`, 본문 `
 | A50 | Households | 집 소속·역할, 지정 계정 초대, 허브 연결, 기록 격리 | [`households.py`](../../server/services/central-server/central_server/households.py) |
 | A50 | PushStore + Preferences | 설치 토큰·증명·binding, 종류별 수신 선택, 온습도 간격, 전송 작업 | [`push.py`](../../server/services/central-server/central_server/push.py), [`preferences.py`](../../server/services/central-server/central_server/preferences.py) |
 | A50 | PushWorker + FCMSender | 전송 직전 권한·설정 확인, 만료·재시도, FCM HTTP v1 요청 | [`push.py`](../../server/services/central-server/central_server/push.py), [`fcm.py`](../../server/services/central-server/central_server/fcm.py) |
+| A50 | 웹 화면·로그인 보조 | `/app/` 파일과 웹 설정 제공, `/__/auth/`를 설정된 Firebase로 전달 | [`web_app.py`](../../server/services/central-server/central_server/web_app.py) |
+| iPhone 홈 화면 | 웹앱·서비스 워커 | 집별 API 호출, 기기별 알림 설정과 웹 푸시 표시 | [`app.js`](../../server/services/central-server/central_server/webapp/js/app.js), [`sw.js`](../../server/services/central-server/central_server/webapp/sw.js) |
 | 가족 휴대폰 | FirebaseSession + ApiClient | Google 로그인·Firebase 세션, HTTPS 사용자 API | [`FirebaseSession.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/FirebaseSession.java), [`ApiClient.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/ApiClient.java) |
 | 가족 휴대폰 | FamilyActivity | 홈·기록·설정, 가족 관리와 알림 선택, 오류 안내·스크롤 유지 | [`FamilyActivity.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/FamilyActivity.java) |
 | 가족 휴대폰 | PushManager + PushSyncWorker | WorkManager로 FCM 토큰·설치 증명·알림 선택을 중앙에 등록 | [`PushManager.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/PushManager.java), [`PushSyncWorker.java`](../../server/android/family-app/app/src/main/java/com/aircon/family/PushSyncWorker.java) |
@@ -87,7 +95,7 @@ FCM 토큰이나 주제를 알고 있다는 이유로 가족 권한을 주지 �
 
 Pi 연결 서비스는 처음 실행할 때 마지막 기록 위치를 시작점으로 삼는다. 오래된 기록을 새 알림으로 다시 쏟아내지 않는다. 5초마다 문·경고의 새 행과 온습도 최신 보고 시각을 읽는다. 온습도는 센서가 새로 보고한 값만 전달하고 측정 주기를 바꾸지 않는다.
 
-문·경고·온습도 선택과 온습도 1·5·15·60분 간격은 **휴대폰 설치 단위**다. 현재 온습도 간격은 해당 설치의 온습도 알림 전체에 적용되며, 집이나 센서별로 각각 다른 타이머가 있는 것은 아니다. 기본값은 문·경고 켜짐, 온습도 꺼짐, 간격 5분이다. 보고가 없으면 주기적으로 같은 값을 보내지 않는다.
+알림 종류·중요도와 정기 보고 1·5·15·60분 간격은 **휴대폰 설치 단위**다. 기본값은 안전 긴급, 보안·기기·자동화 알림, 환경·가족 조용히, 정기 보고 끔, 보고 간격 5분이다. 안전은 긴급·알림만 선택한다. 간격은 그 설치의 온습도 보고 전체에 적용되며 센서별 별도 타이머는 아니다. 새 보고가 없으면 같은 값을 반복해 보내지 않는다. 예전 앱의 문·온습도·경고 선택도 서버가 계속 받아 호환한다.
 
 이벤트 수집은 `(hub_id, sender_event_id)`로 중복을 확인한다. 같은 ID·같은 내용은 기존 결과를 돌려주고, 같은 ID·다른 내용은 충돌로 처리한다. 중앙 이벤트 저장과 전송 대기 생성은 같은 DB 트랜잭션에서 한다. 이 방식은 수집 단계의 중복을 줄이지만, 외부 FCM 전달 전체를 정확히 한 번으로 보장하지는 않는다. APK도 최근 메시지 ID로 중복을 거른다.
 

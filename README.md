@@ -20,13 +20,13 @@
 
 [![가족 앱부터 도메인·Cloudflare·A50·Pi·에어컨까지의 연결](server/docs/architecture/connection-flow.svg)](server/docs/architecture/connection-flow.svg)
 
-[연결을 쉬운 말로 읽기](server/docs/connection-flow.md) · [블로그용 PNG](server/docs/architecture/connection-flow.png). 그림 상단에 고정 주소의 실제 연결 상태를 표시했다.
+[연결을 쉬운 말로 읽기](server/docs/connection-flow.md) · [블로그용 PNG](server/docs/architecture/connection-flow.png). 그림은 2026-10-16 기준으로 Android·iPhone과 중앙 서버 0.8.0을 반영했다. 고정 주소 연결 상태와 실제 iPhone 수신이 아직 확인되지 않은 점도 표시했다.
 
-**가족 APK 0.6.2에서는 기록·알림과 에어컨 조작을 사용할 수 있다.** 0.6.1부터 어두운 화면과 원형 온도 다이얼로 다시 디자인하고, 홈을 공간별 기기 타일과 ‘지금 확인할 것’ 중심으로 바꿨다. 기기는 Pi가 보내는 기기 목록(이름·공간·종류·기능 블록·상태)으로 그리므로 전등 같은 새 기기도 같은 화면 규칙으로 들어온다. 알림은 안전·보안·기기·환경·정기 보고·자동화·가족 일곱 종류마다 긴급·알림·조용히·끔을 고른다([결정 0019](docs/decisions/0019-capability-inventory-and-alert-levels.md)). 0.6.0부터 앱은 처음 연결한 서버의 지문을 기억하고, 주소가 바뀌어도 같은 서버임을 서명으로 확인한 뒤에만 로그인 토큰을 보낸다. 앱의 명령은 A50에서 집별 권한을 확인한 뒤 해당 Pi가 받아 기존 에어컨 API로 실행한다. 냉방 17–30°C·바람 자동/약/중/강, 자동·제습·송풍, 풍향 고정·스윙·절전·터보·표시등과 전원 끄기를 지원하며 조회 전용 계정은 조작하지 못한다. 기존 Tailscale Pi 웹 대시보드도 유지한다. IR 송신 완료는 실제 전원 상태를 읽은 값이 아니며, FCM 전송 접수도 휴대폰에 알림이 표시됐다는 뜻은 아니다.
+**가족 APK 0.6.2에서는 기록·알림과 에어컨 조작을 사용할 수 있다.** iPhone 가족용으로 `https://roomrelay.top/app/` 홈 화면 웹앱을 추가했다. 웹 화면과 Google 로그인 페이지 진입은 확인했고 실제 iPhone 로그인·푸시 수신은 남아 있다([iPhone 가족용 웹앱](server/docs/ios-web-app.md)). 0.6.1부터 어두운 화면과 원형 온도 다이얼로 다시 디자인하고, 홈을 공간별 기기 타일과 ‘지금 확인할 것’ 중심으로 바꿨다. 기기는 Pi가 보내는 기기 목록(이름·공간·종류·기능 블록·상태)으로 그리므로 전등 같은 새 기기도 같은 화면 규칙으로 들어온다. 알림은 안전·보안·기기·환경·정기 보고·자동화·가족 일곱 종류마다 긴급·알림·조용히·끔을 고른다([결정 0019](docs/decisions/0019-capability-inventory-and-alert-levels.md)). 0.6.0부터 앱은 처음 연결한 서버의 지문을 기억하고, 주소가 바뀌어도 같은 서버임을 서명으로 확인한 뒤에만 로그인 토큰을 보낸다. 앱의 명령은 A50에서 집별 권한을 확인한 뒤 해당 Pi가 받아 기존 에어컨 API로 실행한다. 냉방 17–30°C·바람 자동/약/중/강, 자동·제습·송풍, 풍향 고정·스윙·절전·터보·표시등과 전원 끄기를 지원하며 조회 전용 계정은 조작하지 못한다. 기존 Tailscale Pi 웹 대시보드도 유지한다. IR 송신 완료는 실제 전원 상태를 읽은 값이 아니며, FCM 전송 접수도 휴대폰에 알림이 표시됐다는 뜻은 아니다.
 
 ```mermaid
 flowchart LR
-    A[가족 앱 · Google 로그인] -->|명령 요청| B[A50 · 현재 집과 가족 권한 확인]
+    A[Android 앱 / iPhone 웹앱 · Google 로그인] -->|명령 요청| B[A50 · 현재 집과 가족 권한 확인]
     B --> C[30초 만료 명령 대기열]
     D[해당 집 Pi · 전용 허브 키] -->|HTTPS로 자기 집 명령 조회| C
     D -->|허용된 에어컨 명령| E[기존 Pi 에어컨 API]
@@ -53,7 +53,7 @@ Zigbee2MQTT는 인터넷 회원가입 서비스가 아니다. Pi에 설치해 Zi
 - 이 글의 **실물 에어컨 신호는 Carrier CS-A061GS**에서 기록했다. 다른 모델에는 그대로 보내지 말고 해당 리모컨 신호부터 새로 확보해야 한다. 신호 자료는 [`device_profiles/air_conditioner/Carrier/CS-A061GS/`](device_profiles/air_conditioner/Carrier/CS-A061GS/)에 있다.
 - **이번 시제품 경로는 USB 전원 ESP32-H2 + 만능기판**이다. 배터리 제품이나 양산 PCB를 완성한 상태가 아니다. Pi의 GPIO18에 IR 송신기를 직접 다는 첫 번째 방식은 별도 [하드웨어 기록](docs/hardware/)에 있다. 두 방식을 동시에 만들 필요는 없다.
 - H2로 에어컨 끄기, 대시보드 냉방 명령에 대한 실물 반응을 봤다. 하지만 냉방 21–30°C 신호는 규칙으로 계산한 값이고, 다른 모드·부가 기능·무선 장시간 안정성은 더 시험해야 한다. 화면의 에어컨 상태는 **마지막으로 보낸 명령에 따른 추정값**이지 에어컨이 보내 준 측정값이 아니다.
-- 외부 접속은 Tailscale을 사용한다. `8001`, MQTT `1883`, Zigbee2MQTT 관리 화면 `8080`을 공유기 포트포워딩으로 인터넷에 열지 않는다.
+- Pi 웹 화면·SSH 관리의 외부 접속은 Tailscale을 사용한다. 가족 앱·iPhone 웹앱은 Cloudflare를 거쳐 A50에 연결한다. `8001`, MQTT `1883`, Zigbee2MQTT 관리 화면 `8080`을 공유기 포트포워딩으로 인터넷에 열지 않는다.
 
 ## 1. 준비물과 파일 지도
 
@@ -100,7 +100,7 @@ PowerShell이 `.ps1` 실행을 막는 PC라면 현재 창에서만 `Set-Executio
 
 1. [Raspberry Pi Imager](https://www.raspberrypi.com/software/)로 Raspberry Pi OS Lite 64-bit를 microSD에 기록한다. 이번 설치 기록의 기준은 Debian 13 Trixie arm64다. Imager의 사전 설정에서 네트워크, 시간대, 사용자 계정과 SSH 공개키 로그인을 설정한다. 아래 Pi 명령은 사용자 이름을 `air`, 프로젝트 경로를 `/home/air/aircon-controller`로 둔 **저장소 스크립트 기본값**에 맞췄다. 다른 이름을 쓰려면 서비스 파일과 배포 경로도 함께 바꿔야 한다.
 2. PC에서 SSH로 Pi에 접속한다. Pi가 처음 켜지지 않거나 SSH가 안 된다면 [Raspberry Pi의 초기 설정 안내](https://www.raspberrypi.com/documentation/computers/getting-started.html)를 먼저 따른다.
-3. Pi와 원격 접속할 휴대폰·PC에 Tailscale을 설치하고 **본인 계정의 같은 사설망(tailnet)**에 넣는다. 설치·로그인 명령은 [Tailscale의 현재 Linux 안내](https://tailscale.com/kb/1031/install-linux)를 따른다. Pi에서 `tailscale ip -4`로 주소가 나오는지 살핀다. 주소 자체는 블로그, 이슈, 화면 캡처에 공개하지 않는다.
+3. Pi와 Pi 웹 화면·SSH를 사용할 관리용 휴대폰·PC에 Tailscale을 설치하고 **본인 계정의 같은 사설망(tailnet)**에 넣는다. 설치·로그인 명령은 [Tailscale의 현재 Linux 안내](https://tailscale.com/kb/1031/install-linux)를 따른다. Pi에서 `tailscale ip -4`로 주소가 나오는지 살핀다. 주소 자체는 블로그, 이슈, 화면 캡처에 공개하지 않는다.
 4. Pi에서도 이 저장소를 내려받고 Python 환경을 만든다. 이것은 **첫 설치**다. 이후 코드 수정은 PC를 기준으로 하고, Pi 파일을 직접 고쳐 서로 다른 버전을 만들지 않는다.
 
 ```bash

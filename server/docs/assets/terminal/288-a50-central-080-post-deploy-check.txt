@@ -1,0 +1,12 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - [read-only schema 8 row counts]
+SCHEMA_VERSION=8 INTEGRITY=ok
+ROWS={"homes": 2, "hubs": 1, "memberships": 2, "events": 1068, "installations": 4, "notification_levels": 16, "hub_devices": 3, "quiet_hours": 0}
+HEARTBEAT_AGE_SECONDS=0
+
+EXIT_CODE=0
+$ SSH [verified host key] central_server.admin identity
+SERVER_IDENTITY_GROUPED=[REDACTED_SERVER_IDENTITY]
+
+EXIT_CODE=0

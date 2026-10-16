@@ -115,13 +115,13 @@ def test_schema_five_upgrade_keeps_data_and_adds_one_identity_key(tmp_path):
         conn.execute("INSERT INTO homes VALUES('h','keep-home','u',1)")
         conn.execute("INSERT INTO memberships VALUES('h','u','owner',1,NULL)")
         conn.execute("INSERT INTO installations VALUES('phone','proof','u','private-token','binding',1,1000)")
-        for table in ('server_identity', 'hub_inventory', 'hub_devices', 'notification_levels'):
+        for table in ('server_identity', 'hub_inventory', 'hub_devices', 'notification_levels', 'quiet_hours'):
             conn.execute('DROP TABLE '+table)  # a real schema-5 database has none of these
         conn.execute('PRAGMA user_version=5')
     initialize(db)
     initialize(db)
     with sqlite3.connect(db) as conn:
-        assert conn.execute('PRAGMA user_version').fetchone() == (7,)
+        assert conn.execute('PRAGMA user_version').fetchone() == (8,)
         assert conn.execute('SELECT name,active FROM homes').fetchall() == [('keep-home', 1)]
         assert conn.execute('SELECT token,binding FROM installations').fetchall() == [('private-token', 'binding')]
         assert conn.execute('SELECT COUNT(*) FROM server_identity').fetchone() == (1,)

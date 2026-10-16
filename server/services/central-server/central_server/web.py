@@ -11,6 +11,7 @@ from flask import Flask, jsonify, render_template_string
 
 from central_server import VERSION
 from central_server.storage import ready
+from central_server import web_app
 
 STATUS_PAGE = '''<!doctype html><html lang="ko"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -29,7 +30,8 @@ p{line-height:1.7}footer{margin-top:32px;color:#61728a;font-size:13px}
 <footer>시험 운영 · 버전 {{ version }}</footer></main></html>'''
 
 
-def create_app(database: Path, *, identity_verifier=None, push_sender_ready=False) -> Flask:
+def create_app(database: Path, *, identity_verifier=None, push_sender_ready=False,
+               firebase_project=None, web_config=None, webapp_folder=None, auth_http=None) -> Flask:
     app = Flask(__name__)
     app.config.update(MAX_CONTENT_LENGTH=16384)
     app.config['PUSH_SENDER_READY'] = push_sender_ready
@@ -44,8 +46,10 @@ def create_app(database: Path, *, identity_verifier=None, push_sender_ready=Fals
 
     @app.after_request
     def response_headers(response):
-        response.headers['Cache-Control'] = 'no-store'
         response.headers['X-Content-Type-Options'] = 'nosniff'
+        if web_app.response_headers(response):
+            return response  # /app/ and the sign-in helper set their own cache and CSP headers
+        response.headers['Cache-Control'] = 'no-store'
         response.headers['Content-Security-Policy'] = (
             "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'"
         )
@@ -71,6 +75,9 @@ def create_app(database: Path, *, identity_verifier=None, push_sender_ready=Fals
 
     from central_server.api import register
     register(app, database, identity_verifier)
+    # Home-screen web app for iPhone family members (decision record 0020).
+    web_app.register(app, firebase_project=firebase_project, web_settings=web_config,
+                     folder=webapp_folder, http=auth_http)
     @app.errorhandler(sqlite3.Error)
     def database_error(error):
         logging.getLogger('central_server').warning('DATABASE_OPERATION_FAILED kind=%s', type(error).__name__)

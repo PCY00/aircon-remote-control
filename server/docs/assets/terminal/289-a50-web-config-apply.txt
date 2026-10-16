@@ -1,0 +1,13 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - [Firebase web app settings on stdin; values never printed]
+ok: run: /data/data/com.termux/files/usr/var/service/aircon-central: (pid 15198) 1s
+CONFIG_FIELDS_BEFORE=["fcm_service_account_file", "firebase_project_id"]
+PROJECT_ID_MATCHES_SERVER=TRUE
+WEB_APP_ALREADY_SAME=FALSE
+CONFIG_FIELDS_AFTER=["fcm_service_account_file", "firebase_project_id", "web_app"] MODE=0o600
+APP_CONFIG_FIELDS=["apiKey", "appId", "authDomain", "messagingSenderId", "projectId"]
+APP_CONFIG_MATCHES=TRUE
+A50_WEB_CONFIG=PASS
+
+EXIT_CODE=0

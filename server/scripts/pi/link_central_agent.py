@@ -121,7 +121,7 @@ def native(home, test, *extra, apply=False):
 
 
 def first_pairing_available(phone, pi):
-    return (phone["version"] in {"0.3.1", "0.4.0", "0.5.0", "0.5.1", "0.6.0", "0.7.0"} and not phone["hubs"]
+    return (phone["version"] in {"0.3.1", "0.4.0", "0.5.0", "0.5.1", "0.6.0", "0.7.0", "0.8.0"} and not phone["hubs"]
             and not phone["credential_exists"] and not pi["config_exists"])
 
 
