@@ -21,3 +21,9 @@ PUBLIC_FILES=1792 IMAGES=659 PRIVATE_FINDINGS=0
 
 $ python [compare staged Git blobs with server/MANIFEST.json]
 STAGED_MANIFEST_ENTRIES=554 MISMATCHES=0
+
+$ git ls-remote origin refs/heads/main
+82ab55b9ed30d32d29f91ee486ef79d8b0c24c12	refs/heads/main
+
+$ gh api repos/PCY00/aircon-remote-control/commits/main --jq .sha
+82ab55b9ed30d32d29f91ee486ef79d8b0c24c12
