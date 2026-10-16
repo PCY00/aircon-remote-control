@@ -1,0 +1,9 @@
+# Actual executed commands and output; private details removed
+
+$ SSH [verified host key] python - [keep only hub_id in the private hub record; key never printed]
+BEFORE_FIELDS=["claim_code", "claim_expires_at", "hub_id", "hub_token"]
+HUB_ID_MATCHES_ACTIVE_BOUND_HUB=TRUE
+AFTER_FIELDS=["hub_id"] MODE=0o600
+OTHER_FILES_WITH_PLAINTEXT_KEY=0
+
+EXIT_CODE=0

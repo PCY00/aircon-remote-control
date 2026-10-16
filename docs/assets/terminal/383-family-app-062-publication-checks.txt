@@ -1,0 +1,23 @@
+# Actual executed commands and output; private details removed
+
+$ python -m pytest -q tests/test_a50_family_build.py tests/test_reader_bundle.py tests/test_pi_hub_record.py [from server/]
+..........................................                               [100%]
+42 passed in 3.53s
+
+$ read completed production-build JUnit XML reports [counts only]
+ANDROID_UNIT_RESULTS={"tests": 88, "failures": 0, "errors": 0, "skipped": 0}
+
+$ python scripts/sanitize_blog_images.py docs/assets server/docs/assets
+IMAGE_COUNT=655
+PRIVATE_METADATA_COUNT=0
+UNCHECKED_COUNT=0
+
+$ python scripts/android/verify_family_apk.py [from server/, full output in server/docs/assets/terminal/284-a50-family-apk-verification.txt]
+FAMILY_APK_VERIFICATION=PASS
+
+
+$ python [private publication audit, file contents and image metadata]
+PUBLIC_FILES=1792 IMAGES=659 PRIVATE_FINDINGS=0
+
+$ python [compare staged Git blobs with server/MANIFEST.json]
+STAGED_MANIFEST_ENTRIES=554 MISMATCHES=0
