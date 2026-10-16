@@ -1,8 +1,13 @@
-# Keep public server source bytes stable for manifests and pinned SDK hashes on Windows.
+* text=auto
 server/** text=auto eol=lf
-server/**/*.png -text
-server/**/*.jpg -text
-server/**/*.jpeg -text
-server/**/*.ico -text
-# Upstream SDK bytes include intentional trailing spaces; preserve the verified download.
+*.py text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.example text eol=lf
+*.ps1 text eol=crlf
+*.jpg binary
+*.png binary
+server/**/*.jpeg binary
+server/**/*.ico binary
+# Preserve the verified upstream SDK bytes, including its intentional trailing spaces.
 server/services/central-server/central_server/webapp/vendor/firebase-*.js whitespace=-blank-at-eol

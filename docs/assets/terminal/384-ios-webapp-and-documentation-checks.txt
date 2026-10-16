@@ -48,3 +48,15 @@ $ python [compare generated connection diagram and vendored SDK in the public co
 DIAGRAM_GENERATOR_MATCH=TRUE
 PUBLIC_COPY_PINNED_SDK=PASS
 REVIEWED_SOURCE_PUBLIC_COPY_MATCH=TRUE
+
+$ git ls-remote origin refs/heads/main
+c3a5fa7588c3f0d1fab08513cd779a660d06c00e	refs/heads/main
+
+$ gh api repos/PCY00/aircon-remote-control/commits/main --jq .sha
+c3a5fa7588c3f0d1fab08513cd779a660d06c00e
+
+$ git check-attr text eol diff whitespace [selected PowerShell, pinned SDK and PNG files; relevant output]
+scripts/deploy.ps1: eol: crlf
+server/services/central-server/central_server/webapp/vendor/firebase-app.js: eol: lf
+server/services/central-server/central_server/webapp/icon-192.png: text: unset
+server/services/central-server/central_server/webapp/icon-192.png: diff: unset
